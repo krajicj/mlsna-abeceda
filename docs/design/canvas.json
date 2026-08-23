@@ -1,0 +1,11 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Varianta A · Zahrádka písmenek", "x": 0, "y": 0, "w": 1024, "h": 768 },
+    { "file": "Kitchen.dc.html", "title": "Varianta C · Kouzelná kuchyně", "x": 1144, "y": 0, "w": 1024, "h": 768 }
+  ],
+  "annotations": [
+    { "id": "poznamka-a", "x": 0, "y": -240, "w": 560, "text": "VARIANTA A · Zahrádka písmenek\nVčelka se zeptá hlasem: „Kde je M jako maminka?“ Dcera klepne na kytku se správným písmenkem. Každá správná odpověď = kapka do konvičky (vpravo dole). Plná konvička = kytka v zahrádce vpravo povyroste (klíček O → slunečnice E). Zahrádka zůstává uložená, vrací se k ní a vidí, co už vypěstovala – tři muchomůrky jsou číslo 3. Občas přiletí motýl nebo beruška jen tak, pro radost." },
+    { "id": "poznamka-c", "x": 1144, "y": -240, "w": 560, "text": "VARIANTA C · Kouzelná kuchyně\nMedvídek si hlasem objedná: „Tři jahody a dortík s písmenkem K!“ Objednávka je v bublině i obrázky, aby ji nemusela číst. Dcera bere z polic: klepe na jahody a hlas s ní počítá (1, 2, 3 – kolečka nad dortem), pak vybere perníček s písmenkem K. Hotový dort medvídek sní a zaplatí hvězdičkou (vpravo nahoře). Za hvězdičky si kupuje nové věci do kuchyně a nová zvířátka-zákazníky." }
+  ],
+  "launch": { "view": "canvas" }
+}

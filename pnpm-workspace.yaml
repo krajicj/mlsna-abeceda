@@ -1,0 +1,4 @@
+minimumReleaseAge: 20160 # 14 days, applies to transitive packages too; strict by default when set
+blockExoticSubdeps: true # transitive deps may not come from git/tarball URLs
+trustPolicy: no-downgrade
+savePrefix: '' # exact versions, never ^ or ~

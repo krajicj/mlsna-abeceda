@@ -1,0 +1,10 @@
+node_modules/
+.pnpm-store/
+dist/
+coverage/
+*.env
+!*.env.example
+.env*
+personal.json
+docs/design/mlsna-abeceda-screens.html
+.DS_Store

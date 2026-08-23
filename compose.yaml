@@ -1,0 +1,86 @@
+# All toolchain commands run here – see CLAUDE.md › Commands.
+name: mlsna-abeceda # project name (and volume prefix) independent of the directory name
+x-toolchain: &toolchain
+  build: .
+  image: mlsna-abeceda-toolchain
+  user: node
+  working_dir: /app
+  init: true
+  cap_drop: [ALL]
+  security_opt: ['no-new-privileges:true']
+  volumes:
+    - .:/app
+    - node_modules:/app/node_modules
+    - pnpm-store:/app/.pnpm-store # pnpm puts the store next to the project (HOME is on another device)
+  depends_on:
+    init:
+      condition: service_completed_successfully
+
+services:
+  # Named volumes are created root-owned; hand them to user `node`. Idempotent.
+  init:
+    build: .
+    image: mlsna-abeceda-toolchain
+    user: root
+    network_mode: none
+    volumes:
+      - node_modules:/app/node_modules
+      - pnpm-store:/app/.pnpm-store # pnpm puts the store next to the project (HOME is on another device)
+    command: chown node:node /app/node_modules /app/.pnpm-store
+
+  # Services under the `cli` profile are never started by `--profile dev up`; `docker compose run`
+  # enables a profile automatically for the service it targets.
+  install: # internet access (registry); first time without a lockfile: `run --rm install pnpm install`
+    <<: *toolchain
+    profiles: [cli]
+    command: pnpm install --frozen-lockfile
+
+  add: # internet access; usage: docker compose run --rm add -D <pkg>@<exact-version>
+    <<: *toolchain
+    profiles: [cli]
+    entrypoint: ['pnpm', 'add']
+
+  vite: # dev server on an internal network – no DNS, no egress
+    <<: *toolchain
+    profiles: [dev]
+    networks: [isolated]
+    environment:
+      VITE_POLL: ${VITE_POLL:-0}
+    command: pnpm dev
+
+  dev: # publishes the dev server to the host: http://localhost:5173/mlsna-abeceda/
+    image: alpine/socat@sha256:3d9e7966201dd3a065df591020a09fd3c70845de7e7086e3531ea69db774406b
+    profiles: [dev]
+    user: '65534:65534'
+    cap_drop: [ALL]
+    read_only: true
+    networks: [default, isolated]
+    ports: ['127.0.0.1:5173:5173']
+    command: TCP-LISTEN:5173,fork,reuseaddr TCP:vite:5173
+    depends_on: [vite]
+
+  test:
+    <<: *toolchain
+    profiles: [cli]
+    network_mode: none
+    command: pnpm test
+
+  check:
+    <<: *toolchain
+    profiles: [cli]
+    network_mode: none
+    command: pnpm check
+
+  build:
+    <<: *toolchain
+    profiles: [cli]
+    network_mode: none
+    command: pnpm build
+
+networks:
+  isolated:
+    internal: true
+
+volumes:
+  node_modules:
+  pnpm-store:
