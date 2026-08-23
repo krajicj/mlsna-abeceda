@@ -525,8 +525,8 @@ poznámku, že první instalace bez lockfile je `docker compose run --rm install
 
 ## Výsledek implementace
 
-Implementováno 23. 8. 2026. Hotovo je vše kromě kroku 8 (commit, GitHub repozitář, zapnutí
-Pages, ověření živé stránky) – ten podle plánu čeká na pokyn autora.
+Implementováno a nasazeno 23. 8. 2026. Hotové jsou všechny kroky včetně kroku 8
+(commit `117bfae`, veřejný repozitář, Pages, živá stránka).
 
 **Vytvořené soubory** (přesně podle Kontraktu): `Dockerfile`, `.dockerignore`, `compose.yaml`,
 `pnpm-workspace.yaml`, `package.json`, `pnpm-lock.yaml` (46 balíčků), `tsconfig.json`,
@@ -581,11 +581,23 @@ zatím bez commitu.
   ukazuje jen `elevenlabs.env.example` (záměrná výjimka `!*.env.example`).
 - Akce ve workflow: `grep -E "uses: .*@v[0-9]"` nic nenajde – vše na SHA.
 
-**Neověřeno** (čeká na krok 8, tedy na pokyn „commit“)
+**Krok 8 – repozitář a nasazení** (na pokyn autora)
 
-- Průchod workflow v CI, HTTP 200 a `<title>` na `https://krajicj.github.io/mlsna-abeceda/`,
-  `build_type=workflow`, veřejnost repozitáře, neběžící `deploy` při selhání testů.
+- Commit `117bfae` (33 souborů), repozitář `krajicj/mlsna-abeceda` založen jako **veřejný**
+  s výchozí větví `main`, remote přes SSH (token `gh` nemá scope `workflow`, přes HTTPS by
+  push souboru ve `.github/workflows/` neprošel).
+- Pages zapnuty přes API ještě před pushem: `build_type=workflow`.
+- Push `main` → workflow „Deploy to GitHub Pages" (run 32660463695) zelený: `install
+  --frozen-lockfile`, `check`, `test`, `build` (18 s), pak `deploy` (8 s).
+- `https://krajicj.github.io/mlsna-abeceda/` vrací **200** s `<title>Mlsná abeceda</title>`,
+  assety na `/mlsna-abeceda/assets/…` (CSS 200). V Chrome název na krémovém pozadí, konzole
+  bez jediné zprávy; v rámu 844×390 (mobil na šířku) bez vodorovného i svislého posouvání.
+
+**Neověřeno**
+
 - Dotyk na skutečném tabletu (ověřeno jen v Chrome na desktopu a v emulaci rozměrem).
+- Že `deploy` neproběhne při selhání `check`/`test`/`build` – plyne z `needs: build`,
+  ale reálné selhání jsme nevyvolávali.
 
 **Poznámky a návrhy mimo rozsah**
 
