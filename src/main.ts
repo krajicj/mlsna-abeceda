@@ -1,13 +1,46 @@
 import './style.css';
 import { createAudioEngine } from './audio/context';
+import { type Letter } from './data/curriculum';
+import { letterOrder } from './game/curriculum';
+import { generateOrder, type Order } from './game/orders';
+import { createRng, systemRng } from './game/rng';
+import {
+  readSave,
+  resetSave,
+  writeSave,
+  withSettings,
+  type SaveData,
+  type StorageLike,
+} from './game/save';
+import { EMPTY_SETTINGS, normalizeSettings, type Settings } from './game/settings';
+import { SAVE_KEY } from './game/version';
 import { kitchenScene } from './scenes/kitchen';
 import { titleScene } from './scenes/title';
 import { createOrientationGuard } from './stage/orientation';
 import { createSceneManager } from './stage/scenes';
 import { createStage } from './stage/stage';
 
+/** Reading `localStorage` itself can throw when the browser blocks site data. */
+function browserStorage(): StorageLike {
+  try {
+    const storage = window.localStorage;
+    storage.getItem(SAVE_KEY);
+    return storage;
+  } catch {
+    const memory = new Map<string, string>();
+    return {
+      getItem: (key) => memory.get(key) ?? null,
+      setItem: (key, value) => void memory.set(key, value),
+      removeItem: (key) => void memory.delete(key),
+    };
+  }
+}
+
 const app = document.querySelector<HTMLElement>('#app');
 if (app) {
+  const storage = browserStorage();
+  readSave(storage); // loads and repairs the record early; the scenes start using it in STEP-05
+
   const stage = createStage(app);
   const audio = createAudioEngine();
   const scenes = createSceneManager(stage, audio, { title: titleScene, kitchen: kitchenScene });
@@ -15,12 +48,43 @@ if (app) {
   scenes.go('title');
 
   if (import.meta.env.DEV) {
-    // Handles for the manual checks in docs/steps/STEP-02-*.md; stripped from the build.
+    // Handles for the manual checks in docs/steps/STEP-02-*.md and STEP-03-*.md; stripped from
+    // the build, so real names never reach the deployed game (settings UI comes in STEP-16).
     Object.assign(window, {
       __stage: stage,
       __audio: audio,
       __scenes: scenes,
       __orientation: orientation,
+      __save: {
+        read: (): SaveData => readSave(storage),
+        write: (data: SaveData): void => writeSave(storage, data),
+        reset: (): SaveData => resetSave(storage),
+        raw: (): string | null => storage.getItem(SAVE_KEY),
+      },
+      __settings: {
+        get: (): Settings => readSave(storage).settings,
+        set: (input: unknown): { settings: Settings; order: Letter[] } => {
+          const settings = normalizeSettings(input);
+          writeSave(storage, withSettings(readSave(storage), settings));
+          return { settings, order: letterOrder(settings) };
+        },
+        clear: (): Settings => {
+          writeSave(storage, withSettings(readSave(storage), EMPTY_SETTINGS));
+          return EMPTY_SETTINGS;
+        },
+      },
+      __game: {
+        /** Stateless: reads the saved game every time; with a `seed` the result is repeatable. */
+        order: (index = 1, seed?: number): Order => {
+          const save = readSave(storage);
+          return generateOrder({
+            settings: save.settings,
+            tracks: save.tracks,
+            index,
+            rng: seed === undefined ? systemRng : createRng(seed),
+          });
+        },
+      },
     });
   }
 }

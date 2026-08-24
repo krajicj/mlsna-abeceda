@@ -1,11 +1,13 @@
 # Mlsná abeceda – herní návrh
 
-Verze 0.3 · 23. 8. 2026 · jediný zdroj pravdy pro mechaniky.
+Verze 0.4 · 24. 8. 2026 · jediný zdroj pravdy pro mechaniky.
 Věci označené **[předpoklad]** jsem zvolil sám a čekají na potvrzení; otevřené otázky jsou
 v poslední kapitole. Jména v příkladech jsou smyšlená – skutečná rodina žije jen
 v nastavení hry (kap. 3). Změny proti 0.2: název Mlsná abeceda, veřejný repozitář, hlas
 z nabídky ElevenLabs místo klonu (kap. 8), jen zvířecí zákazníci, diakritika až později,
-limit sezení 10 objednávek, hudba odložena.
+limit sezení 10 objednávek, hudba odložena. Změny proti 0.3 (rozhodnuto při plánování
+STEP-03): přesné střídání drah u prvních deseti objednávek (kap. 5.3), upřesněná diakritika
+v pořadí písmen (kap. 5.4), slovo pro písmeno E (kap. 5.6).
 
 ## 1. O co jde
 
@@ -130,6 +132,9 @@ Generátor objednávek si bere položky z obou drah podle toho, kde zrovna kter�
 ### 5.3 Skládání objednávky
 
 - **Délka:** prvních 10 objednávek 1 položka; pak 2; od (Č3 nebo P3) až 3.
+- **Prvních 10 objednávek se dráhy přesně střídají:** lichá objednávka je číselná, sudá
+  písmenková – mezi každou novou věcí tak přijde jistý úspěch. V číselné dráze se navíc
+  střídá počítání a číslice (1. objednávka počítání, 3. číslice, 5. počítání…).
 - **Mix:** při 2+ položkách vždy aspoň jedna z každé dráhy, pokud to sada dovolí.
   Položka z dráhy, která je pozadu (písmena), má vyšší váhu – ale nikdy dvě stejné za sebou,
   aby z toho nebyl dril.
@@ -142,10 +147,15 @@ Každé písmeno a číslo má **skóre zvládnutí** 0–5:
 - Nové prvky se zavádějí, když ≥ 80 % aktuální sady má skóre ≥ 3, vždy jeden nový.
   Nový prvek se objeví nejpozději do 2 objednávek od zavedení.
 - Výběr z „pytlíku“: prvky se skóre < 3 mají 3× vyšší váhu; nic se neopakuje dvakrát za sebou.
-- Distraktory: ze zvládnutých prvků; na P1 vizuálně odlišné (K vs O, ne K vs X; 1 vs 7 ne).
+- Distraktory: ze zvládnutých prvků a tvarově odlišné od správné odpovědi. Vyloučené
+  dvojice: O–C, O–D, C–G, E–F, M–N, P–R, U–V, I–J, S–Z, B–R, H–N a 1–7, 6–9, 3–8, 5–6.
+  (K a O vedle sebe tedy ano, M a N ne.) Když zvládnutých prvků není dost, pravidlo se
+  uvolní – radši kratší nabídka než žádná objednávka.
 - Postup na další stupeň: vše v aktuálním stupni má skóre ≥ 3. Zpět jen rodič.
-- **Pořadí písmen** (počítá se z nastavení): 1) písmena jména dítěte bez diakritiky v pořadí,
-  v jakém jsou ve jméně (Š se zatím ukazuje jako S), 2) počáteční písmena členů rodiny,
+- **Pořadí písmen** (počítá se z nastavení): 1) písmena jména dítěte v pořadí, v jakém jsou
+  ve jméně, ta s háčkem/čárkou se **přeskočí** (Anička → A, N, I, K; Č přijde až v P4),
+  2) počáteční písmena členů rodiny, ta se naopak **složí** na základní tvar (Šimon → S),
+  aby o své písmeno nikdo nepřišel,
   3) častá a tvarově odlišná: O, S, T, A, M, U, D, N, R, J, B, V, Z, H, C, F, G,
   4) až na P4 písmena s diakritikou ze jména, ostatní diakritika mimo v1.
   Příklad pro Aničku, maminku Lenku a bráchu Tomíka: **A, N, I, K → L, T, O, S → M, U, D … → Č**
@@ -165,12 +175,14 @@ Chyba nikdy nezastaví hru a nikdy nezní jako výtka.
 ### 5.6 Obsah
 
 - **Slova k písmenům** (hláska zní jasně, slovo zná, píše se tím písmenem). Role z rodiny
-  mají přednost (M – maminka, T – táta, B – brácha). Výchozí tabulka:
+  mají přednost, pokud takový člen v nastavení opravdu je: M – maminka, T – táta,
+  B – brácha, S – ségra, B – babička, D – děda; při kolizi (brácha × babička) vyhrává
+  první v tomhle pořadí, druhý zůstane u slova z výchozí tabulky. Výchozí tabulka:
 
   | | | | |
   |---|---|---|---|
   | A – auto | B – balón | C – cibule | D – dům |
-  | E – ementál **?** *(nebo jméno z rodiny, jen s klipem)* | F – fotbal | G – guma | H – houba |
+  | E – jméno dítěte (jen s klipem), jinak ementál | F – fotbal | G – guma | H – houba |
   | I – iglú | J – jablko | K – kočka | L – lev |
   | M – maminka | N – nos | O – oko | P – pes |
   | R – ryba | S – slon | Š – šnek | T – táta |

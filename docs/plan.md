@@ -20,8 +20,8 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 |---|---|---|---|---|
 | STEP-01 | [Projekt, izolovaný toolchain, repozitář a nasazení na Pages](steps/STEP-01-project-setup-and-deploy.md) | M0 | — | done |
 | STEP-02 | [Responzivní scéna, přepínání scén, odemčení audia, orientace](steps/STEP-02-stage-scenes-and-audio-unlock.md) | M0 | 01 | done |
-| STEP-03 | Herní logika: kurikulum, dvě dráhy, generátor objednávek (Č1/P1), ukládání | M1 | 01 | — |
-| STEP-04 | Kuchyně – statická scéna ze SVG (medvídek, pult, police, miska, perníčky, svíčky) | M1 | 02 | — |
+| STEP-03 | [Herní logika: kurikulum, dvě dráhy, generátor objednávek (Č1/P1), ukládání](steps/STEP-03-game-logic-and-save.md) | M1 | 01 | done |
+| STEP-04 | Kuchyně – statická scéna ze SVG (medvídek, pult, police, miska, perníčky, svíčky) + self-host fontu Fredoka | M1 | 02 | — |
 | STEP-05 | Položka „počítání“: miska → výrobek, kolečka, přepočítání, nečinnost (zatím bez hlasu) | M1 | 03, 04 | — |
 | STEP-06 | Položky „písmenko“ a „číslice“: výběr z police, chyba, nápověda | M1 | 05 | — |
 | STEP-07 | Hlas: manifest hlášek, generátor z ElevenLabs, casting, fronta přehrávání | M1 | 02 | — |
@@ -36,7 +36,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-16 | Rodičovský koutek: zámek, nastavení dítěte a rodiny, limity, zvuk | M4 | 11 | — |
 | STEP-17 | Hlasový balíček jmen (`personal.json`, index, oslovení) | M4 | 07, 16 | — |
 | STEP-18 | Pokrok, export/import, mazání dat | M4 | 16 | — |
-| STEP-19 | PWA ručně (service worker, manifest), offline, ikona na ploše, fonty self-host | M4 | 02 | — |
+| STEP-19 | PWA ručně (service worker, manifest), offline, ikona na ploše | M4 | 02 | — |
 | STEP-20 | „Kolik je“ a dva druhy ovoce (Č2–Č3) | M5 | 10 | — |
 | STEP-21 | Sčítání (Č4) | M5 | 20 | — |
 | STEP-22 | Výrobky: palačinky, koktejl | M5 | 15 | — |
@@ -49,3 +49,6 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 - STEP-07 (hlas) potřebuje účet ElevenLabs a klíč v `~/.config/mlsna-abeceda/elevenlabs.env`; do té doby
   se dá stavět s tichým placeholderem (STEP-05/06 nejsou na hlasu závislé).
 - Kroky se stejným „Po“ (např. 12/13/14, 03/04) jdou dělat nezávisle na sobě.
+- **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-19 do STEP-04: zatím se
+  vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
+  kuchyně nešlo posoudit. STEP-19 řeší jen PWA a offline.
