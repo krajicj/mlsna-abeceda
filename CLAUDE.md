@@ -21,7 +21,8 @@ wrong; `plan-step` is right).
 
 ## Project status (August 2026)
 
-- Phase: M0 – project skeleton and isolated toolchain exist (STEP-01); the game itself is
+- Phase: M0 done – project skeleton and isolated toolchain (STEP-01), scaled stage, scene
+  switching, audio unlock on first tap and the portrait guard (STEP-02); the game itself is
   variant "C – Kouzelná kuchyně" (magic kitchen). A push to `main` deploys to Pages.
 - The child does not know letters, counts to 20, recognises digits to 5 → learning runs on
   **two independent tracks** (numbers × letters), see design doc ch. 5.
@@ -111,8 +112,9 @@ repository and outside the bind mount — and is passed only to the `voice` serv
 
 ## Non-negotiable rules
 
-1. **The player cannot read.** No text in the game UI (exception: the parent corner). Every
-   instruction is voice + picture. Letters and digits on screen are _learning content_, not UI.
+1. **The player cannot read.** No text in the game UI (exceptions: the parent corner, and the
+   game title on the tap screen — a wordmark, not an instruction). Every instruction is voice +
+   picture. Letters and digits on screen are _learning content_, not UI.
 2. **You cannot lose.** No timers, lives, speed scores, red crosses. A mistake = gentle voice
    correction and a hint; the game never blocks progress.
 3. **Touch targets ≥ 88 logical px** (≈ 44 physical px on a phone), landscape only, nothing

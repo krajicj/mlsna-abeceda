@@ -1,27 +1,122 @@
+/*
+ * Global shell: letterbox, the measured viewport, the scaled stage and the anchor convention
+ * every scene builds on (STEP-04 onwards). Per-scene rules live next to the scene.
+ */
+:root {
+  --ink: #3b2a1a;
+  --wall: #ffe9d1;
+  --wood: #d9a066;
+  --star: #ffc53d;
+  --stage-w: 1024px;
+  --stage-scale: 1;
+}
+
 html,
 body {
   margin: 0;
   height: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
-  background: #ffe9d1;
-  color: #3b2a1a;
-  font-family: system-ui, sans-serif;
+  /* The letterbox bars: the stage never covers the whole window at every aspect ratio. */
+  background: var(--ink);
+  color: var(--ink);
+  font-family: Fredoka, 'Arial Rounded MT Bold', 'Helvetica Neue', Arial, sans-serif;
+  touch-action: manipulation; /* no double-tap zoom */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.splash {
-  min-height: 100vh;
+/* The element ResizeObserver measures: the window minus the notch and the home indicator. */
+.viewport {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  right: env(safe-area-inset-right, 0px);
+  bottom: env(safe-area-inset-bottom, 0px);
+  left: env(safe-area-inset-left, 0px);
+  overflow: hidden;
+}
+
+/*
+ * A scaled element keeps its unscaled layout size, so flex or grid centring would overflow at
+ * scale < 1; the -50% translate centres reliably at any scale.
+ */
+.stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--stage-w);
+  height: 768px;
+  transform: translate(-50%, -50%) scale(var(--stage-scale));
+  overflow: hidden;
+  background: var(--wall);
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+}
+
+/* Anchored layout: the stage width changes, its height never does – only the gaps stretch. */
+.stage .anchor-left {
+  position: absolute;
+  left: 0;
+}
+
+.stage .anchor-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.stage .anchor-right {
+  position: absolute;
+  right: 0;
+}
+
+/* Above the letterbox, not just the stage – the whole window has to say "turn me". */
+.orientation-guard {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 0 24px;
+  background: var(--wall);
 }
 
-h1 {
-  font-size: clamp(32px, 6vw, 64px);
-  margin: 0;
+.orientation-guard[hidden] {
+  display: none;
+}
+
+.rotate-phone {
+  width: min(46vmin, 360px);
+  height: auto;
+}
+
+.rotate-phone-body {
+  animation: rotate-phone 2.4s ease-in-out infinite;
+  transform-origin: 100px 100px;
+}
+
+@keyframes rotate-phone {
+  0%,
+  30% {
+    transform: rotate(0deg);
+  }
+  60%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotate-phone-body {
+    animation: none;
+    transform: rotate(-90deg);
+  }
 }

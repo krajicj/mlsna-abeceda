@@ -19,7 +19,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | Krok | Název | Milník | Po | Stav |
 |---|---|---|---|---|
 | STEP-01 | [Projekt, izolovaný toolchain, repozitář a nasazení na Pages](steps/STEP-01-project-setup-and-deploy.md) | M0 | — | done |
-| STEP-02 | Responzivní scéna, scény, odemčení audia, orientace | M0 | 01 | — |
+| STEP-02 | [Responzivní scéna, přepínání scén, odemčení audia, orientace](steps/STEP-02-stage-scenes-and-audio-unlock.md) | M0 | 01 | done |
 | STEP-03 | Herní logika: kurikulum, dvě dráhy, generátor objednávek (Č1/P1), ukládání | M1 | 01 | — |
 | STEP-04 | Kuchyně – statická scéna ze SVG (medvídek, pult, police, miska, perníčky, svíčky) | M1 | 02 | — |
 | STEP-05 | Položka „počítání“: miska → výrobek, kolečka, přepočítání, nečinnost (zatím bez hlasu) | M1 | 03, 04 | — |
