@@ -103,6 +103,7 @@ docker compose --profile dev up          # dev server → http://localhost:5173/
 docker compose run --rm test             # vitest run          (network: none)
 docker compose run --rm check            # tsc + prettier      (network: none)
 docker compose run --rm build            # vite build → dist/  (network: none)
+docker compose run --rm fonts            # download Fredoka (woff2 + OFL) into public/fonts/; run once, result is committed
 docker compose run --rm voice            # generate voice lines; reads ~/.config/mlsna-abeceda/elevenlabs.env
 docker compose run --rm add <pkg>@<ver>  # add a dependency (needs internet) – only with a justification in the step plan
 ```

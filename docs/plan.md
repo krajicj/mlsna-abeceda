@@ -21,7 +21,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-01 | [Projekt, izolovaný toolchain, repozitář a nasazení na Pages](steps/STEP-01-project-setup-and-deploy.md) | M0 | — | done |
 | STEP-02 | [Responzivní scéna, přepínání scén, odemčení audia, orientace](steps/STEP-02-stage-scenes-and-audio-unlock.md) | M0 | 01 | done |
 | STEP-03 | [Herní logika: kurikulum, dvě dráhy, generátor objednávek (Č1/P1), ukládání](steps/STEP-03-game-logic-and-save.md) | M1 | 01 | done |
-| STEP-04 | Kuchyně – statická scéna ze SVG (medvídek, pult, police, miska, perníčky, svíčky) + self-host fontu Fredoka | M1 | 02 | — |
+| STEP-04 | [Kuchyně – statická scéna ze SVG (medvídek, pult, police, miska, perníčky, svíčky) + self-host fontu Fredoka](steps/STEP-04-kitchen-scene-and-font.md) | M1 | 02 | done |
 | STEP-05 | Položka „počítání“: miska → výrobek, kolečka, přepočítání, nečinnost (zatím bez hlasu) | M1 | 03, 04 | — |
 | STEP-06 | Položky „písmenko“ a „číslice“: výběr z police, chyba, nápověda | M1 | 05 | — |
 | STEP-07 | Hlas: manifest hlášek, generátor z ElevenLabs, casting, fronta přehrávání | M1 | 02 | — |

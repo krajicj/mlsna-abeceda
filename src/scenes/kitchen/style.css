@@ -1,57 +1,44 @@
+/* Colours, the bear's breathing and the dev guide; every position comes from src/art/layout.ts. */
 .scene-kitchen {
   background: var(--wall);
-  background-image: radial-gradient(#f7d6b3 3px, transparent 3.5px);
+  background-image: radial-gradient(var(--wall-dot) 3px, transparent 3.5px);
   background-size: 48px 48px;
 }
 
-.kitchen-counter {
+.scene-kitchen svg {
+  display: block; /* no inline baseline gap under the art */
+}
+
+.kitchen-backdrop,
+.kitchen-prop {
   position: absolute;
+}
+
+.kitchen-backdrop {
   left: 0;
-  right: 0;
-  top: 500px;
-  height: 192px;
-  background: #bfe6d6;
-  border-top: 4px solid var(--ink);
-  border-bottom: 4px solid var(--ink);
-  box-shadow:
-    inset 0 46px 0 var(--wood),
-    inset 0 58px 0 #b07a3f;
+  top: 0;
 }
 
-.kitchen-floor {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 76px;
-  background: repeating-linear-gradient(90deg, #fbebd6 0 64px, #f1d4b4 64px 128px);
+/* Idle: the bear breathes, nothing else moves. */
+.kitchen-bear {
+  transform-origin: 50% 100%;
+  animation: bear-breathe 3.6s ease-in-out infinite;
 }
 
-/* Placeholder blocks: STEP-04 replaces each with real SVG art. */
-.kitchen-slot {
-  border: 4px dashed rgb(59 42 26 / 35%);
-  border-radius: 20px;
-  background: rgb(255 255 255 / 35%);
+@keyframes bear-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.014);
+  }
 }
 
-.customer-slot {
-  top: 210px;
-  width: 260px;
-  height: 300px;
-  margin-left: 70px;
-}
-
-.product-slot {
-  top: 300px;
-  width: 260px;
-  height: 230px;
-}
-
-.shelf-slot {
-  top: 190px;
-  width: 400px;
-  height: 280px;
-  margin-right: 14px;
+@media (prefers-reduced-motion: reduce) {
+  .kitchen-bear {
+    animation: none;
+  }
 }
 
 /* Dev only: the 1024 px band every layout must stay readable inside. */
@@ -65,27 +52,4 @@
   border-left: 2px dashed rgb(228 72 77 / 45%);
   border-right: 2px dashed rgb(228 72 77 / 45%);
   pointer-events: none;
-}
-
-.back-tile {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  width: 96px;
-  height: 96px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 4px solid var(--ink);
-  border-radius: 24px;
-  background: #ffffff;
-  box-shadow: 0 5px 0 rgb(59 42 26 / 16%);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.back-tile:active {
-  transform: translateY(3px);
-  box-shadow: 0 2px 0 rgb(59 42 26 / 16%);
 }

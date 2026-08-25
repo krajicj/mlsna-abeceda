@@ -40,6 +40,11 @@ services:
     profiles: [cli]
     entrypoint: ['pnpm', 'add']
 
+  fonts: # internet access; one-off: downloads Fredoka into public/fonts/ and writes src/fonts.css
+    <<: *toolchain
+    profiles: [cli]
+    command: node scripts/fetch-fonts.mjs
+
   vite: # dev server on an internal network – no DNS, no egress
     <<: *toolchain
     profiles: [dev]

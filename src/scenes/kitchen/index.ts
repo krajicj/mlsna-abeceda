@@ -1,43 +1,118 @@
+import { fruitBowl } from '../../art/bowl';
+import { bear } from '../../art/bear';
+import { cakeBase } from '../../art/cake';
+import { candle } from '../../art/candle';
+import { cookie } from '../../art/cookie';
+import { kitchenBackdrop } from '../../art/kitchen';
+import { MAX_CHOICES, kitchenLayout, shelfSlots, type KitchenLayout } from '../../art/layout';
+import type { Rect } from '../../art/svg';
 import type { Scene } from '../../stage/scenes';
 import './style.css';
 
-// Temporary way back to the title screen – shape only, no text. STEP-04 removes it.
-const STAR_SVG = `
-<svg viewBox="0 0 24 24" width="56" height="56" aria-hidden="true">
-  <path d="M12 2.5l2.9 6.1 6.7.8-4.9 4.6 1.2 6.6L12 17.3l-5.9 3.3 1.2-6.6L2.4 9.4l6.7-.8z"
-        fill="#FFC53D" stroke="#3B2A1A" stroke-width="2" stroke-linejoin="round"></path>
-</svg>`;
+/** Placeholder contents of the shelves; STEP-06 fills them from the order instead. */
+const DEMO_DIGITS = ['1', '2', '3', '4'];
+const DEMO_LETTERS = ['K', 'A', 'M', 'O'];
+
+interface KitchenDevHandle {
+  letters(list: readonly string[]): void;
+  digits(list: readonly string[]): void;
+  layout(): KitchenLayout;
+}
+
+function place(el: HTMLElement, rect: Rect): void {
+  el.style.left = `${rect.x}px`;
+  el.style.top = `${rect.y}px`;
+  el.style.width = `${rect.width}px`;
+  el.style.height = `${rect.height}px`;
+}
+
+function prop(className: string, art: string): HTMLDivElement {
+  const el = document.createElement('div');
+  el.className = `kitchen-prop ${className}`;
+  el.innerHTML = art;
+  return el;
+}
 
 /**
- * Placeholder kitchen: wall, counter, floor and the three anchored blocks STEP-04 fills in
- * (customer left, product in the middle, shelf right). Only the gaps stretch with the width.
+ * The kitchen: the bear waits behind the counter, the cake base and the bowl of strawberries
+ * stand on the worktop, digits sit on the upper shelf and letters on the lower one. Static by
+ * design – tapping arrives with STEP-05 (counting) and STEP-06 (letters and digits).
  */
-export const kitchenScene: Scene = (ctx) => {
+export const kitchenScene: Scene = () => {
   const el = document.createElement('div');
   el.className = 'scene-kitchen';
-  el.innerHTML = `
-    <div class="kitchen-counter"></div>
-    <div class="kitchen-floor"></div>
-    <div class="anchor-left kitchen-slot customer-slot"></div>
-    <div class="anchor-center kitchen-slot product-slot"></div>
-    <div class="anchor-right kitchen-slot shelf-slot"></div>
-    ${import.meta.env.DEV ? '<div class="kitchen-dev-guide"></div>' : ''}
-  `;
 
-  const back = document.createElement('button');
-  back.type = 'button';
-  back.className = 'back-tile';
-  back.setAttribute('aria-label', 'Zpět');
-  back.innerHTML = STAR_SVG;
-  el.append(back);
+  const backdrop = document.createElement('div');
+  backdrop.className = 'kitchen-backdrop';
+  const bearEl = prop('kitchen-bear', bear());
+  const cakeEl = prop('kitchen-cake', cakeBase());
+  const bowlEl = prop('kitchen-bowl', fruitBowl());
+  const digitShelf = document.createElement('div');
+  const letterShelf = document.createElement('div');
+  el.append(backdrop, bearEl, cakeEl, bowlEl, digitShelf, letterShelf);
 
-  const onClick = (): void => ctx.go('title');
-  back.addEventListener('click', onClick);
+  if (import.meta.env.DEV) {
+    const guide = document.createElement('div');
+    guide.className = 'kitchen-dev-guide';
+    el.append(guide);
+  }
+
+  let layout = kitchenLayout(0);
+  let backdropWidth = 0;
+  let digits: readonly string[] = DEMO_DIGITS;
+  let letters: readonly string[] = DEMO_LETTERS;
+
+  function fillShelf(
+    container: HTMLElement,
+    shelf: Rect,
+    items: readonly string[],
+    art: (value: string) => string,
+  ): void {
+    const slots = shelfSlots(shelf, items.length);
+    container.replaceChildren(
+      ...slots.map((slot, index) => {
+        const item = prop('kitchen-item', art(items[index] ?? ''));
+        place(item, slot);
+        return item;
+      }),
+    );
+  }
+
+  function draw(): void {
+    place(bearEl, layout.bear);
+    place(cakeEl, layout.cake);
+    place(bowlEl, layout.bowl);
+    fillShelf(digitShelf, layout.shelfDigits, digits, candle);
+    fillShelf(letterShelf, layout.shelfLetters, letters, cookie);
+  }
+
+  const devHandle: KitchenDevHandle = {
+    letters(list) {
+      letters = list.slice(0, MAX_CHOICES);
+      draw();
+    },
+    digits(list) {
+      digits = list.slice(0, MAX_CHOICES);
+      draw();
+    },
+    layout: () => layout,
+  };
+  const devWindow = window as unknown as { __kitchen?: KitchenDevHandle };
+  if (import.meta.env.DEV) devWindow.__kitchen = devHandle;
 
   return {
     el,
+    resize(size) {
+      layout = kitchenLayout(size.width);
+      if (size.width !== backdropWidth) {
+        backdropWidth = size.width;
+        backdrop.innerHTML = kitchenBackdrop(size.width);
+      }
+      draw();
+    },
     destroy() {
-      back.removeEventListener('click', onClick);
+      // Leave the handle alone when a newer kitchen has already claimed it (crossfade order).
+      if (import.meta.env.DEV && devWindow.__kitchen === devHandle) delete devWindow.__kitchen;
     },
   };
 };

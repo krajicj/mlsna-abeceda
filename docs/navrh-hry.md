@@ -71,7 +71,8 @@ zvoneček → přijde zákazník → řekne objednávku (hlas + obrázky v bubli
 
 - **Zvoneček** na pultu přivolá dalšího zákazníka. Dítě řídí tempo; bez klepnutí se nic neděje.
 - Jedna objednávka = 1–3 položky (kap. 5.3). Pořadí plnění je volné; bublina odškrtává hotové.
-- Výrobek se staví uprostřed pultu; položky na něj přilétají z polic.
+- Výrobek se staví uprostřed pultu; položky na něj přilétají z polic (písmenka, číslice)
+  a z misky na pultu (ovoce – kvůli velikosti terčů, viz STEP-04).
 - Po splnění všech položek zacinká „hotovo“ + konfety, zákazník si dobrotu vezme.
 
 ### Výrobky (co se staví)

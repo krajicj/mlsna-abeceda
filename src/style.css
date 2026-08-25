@@ -5,6 +5,7 @@
 :root {
   --ink: #3b2a1a;
   --wall: #ffe9d1;
+  --wall-dot: #f7d6b3;
   --wood: #d9a066;
   --star: #ffc53d;
   --stage-w: 1024px;
@@ -59,6 +60,14 @@ body {
 .scene {
   position: absolute;
   inset: 0;
+}
+
+/*
+ * Letters and digits drawn inside the SVG art (learning content, never UI text): the same
+ * family as the rest of the game, so a missing Fredoka degrades the same way everywhere.
+ */
+.art-text {
+  font-family: Fredoka, 'Arial Rounded MT Bold', 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* Anchored layout: the stage width changes, its height never does – only the gaps stretch. */

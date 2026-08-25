@@ -3,3 +3,4 @@ node_modules/
 docs/
 .claude/
 pnpm-lock.yaml
+src/fonts.css
