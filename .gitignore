@@ -6,5 +6,6 @@ coverage/
 !*.env.example
 .env*
 personal.json
+casting/
 docs/design/mlsna-abeceda-screens.html
 .DS_Store

@@ -35,13 +35,16 @@ Cíle, v pořadí:
 - Vstup: **jen klepnutí** (žádné tahání – na myši a pro 4letou nejspolehlivější). Klepnutí
   na věc = věc přiletí na místo. Tahání můžeme přidat později jako volitelné.
 - Rodič: nastavuje, sleduje pokrok. Hru spouští z ikony na ploše (PWA), funguje offline.
-- Jazyk hry: čeština. Vypravěč = jeden hlas z nabídky ElevenLabs (kap. 8); zvířátka krátké repliky.
+- Jazyk hry: čeština. Vypravěč = hlas z nabídky ElevenLabs (kap. 8); hlasů může být víc a dítě
+  si vybere, kdo mu bude povídat. Zvířátka krátké repliky.
 
 ## 3. Personalizace (vše v nastavení, nic v kódu)
 
 Hra nezná žádná jména předem. Rodič v rodičovském koutku vyplní:
 
-- **Dítě:** jméno + 5. pád pro oslovení (např. Anička / Aničko).
+- **Dítě:** jméno + 5. pád pro oslovení (např. Anička / Aničko) a **rod** (holčička /
+  kluk / neutrální, výchozí neutrální) – jen kvůli tvarům v pochvalách („Šikovná!“ ×
+  „Šikovný!“ × „Výborně!“), nikde jinde se nepoužije.
 - **Rodina:** seznam {jméno, role} – maminka, tatínek, brácha, ségra, babička, děda…
   (např. Lenka – maminka, Tomík – brácha).
 
@@ -49,6 +52,7 @@ Z toho hra odvodí:
 - **Pořadí písmen** (kap. 5.4): nejdřív písmena ze jména dítěte, pak počáteční písmena rodiny.
 - **Slova k písmenům:** role jsou vždy k dispozici („M jako maminka“, „T jako táta“,
   „B jako brácha“); jména se použijí, jen pokud k nim existuje hlasový klip.
+- **Rod pochval** (kap. 8): sada hlášek, ze které vypravěč chválí.
 - **Oslovení** („Výborně, Aničko!“) a „objednávky pro rodinu“ („dvě jahody pro Tomíka“) –
   opět jen s klipem, jinak hra řekne neutrální variantu („…pro bráchu“).
 - **Milník:** až umí všechna písmena svého jména, zákazník si objedná dort s jejím jménem
@@ -170,7 +174,9 @@ Chyba nikdy nezastaví hru a nikdy nezní jako výtka.
   se rozsvítí a poskočí: „K je tady!“ Po klepnutí normální pochvala (ne slabší).
 - **Přepočítání:** po dosažení počtu se miska jemně přiklopí víčkem a kolečka nad výrobkem
   zacinkají – signál „stop“. Když dítě přesto klepne na misku, víčko se zahoupá, kolečka
-  poskočí a vypravěč řekne „Už máme tři, to stačí!“ – ovoce už z přiklopené misky ven nejde.
+  poskočí a vypravěč řekne „Už máme tři jahody, to stačí!“ (s druhem ovoce – bez něj by
+  u jedničky nesedělo skloňování, klip je proto na každý druh zvlášť) – ovoce už
+  z přiklopené misky ven nejde.
 - **Nečinnost 15 s:** vypravěč zopakuje položku, položka v bublině zabliká.
 - **Nečinnost 40 s:** nápověda (cíl se rozsvítí). Nikdy nic neudělá za dítě.
 
@@ -235,12 +241,25 @@ Co **nebude:** streaky, denní odměny, časově omezené nabídky, odemykání 
   podmínky ElevenLabs i osobnostní práva; slouží jen jako *referenční tón*: klidný, vřelý,
   pomalý, mírně rozverný, zřetelné samohlásky.
   **Casting:** skript vygeneruje 5 stejných vět („Prosím tři jahody a perníček s písmenkem K!“,
-  pochvalu, opravu) 4–6 kandidátními hlasy; vybírá dcera. Vybraný hlas se zapíše jako
-  `ELEVENLABS_VOICE_ID` do `~/.config/mlsna-abeceda/elevenlabs.env` (mimo repozitář); veškerá
-  audia se pak generují jen jím.
-  Účet: Free tarif stačí na casting (10 000 znaků/měsíc, vyžaduje uvedení ElevenLabs);
-  na generování v1 (~12 000 znaků) Starter (~5 $/měsíc, komerční licence, lze po měsíci zrušit).
+  pochvalu, opravu) 4–6 kandidátními hlasy; vybírá dcera.
+  Účet: **Free tarif na casting nestačí** – hlasy z Voice Library přes API vůbec nepustí
+  (HTTP 402 `paid_plan_required`), použitelné jsou jen výchozí hlasy. Casting i generování proto
+  potřebují Starter (~5 $/měsíc, komerční licence, lze po měsíci zrušit); hotová audia jsou
+  commitnutá, takže hra ani CI klíč nikdy nepotřebují.
+- **Víc hlasů, dítě si vybírá.** Vypravěčů může být několik – každý má svou složku
+  `public/audio/voice/<slug>/` s celou sadou hlášek a svůj řádek v `src/data/voices.ts`
+  (anglický slug = název složky, český název pro dítě, id hlasu u ElevenLabs). Přidat hlas
+  znamená přidat řádek a pustit generátor; ten dogeneruje jen novou složku.
+  Výběr je dětský, tedy **bez písmenek** (pravidlo 1): portréty hlasů, klepnutí přehraje ukázku,
+  druhé klepnutí vybere. Kde přesně bude (úvodní obrazovka × koutek) se rozhodne, až se výběr
+  bude stavět; do té doby hra mluví výchozím hlasem z tabulky.
 - **Zvířátka:** krátké repliky jiným hlasem (stock) nebo citoslovce/zvuky.
+- **Pochvaly ve třech rodech:** každá pochvala existuje jako neutrální („Výborně!“),
+  ženská („Šikovná!“) a mužská („Šikovný!“) sada; hra vybírá podle rodu z nastavení,
+  bez nastavení mluví neutrálně. Generují se všechny tři – je to pár set znaků.
+- **Opravy se skládají ze dvou celých vět:** „To je A.“ + „Hledáme K.“ jsou dva klipy
+  přehrané za sebou, protože kombinací je 22 × 22. Není to lepení fragmentů (pravidlo 7) –
+  každý klip je samostatná věta se správným tvarem; frontě jen řekneme, ať je řekne v řadě.
 - **Rozsah hlášek v1:** pokyny a pochvaly ~80, objednávky číslo × věc (10 × ~12 = 120),
   písmena (~27 × 2), číslice (10), zákazníci (8 × 4), jména (podle nastavení).
   Celkem ~350 klipů ≈ 12 000 znaků – zanedbatelné. Manifest `src/data/lines.cs.ts`,
@@ -255,13 +274,13 @@ Co **nebude:** streaky, denní odměny, časově omezené nabídky, odemykání 
 
 Zámek: podržet hvězdičky vpravo nahoře 3 s → „Kolik je 4 × 3?“ s číselnou klávesnicí.
 
-- **Dítě a rodina:** jméno + oslovení, členové rodiny (jméno, role); u každého jména vidět,
-  zda má hlasový klip.
+- **Dítě a rodina:** jméno + oslovení + rod (kvůli pochvalám, kap. 3), členové rodiny
+  (jméno, role); u každého jména vidět, zda má hlasový klip.
 - **Učení:** stupeň každé dráhy (lze posunout), sada písmen (zapnout/vypnout jednotlivá),
   rozsah čísel, vypnout/zapnout typy položek.
 - **Pokrok:** mřížka písmen a čísel obarvená podle skóre, počet objednávek, poslední hraní.
 - **Sezení:** limit objednávek / minut, nebo bez limitu.
-- **Zvuk:** hlasitost hlasu, efektů, hudby.
+- **Zvuk:** hlasitost hlasu, efektů, hudby; který vypravěč mluví, když je hlasů víc (kap. 8).
 - **Data:** export (JSON), import, „smazat vše“ s dvojím potvrzením.
 - Verze hry.
 

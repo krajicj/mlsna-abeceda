@@ -10,6 +10,9 @@
     "noFallthroughCasesInSwitch": true,
     "useDefineForClassFields": true,
     "isolatedModules": true,
+    // src/data/lines.cs.ts is read by plain Node too (scripts/generate-voice.mjs),
+    // and Node resolves no extensionless specifiers. Needs noEmit, which is on.
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "noEmit": true,
     "types": ["vite/client"]
