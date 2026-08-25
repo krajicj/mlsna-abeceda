@@ -11,15 +11,23 @@
  *   text or voice changed    → regenerate exactly that one line
  *   line or voice gone       → report the orphan; deleting stays a manual decision
  *
+ * ElevenLabs returns every sentence at its own level (the first set spanned 28 dB, so "Jedna." was
+ * a whisper next to "Ef je tady!"). Every clip therefore goes through a loudness pass before it is
+ * written: ffmpeg measures EBU R128 integrated loudness and true peak, and the clip is re-encoded
+ * with ONE constant gain – no compression, so a one-second sentence keeps its shape. `--normalize`
+ * does the same for clips that are already on disk.
+ *
  * Usage:
  *   docker compose run --rm voice [--dry-run] [--force] [--voice <slug>,…] [--only <glob>,…]
  *                                 [--limit <n>] [--format <fmt>]
+ *   docker compose run --rm normalize [--dry-run] [--force] [--voice <slug>,…] [--only <glob>,…]
  *   docker compose run --rm voice --casting [--candidates <elevenlabs-id>,…]
  *   docker compose run --rm voice --list-voices
  *
  * No dependency: three endpoints do not justify an SDK. The manifests are imported WITH the `.ts`
  * extension – Node strips the types itself but resolves no extensionless specifiers.
  */
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   existsSync,
@@ -51,6 +59,15 @@ const VOICE_SETTINGS = {
   style: 0,
   use_speaker_boost: true,
 };
+/**
+ * Where every clip ends up. -18 LUFS is as loud as this set can go while a constant gain still
+ * fits under the ceiling: at -16 more than half the clips would hit the peak first and the set
+ * would stay 4 dB apart. The ceiling leaves room for the resampler and keeps the mp3 from clipping.
+ */
+const LOUDNESS = { lufs: -18, truePeak: -1.5 };
+/** Below this the re-encode would only cost quality – the clip is already where we want it. */
+const GAIN_EPSILON = 0.1;
+
 const INDEX_VERSION = 2; // 1 was one flat folder, before the game had several narrators
 const SLUG_PATTERN = /^[a-z][a-z0-9-]*$/;
 const MIN_BYTES = 1024; // anything smaller is an error page, not speech
@@ -61,6 +78,7 @@ const USAGE = `usage: docker compose run --rm voice [options]
 
   --dry-run            print what would be generated and how many characters it costs; sends nothing
   --force              regenerate even the lines whose fingerprint matches
+  --normalize          re-gain the clips already on disk to ${LOUDNESS.lufs} LUFS; no key, no network
   --voice <slug>,…     only these narrators from src/data/voices.ts (default: all of them)
   --only <glob>,…      only ids matching a glob ("order.count.*", "*.letter.*")
   --limit <n>          generate at most n clips in this run
@@ -87,6 +105,7 @@ function parseArgs(argv) {
     dryRun: false,
     force: false,
     casting: false,
+    normalize: false,
     listVoices: false,
     voices: [],
     candidates: [],
@@ -111,6 +130,9 @@ function parseArgs(argv) {
         break;
       case '--casting':
         args.casting = true;
+        break;
+      case '--normalize':
+        args.normalize = true;
         break;
       case '--list-voices':
         args.listVoices = true;
@@ -261,6 +283,77 @@ function writeIndex(index, config) {
     voices,
   };
   writeAtomic(INDEX_FILE, `${JSON.stringify(out, null, 2)}\n`);
+}
+
+/** `mp3_44100_64` → what the re-encode needs; a pcm/ulaw format has no encoder here. */
+function mp3Format(format) {
+  const match = /^mp3_(\d+)_(\d+)$/.exec(format);
+  return match === null ? null : { rate: match[1], kbps: match[2] };
+}
+
+function ffmpeg(args, input) {
+  const run = spawnSync('ffmpeg', ['-hide_banner', '-nostats', ...args], {
+    input,
+    maxBuffer: 16 * 1024 * 1024,
+  });
+  if (run.error) {
+    fail(
+      `ffmpeg is missing (${run.error.message}) – it lives in the media stage of the image,` +
+        ' so run: docker compose build',
+    );
+  }
+  if (run.status !== 0) {
+    fail(`ffmpeg exited with ${run.status}: ${String(run.stderr).trim().split('\n').pop()}`);
+  }
+  return run;
+}
+
+/**
+ * EBU R128 integrated loudness and true peak of one clip. The gate of R128 ignores the silence
+ * around the sentence, which plain RMS does not – a clip with a long lead-in would look quiet.
+ */
+function measureLoudness(bytes) {
+  const stderr = String(
+    ffmpeg(['-i', 'pipe:0', '-af', 'ebur128=peak=true', '-f', 'null', '-'], bytes).stderr,
+  );
+  // Only the summary at the end; the per-frame lines carry an "I:" of their own.
+  const summary = stderr.slice(stderr.lastIndexOf('Summary:'));
+  const lufs = /^\s*I:\s*(-?\d+(?:\.\d+)?) LUFS/m.exec(summary);
+  const peak = /^\s*Peak:\s*(-?\d+(?:\.\d+)?) dBFS/m.exec(summary);
+  if (lufs === null || peak === null) fail('ffmpeg printed no loudness summary for a clip');
+  return { lufs: Number(lufs[1]), truePeak: Number(peak[1]) };
+}
+
+/**
+ * One constant gain, never compression: the whole clip moves to LOUDNESS.lufs unless its true peak
+ * would cross the ceiling first (a few clips with a sharp consonant stop there, ~1.5 dB short).
+ * Returns the clip unchanged when it is already in place or the format has no encoder here.
+ */
+function normalizeClip(bytes, config) {
+  const format = mp3Format(config.format);
+  if (format === null) return { bytes, gain: null };
+  const measured = measureLoudness(bytes);
+  const gain = Math.min(LOUDNESS.lufs - measured.lufs, LOUDNESS.truePeak - measured.truePeak);
+  if (Math.abs(gain) < GAIN_EPSILON) return { bytes, gain: 0 };
+  const out = ffmpeg(
+    [
+      '-i',
+      'pipe:0',
+      '-af',
+      `volume=${gain.toFixed(2)}dB`,
+      '-ar',
+      format.rate,
+      '-b:a',
+      `${format.kbps}k`,
+      '-map_metadata',
+      '-1',
+      '-f',
+      'mp3',
+      'pipe:1',
+    ],
+    bytes,
+  );
+  return { bytes: new Uint8Array(out.stdout), gain };
 }
 
 async function readError(response) {
@@ -418,7 +511,7 @@ async function runCasting(args, config) {
     mkdirSync(dir, { recursive: true });
     sweepPartials(dir);
     for (const [index, line] of CASTING_LINES.entries()) {
-      const bytes = await speak(line.text, voice.id, config);
+      const { bytes } = normalizeClip(await speak(line.text, voice.id, config), config);
       writeAtomic(join(dir, `${index + 1}.mp3`), bytes);
     }
     done.push(voice);
@@ -542,7 +635,10 @@ async function runGenerate(args, config) {
     const dir = join(VOICE_DIR, item.voice.slug);
     mkdirSync(dir, { recursive: true });
     sweepPartials(dir);
-    const bytes = await speak(item.line.text, item.voice.elevenLabsId, config);
+    const { bytes, gain } = normalizeClip(
+      await speak(item.line.text, item.voice.elevenLabsId, config),
+      config,
+    );
     writeAtomic(join(dir, `${item.line.id}.mp3`), bytes);
     const section = (index.voices[item.voice.slug] ??= {
       elevenLabsId: item.voice.elevenLabsId,
@@ -553,16 +649,81 @@ async function runGenerate(args, config) {
       hash: item.want,
       text: item.line.text,
       bytes: bytes.byteLength,
+      ...(gain === null ? {} : { loudness: LOUDNESS.lufs }),
     };
     // After every single clip, so Ctrl+C never leaves the index describing something else.
     writeIndex(index, config);
     generated += 1;
     console.log(
       `  ${item.voice.slug}/${item.line.id}.mp3  ${(bytes.byteLength / 1024).toFixed(1)} kB` +
-        `  ${item.line.text}`,
+        `${gain === null ? '' : `  ${signed(gain)}`}  ${item.line.text}`,
     );
   }
   console.log(`\ndone: ${generated} clip(s) in public/audio/voice/`);
+}
+
+function signed(gain) {
+  return `${gain >= 0 ? '+' : ''}${gain.toFixed(1)} dB`;
+}
+
+/**
+ * Re-gains the clips that are already on disk – the set generated before this pass existed, or all
+ * of them after the target moves. No key and no network: the media service runs with none. The
+ * model, format and settings come from the index, so a run cannot rewrite the header with defaults.
+ */
+function runNormalize(args, config) {
+  const index = readIndex(config);
+  const stored = {
+    ...config,
+    model: index.model ?? config.model,
+    format: index.format ?? config.format,
+    settings: index.settings ?? config.settings,
+  };
+  if (mp3Format(stored.format) === null) {
+    fail(`--normalize can only re-encode an mp3 format, and the index says ${stored.format}`);
+  }
+  const inScope = scopeFilter(args.only);
+  const wanted = args.voices.length > 0 ? new Set(args.voices) : null;
+  const todo = [];
+  for (const [slug, section] of Object.entries(index.voices)) {
+    if (wanted !== null && !wanted.has(slug)) continue;
+    for (const [id, entry] of Object.entries(section.lines)) {
+      if (!inScope(id) || (entry.loudness === LOUDNESS.lufs && !args.force)) continue;
+      const file = join(VOICE_DIR, slug, `${id}.mp3`);
+      if (!existsSync(file)) {
+        console.warn(`  missing: ${slug}/${id}.mp3 – generate it first`);
+        continue;
+      }
+      todo.push({ slug, id, entry, file });
+    }
+  }
+  console.log(
+    `loudness: ${todo.length} clip(s) → ${LOUDNESS.lufs} LUFS,` +
+      ` ceiling ${LOUDNESS.truePeak} dBTP (${stored.format})`,
+  );
+  if (todo.length === 0) {
+    console.log('nothing to re-gain');
+    return;
+  }
+  let changed = 0;
+  for (const item of todo.slice(0, args.limit === Infinity ? undefined : args.limit)) {
+    const { bytes, gain } = normalizeClip(readFileSync(item.file), stored);
+    const label = `  ${item.slug}/${item.id}.mp3  ${signed(gain)}`;
+    if (args.dryRun) {
+      console.log(`${label}  (dry run)`);
+      continue;
+    }
+    writeAtomic(item.file, bytes);
+    item.entry.bytes = bytes.byteLength;
+    item.entry.loudness = LOUDNESS.lufs;
+    // After every clip, the same as the generator: Ctrl+C never leaves the index lying.
+    writeIndex(index, stored);
+    changed += 1;
+    console.log(label);
+  }
+  console.log(
+    args.dryRun ? '\ndry run: nothing was written' : `\ndone: ${changed} clip(s) re-gained`,
+  );
 }
 
 async function main() {
@@ -582,6 +743,10 @@ async function main() {
   }
   if (args.casting) {
     await runCasting(args, config);
+    return;
+  }
+  if (args.normalize) {
+    runNormalize(args, config);
     return;
   }
   checkVoiceTable();

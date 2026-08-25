@@ -468,6 +468,29 @@ mimo rozsah** tohohle kroku (chce portréty a ukázky, tedy vlastní krok).
 - STEP-08: `src/audio/voice.ts`, fronta, přerušení dotykem, napojení kuchyně a odstranění
   `src/audio/tones.ts`.
 
+**Dodatek (25. 8. 2026) – vyrovnání hlasitosti.** Autor při zkoušení STEP-08 slyšel, že „Jedna."
+je proti ostatním číslovkám hrozně potichu. Proměřením všech 246 klipů se ukázalo, že to není
+výjimka: ElevenLabs vrací každou větu na jiné úrovni a rozptyl byl **27,8 dB** (integrovaná
+hlasitost od −41,9 do −14,1 LUFS; nejhorší jsou opravy `wrong.letter.*`, `hint.letter.f` dokonce
+mírně klipoval na +0,1 dBFS). Přegenerovat jednu hlášku by byla loterie, takže:
+
+- **Generátor teď každý klip srovná.** Po stažení z API změří ffmpeg integrovanou hlasitost podle
+  EBU R128 a true peak a klip se přeuloží s **jedním konstantním ziskem** (žádná komprese, aby
+  jednovteřinová věta nezměnila charakter) na **−18 LUFS** se stropem **−1,5 dBTP**. Cíl −18 je
+  nejhlasitější hodnota, na kterou tahle sada konstantním ziskem dosáhne: při −16 by víc než
+  polovina klipů narazila dřív na špičku a rozdíly by zůstaly 3,7 dB.
+- **`docker compose run --rm normalize`** (nový režim `--normalize`) srovná klipy, které už na disku
+  jsou. Nepotřebuje klíč ani síť (`network_mode: none`), stav si značí v `index.json`
+  (`loudness: -18` u řádku), takže druhý běh nic nedělá a kvalita se opakovaným překódováním
+  nedegraduje.
+- **ffmpeg je v samostatné vrstvě image** (`Dockerfile`, stage `media`, balík z Debianu základního
+  image, žádné npm). Služby `dev`/`test`/`check`/`build` dál běží na malém `toolchain` image
+  (284 MB), `voice` a `normalize` na `media` (681 MB).
+- **Výsledek:** rozptyl **27,8 dB → 2,1 dB** (−20,1 až −18,0 LUFS), žádný klip nad stropem,
+  „Jedna." −29,4 → −18,4 LUFS (+11 dB) a stejně hlasitá jako „Tři." (−18,2). Šumové pozadí
+  nejvíc zesíleného klipu (`wrong.letter.j`, +21,6 dB) zůstalo na −70 dB RMS, tedy neslyšitelné.
+  Přepsalo se 244 z 246 souborů (dva už byly na cíli), složka má pořád 3,7 MB.
+
 **Dodatek (25. 8. 2026):** k odstranění `tones.ts` ve STEP-08 nedošlo – autor rozhodl, že
 syntetické tóny i úvodní cinknutí (`audio/chime.ts`) zůstanou jako okamžitá odezva na dotyk
 a hlas se k nim jen přidá. Nahradí je nahrané efekty ve **STEP-10**; viz

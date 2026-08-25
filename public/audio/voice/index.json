@@ -15,1232 +15,1478 @@
         "count.1": {
           "hash": "c77fbc6731a44730",
           "text": "Jedna.",
-          "bytes": 7149
+          "bytes": 7150,
+          "loudness": -18
         },
         "count.10": {
           "hash": "943b268d33e55630",
           "text": "Deset.",
-          "bytes": 7567
+          "bytes": 7568,
+          "loudness": -18
         },
         "count.2": {
           "hash": "a1a6b07dc5366b44",
           "text": "Dva.",
-          "bytes": 6940
+          "bytes": 6941,
+          "loudness": -18
         },
         "count.3": {
           "hash": "a44872d3e4320e87",
           "text": "Tři.",
-          "bytes": 6522
+          "bytes": 6523,
+          "loudness": -18
         },
         "count.4": {
           "hash": "002fc7db62e2d2b4",
           "text": "Čtyři.",
-          "bytes": 7985
+          "bytes": 7986,
+          "loudness": -18
         },
         "count.5": {
           "hash": "7c23004f6df1ea00",
           "text": "Pět.",
-          "bytes": 5686
+          "bytes": 5687,
+          "loudness": -18
         },
         "count.6": {
           "hash": "b769639fc96f1b25",
           "text": "Šest.",
-          "bytes": 7149
+          "bytes": 7150,
+          "loudness": -18
         },
         "count.7": {
           "hash": "b53487060cd6a79d",
           "text": "Sedm.",
-          "bytes": 6522
+          "bytes": 6523,
+          "loudness": -18
         },
         "count.8": {
           "hash": "177fed40492e9ae3",
           "text": "Osm.",
-          "bytes": 5686
+          "bytes": 5687,
+          "loudness": -18
         },
         "count.9": {
           "hash": "8dbcda5b1aa67f81",
           "text": "Devět.",
-          "bytes": 7567
+          "bytes": 7568,
+          "loudness": -18
         },
         "count.enough.1.blueberry": {
           "hash": "b59ea13b85f5c491",
           "text": "Už máme jednu borůvku, to stačí!",
-          "bytes": 22195
+          "bytes": 22196,
+          "loudness": -18
         },
         "count.enough.1.cherry": {
           "hash": "04d07f857d02e3eb",
           "text": "Už máme jednu třešeň, to stačí!",
-          "bytes": 21777
+          "bytes": 21778,
+          "loudness": -18
         },
         "count.enough.1.strawberry": {
           "hash": "455251062f18882f",
           "text": "Už máme jednu jahodu, to stačí!",
-          "bytes": 22404
+          "bytes": 22405,
+          "loudness": -18
         },
         "count.enough.10.blueberry": {
           "hash": "311514d13d249c81",
           "text": "Už máme deset borůvek, to stačí!",
-          "bytes": 20524
+          "bytes": 20525,
+          "loudness": -18
         },
         "count.enough.10.cherry": {
           "hash": "fec3abde6f450c5f",
           "text": "Už máme deset třešní, to stačí!",
-          "bytes": 19479
+          "bytes": 19480,
+          "loudness": -18
         },
         "count.enough.10.strawberry": {
           "hash": "9892da631b79a004",
           "text": "Už máme deset jahod, to stačí!",
-          "bytes": 20941
+          "bytes": 20942,
+          "loudness": -18
         },
         "count.enough.2.blueberry": {
           "hash": "5c662cccb8854ef0",
           "text": "Už máme dvě borůvky, to stačí!",
-          "bytes": 19479
+          "bytes": 19480,
+          "loudness": -18
         },
         "count.enough.2.cherry": {
           "hash": "bb2e5a649488133f",
           "text": "Už máme dvě třešně, to stačí!",
-          "bytes": 18016
+          "bytes": 18017,
+          "loudness": -18
         },
         "count.enough.2.strawberry": {
           "hash": "833d5256ff56e346",
           "text": "Už máme dvě jahody, to stačí!",
-          "bytes": 18016
+          "bytes": 18017,
+          "loudness": -18
         },
         "count.enough.3.blueberry": {
           "hash": "49e77d9d3bc5ddc3",
           "text": "Už máme tři borůvky, to stačí!",
-          "bytes": 20524
+          "bytes": 20525,
+          "loudness": -18
         },
         "count.enough.3.cherry": {
           "hash": "8209d9183db559a1",
           "text": "Už máme tři třešně, to stačí!",
-          "bytes": 19061
+          "bytes": 19062,
+          "loudness": -18
         },
         "count.enough.3.strawberry": {
           "hash": "615048f8a62870cf",
           "text": "Už máme tři jahody, to stačí!",
-          "bytes": 19897
+          "bytes": 19898,
+          "loudness": -18
         },
         "count.enough.4.blueberry": {
           "hash": "c7f21466aeffc7fa",
           "text": "Už máme čtyři borůvky, to stačí!",
-          "bytes": 23240
+          "bytes": 23241,
+          "loudness": -18
         },
         "count.enough.4.cherry": {
           "hash": "888b20e20856a7d4",
           "text": "Už máme čtyři třešně, to stačí!",
-          "bytes": 21777
+          "bytes": 21778,
+          "loudness": -18
         },
         "count.enough.4.strawberry": {
           "hash": "90c8063c7c3f3378",
           "text": "Už máme čtyři jahody, to stačí!",
-          "bytes": 21359
+          "bytes": 21360,
+          "loudness": -18
         },
         "count.enough.5.blueberry": {
           "hash": "1090692d6224947d",
           "text": "Už máme pět borůvek, to stačí!",
-          "bytes": 19897
+          "bytes": 19898,
+          "loudness": -18
         },
         "count.enough.5.cherry": {
           "hash": "6d8c6b6bef6bfa26",
           "text": "Už máme pět třešní, to stačí!",
-          "bytes": 18434
+          "bytes": 18435,
+          "loudness": -18
         },
         "count.enough.5.strawberry": {
           "hash": "587a8b541693c940",
           "text": "Už máme pět jahod, to stačí!",
-          "bytes": 20524
+          "bytes": 20525,
+          "loudness": -18
         },
         "count.enough.6.blueberry": {
           "hash": "1f513e3d03740a08",
           "text": "Už máme šest borůvek, to stačí!",
-          "bytes": 21777
+          "bytes": 21778,
+          "loudness": -18
         },
         "count.enough.6.cherry": {
           "hash": "a7f7f25720792971",
           "text": "Už máme šest třešní, to stačí!",
-          "bytes": 20524
+          "bytes": 20525,
+          "loudness": -18
         },
         "count.enough.6.strawberry": {
           "hash": "f82b72e29dcb7010",
           "text": "Už máme šest jahod, to stačí!",
-          "bytes": 20315
+          "bytes": 20316,
+          "loudness": -18
         },
         "count.enough.7.blueberry": {
           "hash": "8b28c13279519ea0",
           "text": "Už máme sedm borůvek, to stačí!",
-          "bytes": 22195
+          "bytes": 22196,
+          "loudness": -18
         },
         "count.enough.7.cherry": {
           "hash": "254081e4259b7f46",
           "text": "Už máme sedm třešní, to stačí!",
-          "bytes": 23658
+          "bytes": 23659,
+          "loudness": -18
         },
         "count.enough.7.strawberry": {
           "hash": "2de1558e78cb0b03",
           "text": "Už máme sedm jahod, to stačí!",
-          "bytes": 20524
+          "bytes": 20525,
+          "loudness": -18
         },
         "count.enough.8.blueberry": {
           "hash": "120398b77a4aaab4",
           "text": "Už máme osm borůvek, to stačí!",
-          "bytes": 19061
+          "bytes": 19062,
+          "loudness": -18
         },
         "count.enough.8.cherry": {
           "hash": "e8338746a2c2f0f2",
           "text": "Už máme osm třešní, to stačí!",
-          "bytes": 20941
+          "bytes": 20942,
+          "loudness": -18
         },
         "count.enough.8.strawberry": {
           "hash": "e461f8c43eb81ded",
           "text": "Už máme osm jahod, to stačí!",
-          "bytes": 21359
+          "bytes": 21360,
+          "loudness": -18
         },
         "count.enough.9.blueberry": {
           "hash": "05669218358e99f9",
           "text": "Už máme devět borůvek, to stačí!",
-          "bytes": 22195
+          "bytes": 22196,
+          "loudness": -18
         },
         "count.enough.9.cherry": {
           "hash": "1f9bef3e4e2e77f2",
           "text": "Už máme devět třešní, to stačí!",
-          "bytes": 19897
+          "bytes": 19898,
+          "loudness": -18
         },
         "count.enough.9.strawberry": {
           "hash": "1b210f2ebd92c3f4",
           "text": "Už máme devět jahod, to stačí!",
-          "bytes": 22822
+          "bytes": 22823,
+          "loudness": -18
         },
         "hint.digit.1": {
           "hash": "2e1c5bb90b22b259",
           "text": "Jednička je tady!",
-          "bytes": 12791
+          "bytes": 12792,
+          "loudness": -18
         },
         "hint.digit.10": {
           "hash": "8282c1cb1ae8999c",
           "text": "Desítka je tady!",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "hint.digit.2": {
           "hash": "fceb45f84bfbc6ac",
           "text": "Dvojka je tady!",
-          "bytes": 12164
+          "bytes": 12165,
+          "loudness": -18
         },
         "hint.digit.3": {
           "hash": "412de159523af713",
           "text": "Trojka je tady!",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "hint.digit.4": {
           "hash": "54a39d51aa38e8f1",
           "text": "Čtyřka je tady!",
-          "bytes": 12791
+          "bytes": 12792,
+          "loudness": -18
         },
         "hint.digit.5": {
           "hash": "c1bcb5cba50b7b69",
           "text": "Pětka je tady!",
-          "bytes": 13209
+          "bytes": 13210,
+          "loudness": -18
         },
         "hint.digit.6": {
           "hash": "800cc09cb13d478f",
           "text": "Šestka je tady!",
-          "bytes": 13627
+          "bytes": 13628,
+          "loudness": -18
         },
         "hint.digit.7": {
           "hash": "ee44dad080555639",
           "text": "Sedmička je tady!",
-          "bytes": 13836
+          "bytes": 13837,
+          "loudness": -18
         },
         "hint.digit.8": {
           "hash": "dfba244db861076c",
           "text": "Osmička je tady!",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "hint.digit.9": {
           "hash": "313d4b3acd4fb413",
           "text": "Devítka je tady!",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "hint.letter.a": {
           "hash": "e94b4e86b7923c65",
           "text": "Á je tady!",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "hint.letter.b": {
           "hash": "dd50e29853828dd2",
           "text": "Bé je tady!",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "hint.letter.c": {
           "hash": "dba2c42676f0bd20",
           "text": "Cé je tady!",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "hint.letter.d": {
           "hash": "87484c7c6f1cd1ef",
           "text": "Dé je tady!",
-          "bytes": 11328
+          "bytes": 11329,
+          "loudness": -18
         },
         "hint.letter.e": {
           "hash": "039b85ed0981876a",
           "text": "É je tady!",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "hint.letter.f": {
           "hash": "234bfdc43bafce9e",
           "text": "Ef je tady!",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "hint.letter.g": {
           "hash": "ef50a61253d68394",
           "text": "Gé je tady!",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "hint.letter.h": {
           "hash": "59c6286176d1e780",
           "text": "Há je tady!",
-          "bytes": 7985
+          "bytes": 7985,
+          "loudness": -18
         },
         "hint.letter.i": {
           "hash": "3a4800552892f743",
           "text": "Í je tady!",
-          "bytes": 7149
+          "bytes": 7150,
+          "loudness": -18
         },
         "hint.letter.j": {
           "hash": "9b4782fadbe8f18b",
           "text": "Jé je tady!",
-          "bytes": 8821
+          "bytes": 8822,
+          "loudness": -18
         },
         "hint.letter.k": {
           "hash": "980edc494721d000",
           "text": "Ká je tady!",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "hint.letter.l": {
           "hash": "999cb5fc725a54f0",
           "text": "El je tady!",
-          "bytes": 8821
+          "bytes": 8822,
+          "loudness": -18
         },
         "hint.letter.m": {
           "hash": "7855ba51e7057e9e",
           "text": "Em je tady!",
-          "bytes": 8403
+          "bytes": 8404,
+          "loudness": -18
         },
         "hint.letter.n": {
           "hash": "8fc9379cb533e150",
           "text": "En je tady!",
-          "bytes": 8821
+          "bytes": 8822,
+          "loudness": -18
         },
         "hint.letter.o": {
           "hash": "c3c7068bcf53da7d",
           "text": "Ó je tady!",
-          "bytes": 7985
+          "bytes": 7986,
+          "loudness": -18
         },
         "hint.letter.p": {
           "hash": "d5239d8840556683",
           "text": "Pé je tady!",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "hint.letter.r": {
           "hash": "f9da3723e626f490",
           "text": "Er je tady!",
-          "bytes": 9866
+          "bytes": 9867,
+          "loudness": -18
         },
         "hint.letter.s": {
           "hash": "78b529df9cb76592",
           "text": "Es je tady!",
-          "bytes": 7567
+          "bytes": 7568,
+          "loudness": -18
         },
         "hint.letter.t": {
           "hash": "44e214ea94030770",
           "text": "Té je tady!",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "hint.letter.u": {
           "hash": "3606969c42bf4ca5",
           "text": "Ú je tady!",
-          "bytes": 6940
+          "bytes": 6941,
+          "loudness": -18
         },
         "hint.letter.v": {
           "hash": "74a98f41d141bc96",
           "text": "Vé je tady!",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "hint.letter.z": {
           "hash": "63ee7e5d4970cbe7",
           "text": "Zet je tady!",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "letter.word.a.auto": {
           "hash": "f77ebfeec5526dc2",
           "text": "Á jako auto.",
-          "bytes": 10910
+          "bytes": 10911,
+          "loudness": -18
         },
         "letter.word.b.babicka": {
           "hash": "02892f38ea7432b3",
           "text": "Bé jako babička.",
-          "bytes": 12164
+          "bytes": 12165,
+          "loudness": -18
         },
         "letter.word.b.balon": {
           "hash": "020b8248f3e15824",
           "text": "Bé jako balón.",
-          "bytes": 13209
+          "bytes": 13210,
+          "loudness": -18
         },
         "letter.word.b.bracha": {
           "hash": "f562b1ec8967de58",
           "text": "Bé jako brácha.",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "letter.word.c.cibule": {
           "hash": "3bd78a82da387039",
           "text": "Cé jako cibule.",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "letter.word.d.deda": {
           "hash": "0c257fd2ab66ef27",
           "text": "Dé jako děda.",
-          "bytes": 11328
+          "bytes": 11329,
+          "loudness": -18
         },
         "letter.word.d.dum": {
           "hash": "209891e2cbf47eff",
           "text": "Dé jako dům.",
-          "bytes": 10284
+          "bytes": 10285,
+          "loudness": -18
         },
         "letter.word.e.emental": {
           "hash": "8872818b3aaf59c6",
           "text": "É jako ementál.",
-          "bytes": 10910
+          "bytes": 10911,
+          "loudness": -18
         },
         "letter.word.f.fotbal": {
           "hash": "0388999b973d1c9d",
           "text": "Ef jako fotbal.",
-          "bytes": 9866
+          "bytes": 9867,
+          "loudness": -18
         },
         "letter.word.g.guma": {
           "hash": "02d48ef0df9bc741",
           "text": "Gé jako guma.",
-          "bytes": 10910
+          "bytes": 10911,
+          "loudness": -18
         },
         "letter.word.h.houba": {
           "hash": "31de5ce5cdfe272e",
           "text": "Há jako houba.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "letter.word.i.iglu": {
           "hash": "de2ce84065983834",
           "text": "Í jako iglú.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "letter.word.j.jablko": {
           "hash": "6a5a70be4fe35239",
           "text": "Jé jako jablko.",
-          "bytes": 12791
+          "bytes": 12792,
+          "loudness": -18
         },
         "letter.word.k.kocka": {
           "hash": "3fffc8a097096b78",
           "text": "Ká jako kočka.",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "letter.word.l.lev": {
           "hash": "6ece5a20f99fe469",
           "text": "El jako lev.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "letter.word.m.maminka": {
           "hash": "6b1eec461bbe97bb",
           "text": "Em jako maminka.",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "letter.word.n.nos": {
           "hash": "8f151fedb16df7a3",
           "text": "En jako nos.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "letter.word.o.oko": {
           "hash": "cbd39508ad0eaf5e",
           "text": "Ó jako oko.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "letter.word.p.pes": {
           "hash": "b50749b88ae0465f",
           "text": "Pé jako pes.",
-          "bytes": 10910
+          "bytes": 10911,
+          "loudness": -18
         },
         "letter.word.r.ryba": {
           "hash": "20db08de0498079a",
           "text": "Er jako ryba.",
-          "bytes": 9866
+          "bytes": 9867,
+          "loudness": -18
         },
         "letter.word.s.segra": {
           "hash": "47ede8a5aa316c97",
           "text": "Es jako ségra.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "letter.word.s.slon": {
           "hash": "1febb51fcb71c5ac",
           "text": "Es jako slon.",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "letter.word.t.tata": {
           "hash": "6ee6d3d2587842ab",
           "text": "Té jako táta.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "letter.word.u.ucho": {
           "hash": "a0e13a7abe4eff48",
           "text": "Ú jako ucho.",
-          "bytes": 9866
+          "bytes": 9867,
+          "loudness": -18
         },
         "letter.word.v.vlak": {
           "hash": "10141957bc9514e8",
           "text": "Vé jako vlak.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "letter.word.z.zebra": {
           "hash": "b1b3c6130e2efb94",
           "text": "Zet jako zebra.",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "order.count.1.blueberry": {
           "hash": "261fbedc58ca9ef0",
           "text": "Prosím jednu borůvku.",
-          "bytes": 15090
+          "bytes": 15091,
+          "loudness": -18
         },
         "order.count.1.cherry": {
           "hash": "ed3283507457ca0e",
           "text": "Prosím jednu třešeň.",
-          "bytes": 14254
+          "bytes": 14255,
+          "loudness": -18
         },
         "order.count.1.strawberry": {
           "hash": "bdef5a29ec441c3e",
           "text": "Prosím jednu jahodu.",
-          "bytes": 16971
+          "bytes": 16972,
+          "loudness": -18
         },
         "order.count.10.blueberry": {
           "hash": "4686dfb9183cf08e",
           "text": "Prosím deset borůvek.",
-          "bytes": 13209
+          "bytes": 13210,
+          "loudness": -18
         },
         "order.count.10.cherry": {
           "hash": "be4ae0d13b75a6de",
           "text": "Prosím deset třešní.",
-          "bytes": 13627
+          "bytes": 13628,
+          "loudness": -18
         },
         "order.count.10.strawberry": {
           "hash": "ee1140f7cafa0b1e",
           "text": "Prosím deset jahod.",
-          "bytes": 12791
+          "bytes": 12792,
+          "loudness": -18
         },
         "order.count.2.blueberry": {
           "hash": "b964a80fbd24beb8",
           "text": "Prosím dvě borůvky.",
-          "bytes": 12164
+          "bytes": 12165,
+          "loudness": -18
         },
         "order.count.2.cherry": {
           "hash": "407bf7542f001b01",
           "text": "Prosím dvě třešně.",
-          "bytes": 13836
+          "bytes": 13837,
+          "loudness": -18
         },
         "order.count.2.strawberry": {
           "hash": "3537e6561379d095",
           "text": "Prosím dvě jahody.",
-          "bytes": 15508
+          "bytes": 15509,
+          "loudness": -18
         },
         "order.count.3.blueberry": {
           "hash": "72aeba8caa4a420d",
           "text": "Prosím tři borůvky.",
-          "bytes": 13627
+          "bytes": 13628,
+          "loudness": -18
         },
         "order.count.3.cherry": {
           "hash": "c4e210075ce703d9",
           "text": "Prosím tři třešně.",
-          "bytes": 13836
+          "bytes": 13837,
+          "loudness": -18
         },
         "order.count.3.strawberry": {
           "hash": "07a03436f7eecfdf",
           "text": "Prosím tři jahody.",
-          "bytes": 12791
+          "bytes": 12792,
+          "loudness": -18
         },
         "order.count.4.blueberry": {
           "hash": "fd2eea35353345dd",
           "text": "Prosím čtyři borůvky.",
-          "bytes": 13627
+          "bytes": 13628,
+          "loudness": -18
         },
         "order.count.4.cherry": {
           "hash": "aee7164c48fb05d1",
           "text": "Prosím čtyři třešně.",
-          "bytes": 15090
+          "bytes": 15091,
+          "loudness": -18
         },
         "order.count.4.strawberry": {
           "hash": "0eab6629069dacce",
           "text": "Prosím čtyři jahody.",
-          "bytes": 14254
+          "bytes": 14255,
+          "loudness": -18
         },
         "order.count.5.blueberry": {
           "hash": "9670653088334df8",
           "text": "Prosím pět borůvek.",
-          "bytes": 15717
+          "bytes": 15718,
+          "loudness": -18
         },
         "order.count.5.cherry": {
           "hash": "2546ed73d3c8b613",
           "text": "Prosím pět třešní.",
-          "bytes": 15508
+          "bytes": 15509,
+          "loudness": -18
         },
         "order.count.5.strawberry": {
           "hash": "c8f1a9db4ad9f01d",
           "text": "Prosím pět jahod.",
-          "bytes": 15090
+          "bytes": 15091,
+          "loudness": -18
         },
         "order.count.6.blueberry": {
           "hash": "5859fe79345a0990",
           "text": "Prosím šest borůvek.",
-          "bytes": 13209
+          "bytes": 13210,
+          "loudness": -18
         },
         "order.count.6.cherry": {
           "hash": "9037d0ec86913abc",
           "text": "Prosím šest třešní.",
-          "bytes": 15508
+          "bytes": 15509,
+          "loudness": -18
         },
         "order.count.6.strawberry": {
           "hash": "016b451ab19f1f93",
           "text": "Prosím šest jahod.",
-          "bytes": 14254
+          "bytes": 14255,
+          "loudness": -18
         },
         "order.count.7.blueberry": {
           "hash": "ddf3fa2b9a8bcd28",
           "text": "Prosím sedm borůvek.",
-          "bytes": 13209
+          "bytes": 13210,
+          "loudness": -18
         },
         "order.count.7.cherry": {
           "hash": "c6c7484d79835c6f",
           "text": "Prosím sedm třešní.",
-          "bytes": 16971
+          "bytes": 16972,
+          "loudness": -18
         },
         "order.count.7.strawberry": {
           "hash": "455d52c3e30d35fc",
           "text": "Prosím sedm jahod.",
-          "bytes": 14254
+          "bytes": 14255,
+          "loudness": -18
         },
         "order.count.8.blueberry": {
           "hash": "b641e7bf5437af77",
           "text": "Prosím osm borůvek.",
-          "bytes": 14254
+          "bytes": 14255,
+          "loudness": -18
         },
         "order.count.8.cherry": {
           "hash": "7ed7065f31bf4f54",
           "text": "Prosím osm třešní.",
-          "bytes": 13627
+          "bytes": 13628,
+          "loudness": -18
         },
         "order.count.8.strawberry": {
           "hash": "e4fa5b991778c012",
           "text": "Prosím osm jahod.",
-          "bytes": 13627
+          "bytes": 13628,
+          "loudness": -18
         },
         "order.count.9.blueberry": {
           "hash": "4e1a17af4eafa779",
           "text": "Prosím devět borůvek.",
-          "bytes": 13836
+          "bytes": 13837,
+          "loudness": -18
         },
         "order.count.9.cherry": {
           "hash": "342bdb08af50854f",
           "text": "Prosím devět třešní.",
-          "bytes": 13836
+          "bytes": 13837,
+          "loudness": -18
         },
         "order.count.9.strawberry": {
           "hash": "3c6dabd156c8989d",
           "text": "Prosím devět jahod.",
-          "bytes": 16135
+          "bytes": 16136,
+          "loudness": -18
         },
         "order.digit.1": {
           "hash": "e22dce8a7dc19b78",
           "text": "Prosím svíčku s číslem jedna.",
-          "bytes": 20941
+          "bytes": 20942,
+          "loudness": -18
         },
         "order.digit.10": {
           "hash": "268bee47ac3db702",
           "text": "Prosím svíčku s číslem deset.",
-          "bytes": 18016
+          "bytes": 18017,
+          "loudness": -18
         },
         "order.digit.2": {
           "hash": "62c3bcf05c1255ee",
           "text": "Prosím svíčku s číslem dva.",
-          "bytes": 16135
+          "bytes": 16136,
+          "loudness": -18
         },
         "order.digit.3": {
           "hash": "48b0718a04d2efa7",
           "text": "Prosím svíčku s číslem tři.",
-          "bytes": 16971
+          "bytes": 16972,
+          "loudness": -18
         },
         "order.digit.4": {
           "hash": "21a5560ed7999ac1",
           "text": "Prosím svíčku s číslem čtyři.",
-          "bytes": 20315
+          "bytes": 20316,
+          "loudness": -18
         },
         "order.digit.5": {
           "hash": "c2b7b44ab7bb6b0a",
           "text": "Prosím svíčku s číslem pět.",
-          "bytes": 16971
+          "bytes": 16972,
+          "loudness": -18
         },
         "order.digit.6": {
           "hash": "9050d7bd45febe62",
           "text": "Prosím svíčku s číslem šest.",
-          "bytes": 17598
+          "bytes": 17599,
+          "loudness": -18
         },
         "order.digit.7": {
           "hash": "95f8d1e98bf9c7b5",
           "text": "Prosím svíčku s číslem sedm.",
-          "bytes": 18434
+          "bytes": 18435,
+          "loudness": -18
         },
         "order.digit.8": {
           "hash": "133618e8bc19cfc1",
           "text": "Prosím svíčku s číslem osm.",
-          "bytes": 19479
+          "bytes": 19480,
+          "loudness": -18
         },
         "order.digit.9": {
           "hash": "a2b4f660642d8cef",
           "text": "Prosím svíčku s číslem devět.",
-          "bytes": 18434
+          "bytes": 18435,
+          "loudness": -18
         },
         "order.letter.a": {
           "hash": "4f506b1dd99fddd3",
           "text": "Prosím perníček s písmenkem á.",
-          "bytes": 22195
+          "bytes": 22196,
+          "loudness": -18
         },
         "order.letter.b": {
           "hash": "10ca76011fbb2a4d",
           "text": "Prosím perníček s písmenkem bé.",
-          "bytes": 24285
+          "bytes": 24286,
+          "loudness": -18
         },
         "order.letter.c": {
           "hash": "5507103b6090c533",
           "text": "Prosím perníček s písmenkem cé.",
-          "bytes": 23658
+          "bytes": 23659,
+          "loudness": -18
         },
         "order.letter.d": {
           "hash": "4691b14163d80261",
           "text": "Prosím perníček s písmenkem dé.",
-          "bytes": 25539
+          "bytes": 25540,
+          "loudness": -18
         },
         "order.letter.e": {
           "hash": "ae29d6829e536f16",
           "text": "Prosím perníček s písmenkem é.",
-          "bytes": 20315
+          "bytes": 20316,
+          "loudness": -18
         },
         "order.letter.f": {
           "hash": "85a15f4cc3979cad",
           "text": "Prosím perníček s písmenkem ef.",
-          "bytes": 22195
+          "bytes": 22196,
+          "loudness": -18
         },
         "order.letter.g": {
           "hash": "6ed332d4791addae",
           "text": "Prosím perníček s písmenkem gé.",
-          "bytes": 24285
+          "bytes": 24286,
+          "loudness": -18
         },
         "order.letter.h": {
           "hash": "e216d27aaed6caa6",
           "text": "Prosím perníček s písmenkem há.",
-          "bytes": 23240
+          "bytes": 23241,
+          "loudness": -18
         },
         "order.letter.i": {
           "hash": "42a8b95361f76a0b",
           "text": "Prosím perníček s písmenkem í.",
-          "bytes": 23658
+          "bytes": 23659,
+          "loudness": -18
         },
         "order.letter.j": {
           "hash": "578ce7e10cd692c8",
           "text": "Prosím perníček s písmenkem jé.",
-          "bytes": 20941
+          "bytes": 20942,
+          "loudness": -18
         },
         "order.letter.k": {
           "hash": "8826c96f99e91b1f",
           "text": "Prosím perníček s písmenkem ká.",
-          "bytes": 25748
+          "bytes": 25749,
+          "loudness": -18
         },
         "order.letter.l": {
           "hash": "4a4ec4819d5a37f1",
           "text": "Prosím perníček s písmenkem el.",
-          "bytes": 20524
+          "bytes": 20525,
+          "loudness": -18
         },
         "order.letter.m": {
           "hash": "6aa3efff321937db",
           "text": "Prosím perníček s písmenkem em.",
-          "bytes": 27211
+          "bytes": 27212,
+          "loudness": -18
         },
         "order.letter.n": {
           "hash": "50c8799afe105777",
           "text": "Prosím perníček s písmenkem en.",
-          "bytes": 24285
+          "bytes": 24286,
+          "loudness": -18
         },
         "order.letter.o": {
           "hash": "0446b56197ebef8a",
           "text": "Prosím perníček s písmenkem ó.",
-          "bytes": 21359
+          "bytes": 21360,
+          "loudness": -18
         },
         "order.letter.p": {
           "hash": "7f04c0beb9827827",
           "text": "Prosím perníček s písmenkem pé.",
-          "bytes": 24703
+          "bytes": 24704,
+          "loudness": -18
         },
         "order.letter.r": {
           "hash": "bb001cf35c4ad2e4",
           "text": "Prosím perníček s písmenkem er.",
-          "bytes": 27002
+          "bytes": 27003,
+          "loudness": -18
         },
         "order.letter.s": {
           "hash": "fa40a892d0333c54",
           "text": "Prosím perníček s písmenkem es.",
-          "bytes": 21359
+          "bytes": 21360,
+          "loudness": -18
         },
         "order.letter.t": {
           "hash": "e77630a64a7d1cd2",
           "text": "Prosím perníček s písmenkem té.",
-          "bytes": 22195
+          "bytes": 22196,
+          "loudness": -18
         },
         "order.letter.u": {
           "hash": "0e748a5c0eb1f150",
           "text": "Prosím perníček s písmenkem ú.",
-          "bytes": 26166
+          "bytes": 26167,
+          "loudness": -18
         },
         "order.letter.v": {
           "hash": "0b5b2aeaae88a22e",
           "text": "Prosím perníček s písmenkem vé.",
-          "bytes": 25121
+          "bytes": 25122,
+          "loudness": -18
         },
         "order.letter.z": {
           "hash": "b9d0258ba2ed7dae",
           "text": "Prosím perníček s písmenkem zet.",
-          "bytes": 23658
+          "bytes": 23659,
+          "loudness": -18
         },
         "praise.female.1": {
           "hash": "6a44867904220c20",
           "text": "Šikovná!",
-          "bytes": 8821
+          "bytes": 8822,
+          "loudness": -18
         },
         "praise.female.2": {
           "hash": "eb189800eb600942",
           "text": "Jsi moc šikovná!",
-          "bytes": 10910
+          "bytes": 10911,
+          "loudness": -18
         },
         "praise.female.3": {
           "hash": "3c6e22401624b9c1",
           "text": "Zvládla jsi to!",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "praise.female.4": {
           "hash": "f3b9309d977c955c",
           "text": "Ty jsi ale chytrá!",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "praise.female.5": {
           "hash": "8ab48e069c6d0e2c",
           "text": "Jsi malá kuchařka!",
-          "bytes": 11328
+          "bytes": 11329,
+          "loudness": -18
         },
         "praise.female.6": {
           "hash": "f785c2e8c88967e4",
           "text": "Udělala jsi to správně!",
-          "bytes": 13209
+          "bytes": 13210,
+          "loudness": -18
         },
         "praise.male.1": {
           "hash": "73714e14d4392998",
           "text": "Šikovný!",
-          "bytes": 7567
+          "bytes": 7568,
+          "loudness": -18
         },
         "praise.male.2": {
           "hash": "69a4cca45429465a",
           "text": "Jsi moc šikovný!",
-          "bytes": 12791
+          "bytes": 12792,
+          "loudness": -18
         },
         "praise.male.3": {
           "hash": "f2b78e134f45a6f9",
           "text": "Zvládl jsi to!",
-          "bytes": 10284
+          "bytes": 10285,
+          "loudness": -18
         },
         "praise.male.4": {
           "hash": "b0c3b497b500382a",
           "text": "Ty jsi ale chytrý!",
-          "bytes": 12164
+          "bytes": 12165,
+          "loudness": -18
         },
         "praise.male.5": {
           "hash": "2a75e9921484b7ab",
           "text": "Jsi malý kuchař!",
-          "bytes": 10910
+          "bytes": 10911,
+          "loudness": -18
         },
         "praise.male.6": {
           "hash": "a83ba4b768087360",
           "text": "Udělal jsi to správně!",
-          "bytes": 15508
+          "bytes": 15509,
+          "loudness": -18
         },
         "praise.neutral.1": {
           "hash": "60c90aa7dc7a46c6",
           "text": "Výborně!",
-          "bytes": 7985
+          "bytes": 7986,
+          "loudness": -18
         },
         "praise.neutral.10": {
           "hash": "9ca3305910d37531",
           "text": "Tak je to správně!",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "praise.neutral.2": {
           "hash": "e96c3e2a59bba4a3",
           "text": "Přesně tak!",
-          "bytes": 10284
+          "bytes": 10285,
+          "loudness": -18
         },
         "praise.neutral.3": {
           "hash": "bb229f7387dbe1d3",
           "text": "To je ono!",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "praise.neutral.4": {
           "hash": "2b37184c1b04bc29",
           "text": "Paráda!",
-          "bytes": 7985
+          "bytes": 7986,
+          "loudness": -18
         },
         "praise.neutral.5": {
           "hash": "7baf66dd07ebe4d2",
           "text": "Skvělá práce!",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "praise.neutral.6": {
           "hash": "0ef07f997ce23294",
           "text": "Jde ti to!",
-          "bytes": 9866
+          "bytes": 9867,
+          "loudness": -18
         },
         "praise.neutral.7": {
           "hash": "bbb5ab0a0fd008f2",
           "text": "Máme to!",
-          "bytes": 8821
+          "bytes": 8821,
+          "loudness": -18
         },
         "praise.neutral.8": {
           "hash": "28c47d89a17e26a2",
           "text": "Ano, správně!",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "praise.neutral.9": {
           "hash": "8a5240102be26636",
           "text": "Bezvadné!",
-          "bytes": 8403
+          "bytes": 8404,
+          "loudness": -18
         },
         "seek.digit.1": {
           "hash": "70a9087ac88575d5",
           "text": "Hledáme jedničku.",
-          "bytes": 13836
+          "bytes": 13837,
+          "loudness": -18
         },
         "seek.digit.10": {
           "hash": "4af0fc1ddbc461cb",
           "text": "Hledáme desítku.",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "seek.digit.2": {
           "hash": "6836c485a2399a0b",
           "text": "Hledáme dvojku.",
-          "bytes": 11328
+          "bytes": 11329,
+          "loudness": -18
         },
         "seek.digit.3": {
           "hash": "feb4cf3d0b6c20fd",
           "text": "Hledáme trojku.",
-          "bytes": 12164
+          "bytes": 12165,
+          "loudness": -18
         },
         "seek.digit.4": {
           "hash": "79429be6609d03e9",
           "text": "Hledáme čtyřku.",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "seek.digit.5": {
           "hash": "884d4dfb6bbbe1a4",
           "text": "Hledáme pětku.",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "seek.digit.6": {
           "hash": "4ab4ae20e36b3bd6",
           "text": "Hledáme šestku.",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "seek.digit.7": {
           "hash": "dc7de7b0dff1611e",
           "text": "Hledáme sedmičku.",
-          "bytes": 12791
+          "bytes": 12792,
+          "loudness": -18
         },
         "seek.digit.8": {
           "hash": "098c1ab9576eb2e2",
           "text": "Hledáme osmičku.",
-          "bytes": 12791
+          "bytes": 12792,
+          "loudness": -18
         },
         "seek.digit.9": {
           "hash": "6580cfaa09e3fbea",
           "text": "Hledáme devítku.",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "seek.letter.a": {
           "hash": "b3b3143f627ce924",
           "text": "Hledáme á.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "seek.letter.b": {
           "hash": "9c54608c9629c1e6",
           "text": "Hledáme bé.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "seek.letter.c": {
           "hash": "ce6a376db60434c6",
           "text": "Hledáme cé.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "seek.letter.d": {
           "hash": "2832de85a0711e5d",
           "text": "Hledáme dé.",
-          "bytes": 8821
+          "bytes": 8822,
+          "loudness": -18
         },
         "seek.letter.e": {
           "hash": "9968f7f4388f4662",
           "text": "Hledáme é.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "seek.letter.f": {
           "hash": "07d885e7c9b30b3c",
           "text": "Hledáme ef.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "seek.letter.g": {
           "hash": "e09c058ca784ddbc",
           "text": "Hledáme gé.",
-          "bytes": 9866
+          "bytes": 9867,
+          "loudness": -18
         },
         "seek.letter.h": {
           "hash": "6005b4f8e31a753a",
           "text": "Hledáme há.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "seek.letter.i": {
           "hash": "fcc1abf385119321",
           "text": "Hledáme í.",
-          "bytes": 9866
+          "bytes": 9867,
+          "loudness": -18
         },
         "seek.letter.j": {
           "hash": "92581855ae3d050d",
           "text": "Hledáme jé.",
-          "bytes": 10284
+          "bytes": 10285,
+          "loudness": -18
         },
         "seek.letter.k": {
           "hash": "9092e15ed071f6b9",
           "text": "Hledáme ká.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "seek.letter.l": {
           "hash": "17890a06d35f72f3",
           "text": "Hledáme el.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "seek.letter.m": {
           "hash": "45c50e3775a218e2",
           "text": "Hledáme em.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "seek.letter.n": {
           "hash": "c8733108c0a9bb40",
           "text": "Hledáme en.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "seek.letter.o": {
           "hash": "32cf3479706429c3",
           "text": "Hledáme ó.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "seek.letter.p": {
           "hash": "a59a4073b23f9f82",
           "text": "Hledáme pé.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "seek.letter.r": {
           "hash": "9410fdaff62322c5",
           "text": "Hledáme er.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "seek.letter.s": {
           "hash": "b21d5db144138132",
           "text": "Hledáme es.",
-          "bytes": 10284
+          "bytes": 10285,
+          "loudness": -18
         },
         "seek.letter.t": {
           "hash": "00e1dbe8baaabe23",
           "text": "Hledáme té.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "seek.letter.u": {
           "hash": "826fcb07242e5c2b",
           "text": "Hledáme ú.",
-          "bytes": 10284
+          "bytes": 10285,
+          "loudness": -18
         },
         "seek.letter.v": {
           "hash": "d84e9cdff498ef05",
           "text": "Hledáme vé.",
-          "bytes": 8403
+          "bytes": 8404,
+          "loudness": -18
         },
         "seek.letter.z": {
           "hash": "d77c0aaf1f3449c8",
           "text": "Hledáme zet.",
-          "bytes": 10284
+          "bytes": 10285,
+          "loudness": -18
         },
         "wrong.digit.1": {
           "hash": "0ab27d4957bbb739",
           "text": "To je jednička.",
-          "bytes": 12164
+          "bytes": 12165,
+          "loudness": -18
         },
         "wrong.digit.10": {
           "hash": "88871d87c30b5770",
           "text": "To je desítka.",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "wrong.digit.2": {
           "hash": "c2ed94031788258b",
           "text": "To je dvojka.",
-          "bytes": 11328
+          "bytes": 11329,
+          "loudness": -18
         },
         "wrong.digit.3": {
           "hash": "261fc92328ef55de",
           "text": "To je trojka.",
-          "bytes": 9866
+          "bytes": 9867,
+          "loudness": -18
         },
         "wrong.digit.4": {
           "hash": "9dbe48b3310ec195",
           "text": "To je čtyřka.",
-          "bytes": 12791
+          "bytes": 12792,
+          "loudness": -18
         },
         "wrong.digit.5": {
           "hash": "4cf62562242882f1",
           "text": "To je pětka.",
-          "bytes": 10284
+          "bytes": 10285,
+          "loudness": -18
         },
         "wrong.digit.6": {
           "hash": "5f01d1bf5fcd8e70",
           "text": "To je šestka.",
-          "bytes": 12373
+          "bytes": 12374,
+          "loudness": -18
         },
         "wrong.digit.7": {
           "hash": "3e86096f922dae00",
           "text": "To je sedmička.",
-          "bytes": 15717
+          "bytes": 15718,
+          "loudness": -18
         },
         "wrong.digit.8": {
           "hash": "57c831a8274e0408",
           "text": "To je osmička.",
-          "bytes": 11746
+          "bytes": 11747,
+          "loudness": -18
         },
         "wrong.digit.9": {
           "hash": "073e6a22aef0521a",
           "text": "To je devítka.",
-          "bytes": 10284
+          "bytes": 10285,
+          "loudness": -18
         },
         "wrong.letter.a": {
           "hash": "2a2b4e8ada6de515",
           "text": "To je á.",
-          "bytes": 8403
+          "bytes": 8404,
+          "loudness": -18
         },
         "wrong.letter.b": {
           "hash": "77e674253d53e477",
           "text": "To je bé.",
-          "bytes": 8821
+          "bytes": 8822,
+          "loudness": -18
         },
         "wrong.letter.c": {
           "hash": "81e96fc017caf4a4",
           "text": "To je cé.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "wrong.letter.d": {
           "hash": "e4d090956e4420cc",
           "text": "To je dé.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "wrong.letter.e": {
           "hash": "278b067be1a51332",
           "text": "To je é.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "wrong.letter.f": {
           "hash": "ccd4eaf39e09d63f",
           "text": "To je ef.",
-          "bytes": 8821
+          "bytes": 8822,
+          "loudness": -18
         },
         "wrong.letter.g": {
           "hash": "33117f8a67394809",
           "text": "To je gé.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "wrong.letter.h": {
           "hash": "e54a20fb6b0d56de",
           "text": "To je há.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "wrong.letter.i": {
           "hash": "f8618eff1c4f592f",
           "text": "To je í.",
-          "bytes": 8821
+          "bytes": 8822,
+          "loudness": -18
         },
         "wrong.letter.j": {
           "hash": "d0963179283606ab",
           "text": "To je jé.",
-          "bytes": 9866
+          "bytes": 9867,
+          "loudness": -18
         },
         "wrong.letter.k": {
           "hash": "14c6f5bed3191256",
           "text": "To je ká.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "wrong.letter.l": {
           "hash": "031f36d17b0a31fe",
           "text": "To je el.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "wrong.letter.m": {
           "hash": "577654d676ffc251",
           "text": "To je em.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "wrong.letter.n": {
           "hash": "4530445145b036fa",
           "text": "To je en.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "wrong.letter.o": {
           "hash": "5fdcd74893351c4e",
           "text": "To je ó.",
-          "bytes": 8403
+          "bytes": 8404,
+          "loudness": -18
         },
         "wrong.letter.p": {
           "hash": "9932fc5bef58aace",
           "text": "To je pé.",
-          "bytes": 9030
+          "bytes": 9031,
+          "loudness": -18
         },
         "wrong.letter.r": {
           "hash": "0761157ef59569a4",
           "text": "To je er.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "wrong.letter.s": {
           "hash": "c6a9f36c2855f26a",
           "text": "To je es.",
-          "bytes": 10493
+          "bytes": 10493,
+          "loudness": -18
         },
         "wrong.letter.t": {
           "hash": "2af8ba46a07eae7c",
           "text": "To je té.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "wrong.letter.u": {
           "hash": "1c05b759927425c0",
           "text": "To je ú.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "wrong.letter.v": {
           "hash": "3810603e005dd98c",
           "text": "To je vé.",
-          "bytes": 9448
+          "bytes": 9449,
+          "loudness": -18
         },
         "wrong.letter.z": {
           "hash": "0e25d0ce347d247f",
           "text": "To je zet.",
-          "bytes": 8821
+          "bytes": 8822,
+          "loudness": -18
         }
       }
     }

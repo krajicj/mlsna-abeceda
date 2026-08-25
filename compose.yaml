@@ -1,7 +1,9 @@
 # All toolchain commands run here – see CLAUDE.md › Commands.
 name: mlsna-abeceda # project name (and volume prefix) independent of the directory name
 x-toolchain: &toolchain
-  build: .
+  build:
+    context: .
+    target: toolchain # the small image; `media` (ffmpeg) is only for the voice services
   image: mlsna-abeceda-toolchain
   user: node
   working_dir: /app
@@ -19,7 +21,9 @@ x-toolchain: &toolchain
 services:
   # Named volumes are created root-owned; hand them to user `node`. Idempotent.
   init:
-    build: .
+    build:
+      context: .
+      target: toolchain
     image: mlsna-abeceda-toolchain
     user: root
     network_mode: none
@@ -47,6 +51,10 @@ services:
 
   voice: # internet (ElevenLabs); the key comes from outside the repository, see CLAUDE.md rule 9
     <<: *toolchain
+    build:
+      context: .
+      target: media # ffmpeg: every generated clip goes through the loudness pass
+    image: mlsna-abeceda-media
     profiles: [cli]
     env_file:
       - path: elevenlabs.env # gitignored symlink to ~/.config/mlsna-abeceda/elevenlabs.env
@@ -55,6 +63,17 @@ services:
         # config` and the other services are unaffected.)
         required: false
     entrypoint: ['node', '--disable-warning=ExperimentalWarning', 'scripts/generate-voice.mjs']
+
+  normalize: # re-gain the committed clips; needs no key and no network, only ffmpeg
+    <<: *toolchain
+    build:
+      context: .
+      target: media
+    image: mlsna-abeceda-media
+    profiles: [cli]
+    network_mode: none
+    entrypoint:
+      ['node', '--disable-warning=ExperimentalWarning', 'scripts/generate-voice.mjs', '--normalize']
 
   vite: # dev server on an internal network – no DNS, no egress
     <<: *toolchain

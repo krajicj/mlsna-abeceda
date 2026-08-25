@@ -24,6 +24,7 @@ docker compose run --rm check            # tsc + prettier
 docker compose run --rm build            # vite build → dist/
 docker compose run --rm voice --dry-run  # what the missing voice lines would cost
 docker compose run --rm voice            # generate them into public/audio/voice/
+docker compose run --rm normalize        # re-gain the committed clips to a common loudness
 ```
 
 The dev, test, check and build containers have no network access, run as a non-root user and
@@ -38,7 +39,9 @@ are listed in `src/data/voices.ts`; each one gets a full set of clips in
 Adding a line or a voice means editing those tables and running `docker compose run --rm voice`,
 which generates only what changed (the fingerprints live in `public/audio/voice/index.json`).
 Sentences are always generated whole: Czech declines, so fragments must never be stitched
-together at playback.
+together at playback. Every clip also goes through a loudness pass (ffmpeg, EBU R128, -18 LUFS with
+a -1.5 dBTP ceiling, one constant gain per clip — no compression): the API returns each sentence at
+its own level, and without it "Jedna." was 15 dB quieter than "Ef je tady!".
 
 The clips are produced with [ElevenLabs](https://elevenlabs.io) and committed. The API key lives
 outside this repository, in `~/.config/mlsna-abeceda/elevenlabs.env`, and reaches only the `voice`
