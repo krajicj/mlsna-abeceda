@@ -5,7 +5,10 @@ import {
   BOWL_FRONT_FRUIT_HEIGHT,
   BOWL_FRUIT_CENTER_Y,
   BOWL_RIM_Y,
+  CAKE_COOKIE_CENTER_Y,
   CAKE_FRUIT_HEIGHT,
+  CAKE_TOP_CENTER_X,
+  CAKE_TOP_ITEM_BOTTOM,
   COUNTER_EDGE_TOP,
   COUNTER_FRONT_TOP,
   COUNTER_TOP,
@@ -21,8 +24,11 @@ import {
   PILL_OFFSET_Y,
   PILL_SIZE,
   SHELF_GAP,
+  SHELF_HIT_WIDTH,
   SHELF_ITEM_WIDTH,
   bowlFruitSpots,
+  cakeCandleSlot,
+  cakeCookieSlot,
   cakeFruitSlots,
   counterPanels,
   floorColumns,
@@ -30,8 +36,11 @@ import {
   kitchenLayout,
   lidRect,
   pillSlots,
+  shelfHitSlots,
   shelfSlots,
 } from './layout';
+import { CANDLE_HEIGHT, CANDLE_WIDTH } from './candle';
+import { COOKIE_SIZE } from './cookie';
 import { fruitWidth } from './fruit';
 import type { Rect } from './svg';
 
@@ -150,6 +159,98 @@ describe('shelfSlots', () => {
     expect(shelfSlots(kitchenLayout(1024).shelfLetters, 4).map((slot) => slot.x)).toEqual([
       570, 682, 794, 906,
     ]);
+  });
+});
+
+describe('shelfHitSlots', () => {
+  it('is empty for a count of zero or less and for nonsense', () => {
+    const shelf = kitchenLayout(1024).shelfLetters;
+    expect(shelfHitSlots(shelf, 0)).toEqual([]);
+    expect(shelfHitSlots(shelf, -2)).toEqual([]);
+    expect(shelfHitSlots(shelf, Number.NaN)).toEqual([]);
+  });
+
+  it('never puts out more than MAX_CHOICES targets', () => {
+    expect(shelfHitSlots(kitchenLayout(1024).shelfDigits, 9)).toHaveLength(MAX_CHOICES);
+  });
+
+  it.each(WIDTHS)('leaves no dead space between the targets at %i px', (width) => {
+    for (const shelf of [kitchenLayout(width).shelfDigits, kitchenLayout(width).shelfLetters]) {
+      for (const count of [1, 2, 3, 4]) {
+        const slots = shelfHitSlots(shelf, count);
+        expect(slots).toHaveLength(count);
+        for (let i = 1; i < slots.length; i += 1) {
+          expect(slots[i]!.x).toBe(slots[i - 1]!.x + SHELF_HIT_WIDTH);
+        }
+        for (const slot of slots) {
+          expect(slot.width).toBe(SHELF_HIT_WIDTH);
+          expect(slot.width).toBeGreaterThanOrEqual(MIN_TARGET);
+          expect(slot.height).toBeGreaterThanOrEqual(MIN_TARGET);
+          expect(slot.x).toBeGreaterThanOrEqual(shelf.x);
+          expect(slot.x + slot.width).toBeLessThanOrEqual(shelf.x + shelf.width);
+          expect(inside(slot, width)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it.each(WIDTHS)('keeps the centres of the pieces it covers at %i px', (width) => {
+    for (const shelf of [kitchenLayout(width).shelfDigits, kitchenLayout(width).shelfLetters]) {
+      for (const count of [1, 2, 3, 4]) {
+        const centres = (slots: Rect[]): number[] => slots.map((slot) => slot.x + slot.width / 2);
+        expect(centres(shelfHitSlots(shelf, count))).toEqual(centres(shelfSlots(shelf, count)));
+      }
+    }
+  });
+
+  it('matches the worked example from the step plan', () => {
+    const shelf = kitchenLayout(1024).shelfDigits;
+    expect(shelfSlots(shelf, 3).map((slot) => slot.x)).toEqual([626, 738, 850]);
+    expect(shelfHitSlots(shelf, 3).map((slot) => slot.x)).toEqual([618, 730, 842]);
+  });
+});
+
+describe('cakeCandleSlot and cakeCookieSlot', () => {
+  it.each(WIDTHS)('takes the size straight from the art at %i px', (width) => {
+    const { cake, shelfDigits, shelfLetters } = kitchenLayout(width);
+    const candleSlot = cakeCandleSlot(cake);
+    const cookieSlot = cakeCookieSlot(cake);
+    expect(candleSlot.width).toBe(CANDLE_WIDTH);
+    expect(candleSlot.height).toBe(CANDLE_HEIGHT);
+    expect(cookieSlot.width).toBe(COOKIE_SIZE);
+    expect(cookieSlot.height).toBe(COOKIE_SIZE);
+    // The same size as on the shelf, so the flight never has to scale the piece.
+    const shelfCandle = shelfSlots(shelfDigits, 3)[0]!;
+    const shelfCookie = shelfSlots(shelfLetters, 3)[0]!;
+    expect([candleSlot.width, candleSlot.height]).toEqual([shelfCandle.width, shelfCandle.height]);
+    expect([cookieSlot.width, cookieSlot.height]).toEqual([shelfCookie.width, shelfCookie.height]);
+  });
+
+  it.each(WIDTHS)('centres both on the top of the cake at %i px', (width) => {
+    const { cake } = kitchenLayout(width);
+    const centre = cake.x + CAKE_TOP_CENTER_X;
+    for (const slot of [cakeCandleSlot(cake), cakeCookieSlot(cake)]) {
+      expect(slot.x + slot.width / 2).toBe(centre);
+      expect(slot.x).toBeGreaterThanOrEqual(cake.x);
+      expect(slot.x + slot.width).toBeLessThanOrEqual(cake.x + cake.width);
+      expect(inside(slot, width)).toBe(true);
+    }
+  });
+
+  it.each(WIDTHS)('stands the candle on the cake and leans the cookie on it at %i px', (width) => {
+    const { cake, bowl } = kitchenLayout(width);
+    const candleSlot = cakeCandleSlot(cake);
+    const cookieSlot = cakeCookieSlot(cake);
+    expect(candleSlot.y + candleSlot.height).toBe(cake.y + CAKE_TOP_ITEM_BOTTOM);
+    expect(cookieSlot.y + cookieSlot.height / 2).toBe(cake.y + CAKE_COOKIE_CENTER_Y);
+    expect(cookieSlot.y + cookieSlot.height).toBeLessThanOrEqual(cake.y + cake.height);
+    for (const slot of [candleSlot, cookieSlot]) expect(separation(slot, bowl)).toBeGreaterThan(0);
+  });
+
+  it('matches the worked example from the step plan', () => {
+    const { cake } = kitchenLayout(1024);
+    expect(cakeCandleSlot(cake)).toEqual({ x: 394, y: 296, width: 96, height: 112 });
+    expect(cakeCookieSlot(cake)).toEqual({ x: 394, y: 428, width: 96, height: 96 });
   });
 });
 

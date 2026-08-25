@@ -4,6 +4,8 @@
  * numbers to animate a strawberry from the bowl onto the cake or to fill the shelves.
  */
 import { STAGE_MAX_WIDTH, STAGE_MIN_WIDTH } from '../stage/layout';
+import { CANDLE_HEIGHT, CANDLE_WIDTH } from './candle';
+import { COOKIE_SIZE } from './cookie';
 import { fruitWidth } from './fruit';
 import type { Rect } from './svg';
 
@@ -11,6 +13,8 @@ export const SHELF_ITEM_WIDTH = 96; // ≥ 88 (CLAUDE.md, rule 3)
 export const SHELF_GAP = 16;
 export const SHELF_BOARD = 16; // the board itself: the bottom strip of the shelf rect
 export const MAX_CHOICES = 4;
+/** Pitch of the hit boxes on a shelf: the piece plus the gap, so no tap falls between two. */
+export const SHELF_HIT_WIDTH = SHELF_ITEM_WIDTH + SHELF_GAP;
 export const FRUIT_SLOT = 96; // strawberry hit box, ≥ 88
 export const FRUIT_GAP = 16;
 export const MAX_FRUIT_SLOTS = 3; // more would not fit a 320 px bowl without overlapping
@@ -27,6 +31,10 @@ export const CAKE_FRUIT_HEIGHT = 44;
 export const CAKE_FRUIT_PITCH = 40;
 /** Centre of the top of the cake inside its 220×146 box (read off cake.ts). */
 export const CAKE_TOP_CENTER_X = 110;
+/** Local y where something standing on the top of the cake touches down (the candle). */
+export const CAKE_TOP_ITEM_BOTTOM = 24;
+/** Local y of the centre of a cookie leaning against the front of the cake (the icing band). */
+export const CAKE_COOKIE_CENTER_Y = 92;
 /** Bottom edges of the two rows of fruit, measured from the top of the cake box. */
 const CAKE_FRUIT_FRONT_BOTTOM = 22;
 const CAKE_FRUIT_BACK_BOTTOM = 10;
@@ -88,6 +96,47 @@ export function shelfSlots(shelf: Rect, count: number): Rect[] {
     width: SHELF_ITEM_WIDTH,
     height,
   }));
+}
+
+/**
+ * Hit boxes over the slots of `shelfSlots`: the same centres, but SHELF_HIT_WIDTH wide and touching
+ * each other, so a finger that lands between two pieces still hits the nearer one. The row as a
+ * whole is not one target the way the bowl is – here a tap has a meaning, and a stray one at the
+ * edge of the shelf must not turn into a mistake the child never made.
+ */
+export function shelfHitSlots(shelf: Rect, count: number): Rect[] {
+  const n = Math.min(Math.max(Math.floor(count) || 0, 0), MAX_CHOICES);
+  const height = shelf.height - SHELF_BOARD;
+  return centeredRow(shelf.x, shelf.width, n, SHELF_HIT_WIDTH, 0).map((x) => ({
+    x,
+    y: shelf.y,
+    width: SHELF_HIT_WIDTH,
+    height,
+  }));
+}
+
+/**
+ * Where the picked piece lands on the cake. Both slots take their size from the art modules
+ * (candle.ts, cookie.ts), so a piece is exactly as big on the cake as it was on the shelf and the
+ * flight never has to rescale it. No import cycle: neither module imports this one.
+ */
+export function cakeCandleSlot(cake: Rect): Rect {
+  return {
+    x: Math.round(cake.x + CAKE_TOP_CENTER_X - CANDLE_WIDTH / 2),
+    y: Math.round(cake.y + CAKE_TOP_ITEM_BOTTOM - CANDLE_HEIGHT),
+    width: CANDLE_WIDTH,
+    height: CANDLE_HEIGHT,
+  };
+}
+
+/** The cookie leans against the front of the cake, centred on the icing – the letter stays big. */
+export function cakeCookieSlot(cake: Rect): Rect {
+  return {
+    x: Math.round(cake.x + CAKE_TOP_CENTER_X - COOKIE_SIZE / 2),
+    y: Math.round(cake.y + CAKE_COOKIE_CENTER_Y - COOKIE_SIZE / 2),
+    width: COOKIE_SIZE,
+    height: COOKIE_SIZE,
+  };
 }
 
 /**

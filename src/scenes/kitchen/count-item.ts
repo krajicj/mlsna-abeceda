@@ -22,10 +22,10 @@ import {
 } from '../../art/layout';
 import { bowlLid } from '../../art/lid';
 import { countPill } from '../../art/pill';
-import type { Rect } from '../../art/svg';
 import type { FruitKind } from '../../data/curriculum';
 import { addFruit, createCounting, type CountingState } from '../../game/counting';
 import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
+import { createMotion, layer, place, prefersReducedMotion } from './dom';
 
 const FLIGHT_MS = 420;
 /** A breath between the last piece landing and the lid, so the child sees the cake finished. */
@@ -43,23 +43,6 @@ export interface CountItemHandle {
   layout(layout: KitchenLayout): void;
   state(): CountingState | null;
   destroy(): void;
-}
-
-function prefersReducedMotion(): boolean {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-function place(el: HTMLElement, rect: Rect): void {
-  el.style.left = `${rect.x}px`;
-  el.style.top = `${rect.y}px`;
-  el.style.width = `${rect.width}px`;
-  el.style.height = `${rect.height}px`;
-}
-
-function layer(className: string): HTMLDivElement {
-  const el = document.createElement('div');
-  el.className = className;
-  return el;
 }
 
 /**
@@ -93,8 +76,7 @@ export function createCountItem(options: {
     onTap(event);
   });
 
-  const timeouts = new Set<number>();
-  const animations = new Set<Animation>();
+  const motion = createMotion();
   let current: KitchenLayout | null = null;
   let state: CountingState | null = null;
   let kind: FruitKind = 'strawberry';
@@ -106,33 +88,6 @@ export function createCountItem(options: {
    * child any more), so starting the next item builds a fresh one.
    */
   let idle: IdleWatcher = createIdleWatcher({ onRemind: blinkPills, onHint: showHint });
-
-  function after(ms: number, run: () => void): void {
-    const id = window.setTimeout(() => {
-      timeouts.delete(id);
-      run();
-    }, ms);
-    timeouts.add(id);
-  }
-
-  /** Every animation is registered, so destroy() can cancel it instead of leaving it running. */
-  function animate(
-    el: Element,
-    keyframes: Keyframe[],
-    keyframeOptions: KeyframeAnimationOptions,
-  ): Animation | null {
-    if (prefersReducedMotion()) return null;
-    try {
-      const animation = el.animate(keyframes, keyframeOptions);
-      animations.add(animation);
-      const forget = (): void => void animations.delete(animation);
-      animation.addEventListener('finish', forget);
-      animation.addEventListener('cancel', forget);
-      return animation;
-    } catch {
-      return null; // no Web Animations API: the game keeps working, just without the movement
-    }
-  }
 
   function renderPill(index: number): void {
     const pill = pills[index];
@@ -216,7 +171,7 @@ export function createCountItem(options: {
     renderPill(index);
     const pill = pills[index];
     if (pill) {
-      animate(
+      motion.animate(
         pill,
         [{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }],
         {
@@ -237,7 +192,7 @@ export function createCountItem(options: {
     const dx = from.cx - (slot.x + slot.width / 2);
     const dy = from.cy - (slot.y + slot.height / 2);
     const scale = from.height / CAKE_FRUIT_HEIGHT;
-    const animation = animate(
+    const animation = motion.animate(
       flyer,
       [
         { transform: `translate(${dx}px, ${dy}px) scale(${scale})` },
@@ -267,14 +222,14 @@ export function createCountItem(options: {
     });
     // A hidden document freezes Web Animations and `finish` may never arrive; without this the
     // piece would hang in the air and the counter would never fill in (see stage/scenes.ts).
-    after(FLIGHT_MS + 120, arrive);
+    motion.after(FLIGHT_MS + 120, arrive);
   }
 
   /** The tapped piece stays in the bowl (it never runs out) and only bows to say "taken". */
   function bounceBowlFruit(index: number): void {
     const piece = options.bowl.querySelector(`[data-spot="${index}"] .art-fruit-body`);
     if (!piece) return;
-    animate(
+    motion.animate(
       piece,
       [{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }],
       {
@@ -287,7 +242,7 @@ export function createCountItem(options: {
   function blinkPills(): void {
     if (prefersReducedMotion()) return;
     pillLayer.classList.add('is-blinking');
-    after(BLINK_MS, () => pillLayer.classList.remove('is-blinking'));
+    motion.after(BLINK_MS, () => pillLayer.classList.remove('is-blinking'));
   }
 
   function showHint(): void {
@@ -306,7 +261,7 @@ export function createCountItem(options: {
     // A covered bowl shows no fruit: the dome dips at its ends, so a stem would poke out over it.
     options.bowl.classList.add('is-covered');
     playCue(options.audio, 'done');
-    animate(
+    motion.animate(
       lidEl,
       [
         { transform: 'translateY(-26px)', opacity: 0 },
@@ -318,7 +273,7 @@ export function createCountItem(options: {
       },
     );
     for (const pill of pills) {
-      animate(
+      motion.animate(
         pill,
         [
           { transform: 'translateY(0)' },
@@ -334,7 +289,7 @@ export function createCountItem(options: {
   }
 
   function wobbleLid(): void {
-    animate(
+    motion.animate(
       lidEl,
       [
         { transform: 'rotate(0deg)' },
@@ -345,7 +300,7 @@ export function createCountItem(options: {
       { duration: 380, easing: 'ease-in-out' },
     );
     for (const pill of pills) {
-      animate(
+      motion.animate(
         pill,
         [
           { transform: 'translateY(0)' },
@@ -382,15 +337,12 @@ export function createCountItem(options: {
     fly(source, placedIndex, () => {
       land(placedIndex);
       playCue(options.audio, 'pling', { step: placedIndex });
-      if (completed) after(LID_DELAY_MS, closeLid);
+      if (completed) motion.after(LID_DELAY_MS, closeLid);
     });
   }
 
   function reset(): void {
-    for (const id of timeouts) window.clearTimeout(id);
-    timeouts.clear();
-    for (const animation of animations) animation.cancel();
-    animations.clear();
+    motion.cancelAll();
     idle.stop();
     landed = [];
     options.bowl.classList.remove('is-covered');

@@ -143,6 +143,11 @@ describe('art modules', () => {
     expect(hintRing(40)).toContain('r="14"');
   });
 
+  it('leaves the hint ring hollow, so it never veils the letter under it', () => {
+    expect(hintRing(96)).toContain('fill="none"');
+    expect(hintRing(96)).not.toContain('fill-opacity');
+  });
+
   it('redraws the backdrop for the stage width it is given', () => {
     expect(attribute(kitchenBackdrop(1366), 'viewBox')).toBe('0 0 1366 768');
     expect(attribute(kitchenBackdrop(800), 'viewBox')).toBe('0 0 1024 768');

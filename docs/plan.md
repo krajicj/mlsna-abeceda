@@ -23,7 +23,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-03 | [Herní logika: kurikulum, dvě dráhy, generátor objednávek (Č1/P1), ukládání](steps/STEP-03-game-logic-and-save.md) | M1 | 01 | done |
 | STEP-04 | [Kuchyně – statická scéna ze SVG (medvídek, pult, police, miska, perníčky, svíčky) + self-host fontu Fredoka](steps/STEP-04-kitchen-scene-and-font.md) | M1 | 02 | done |
 | STEP-05 | [Položka „počítání“: miska → výrobek, kolečka, přepočítání, nečinnost (zatím bez hlasu)](steps/STEP-05-counting-item.md) | M1 | 03, 04 | done |
-| STEP-06 | Položky „písmenko“ a „číslice“: výběr z police, chyba, nápověda | M1 | 05 | — |
+| STEP-06 | [Položky „písmenko“ a „číslice“: výběr z police, chyba, nápověda](steps/STEP-06-letter-and-digit-items.md) | M1 | 05 | done |
 | STEP-07 | Hlas: manifest hlášek, generátor z ElevenLabs, casting, fronta přehrávání | M1 | 02 | — |
 | STEP-08 | Dokončení objednávky: bublina s objednávkou, zákazník jí, hvězdička, jedna celá smyčka | M1 | 06, 07 | — |
 | STEP-09 | Zvoneček, tři zákazníci a jejich repliky | M2 | 08 | — |
@@ -55,6 +55,9 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 - **Borůvka a třešeň** se kreslí už ve STEP-05 (miska i ovoce na dortu podle druhu z objednávky),
   protože generátor ze STEP-03 vybírá ze všech tří startovních druhů; STEP-12 (obchůdek) pak řeší
   jen odemykání *dalšího* ovoce.
+- **STEP-06** staví svíčku doprostřed horní plochy dortu a perníček opře zepředu; s jednou
+  položkou na objednávku se nepotká s kolečky počítadla. Až budou objednávky delší
+  (**STEP-10**), bude potřeba jedno z toho posunout.
 - **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-19 do STEP-04: zatím se
   vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
   kuchyně nešlo posoudit. STEP-19 řeší jen PWA a offline.

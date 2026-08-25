@@ -130,3 +130,78 @@
     animation: none;
   }
 }
+
+/* The choice item (STEP-06): hit boxes over the shelf, the flight onto the cake. */
+.choice-landed,
+.choice-targets,
+.choice-flight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.choice-target,
+.choice-flyer,
+.choice-landed-piece,
+.choice-hint {
+  position: absolute;
+}
+
+/* Only the shelf in play answers a tap; the other one and the bowl stay a picture, so a tap
+   there can never turn into a mistake the child never made. */
+.choice-target {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.choice-hint {
+  pointer-events: none;
+}
+
+.choice-target[hidden],
+.choice-hint[hidden],
+.choice-piece[hidden] {
+  display: none;
+}
+
+.choice-flyer {
+  z-index: 2;
+}
+
+/* The right answer after the second mistake or after 40 s of silence: it glows, nothing else. */
+.kitchen-item.is-revealed svg {
+  filter: drop-shadow(0 0 6px var(--star)) drop-shadow(0 0 16px var(--star));
+}
+
+/* 15 s of silence: the offer waves, one piece after another. */
+.kitchen-shelf.is-bobbing .choice-piece {
+  animation: item-bob 450ms ease-in-out 2;
+}
+
+.kitchen-shelf.is-bobbing .choice-piece:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.kitchen-shelf.is-bobbing .choice-piece:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.kitchen-shelf.is-bobbing .choice-piece:nth-child(4) {
+  animation-delay: 210ms;
+}
+
+@keyframes item-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kitchen-shelf.is-bobbing .choice-piece {
+    animation: none;
+  }
+}
