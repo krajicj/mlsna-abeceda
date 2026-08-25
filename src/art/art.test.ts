@@ -2,13 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { FRUITS } from '../data/curriculum';
 import { bear } from './bear';
 import { fruitBowl } from './bowl';
-import { cakeBase } from './cake';
+import { bubbleFruit, orderBubble, orderCheck, speakerIcon } from './bubble';
+import { cakeBase, cakeGlaze } from './cake';
 import { candle } from './candle';
 import { cookie } from './cookie';
 import { hintRing } from './hint';
 import { kitchenBackdrop } from './kitchen';
+import { confettiPiece, CONFETTI_COUNT, CONFETTI_SIZE } from './confetti';
 import { bowlLid } from './lid';
 import { countPill } from './pill';
+import { star, starsPill } from './star';
 import { fruit, fruitWidth } from './fruit';
 import { PALETTE } from './svg';
 
@@ -26,6 +29,16 @@ const MODULES: Record<string, string> = {
   bowlLid: bowlLid(),
   hintRing: hintRing(96),
   backdrop: kitchenBackdrop(1024),
+  cakeGlaze: cakeGlaze(),
+  orderBubble: orderBubble(),
+  speakerIcon: speakerIcon(44),
+  orderCheck: orderCheck(48),
+  blankCookie: cookie(),
+  blankCandle: candle(),
+  bubbleFruit: bubbleFruit('strawberry', 3),
+  star: star(),
+  starsPill: starsPill(3),
+  confettiPiece: confettiPiece(0),
 };
 
 /** Minimal well-formedness check: every tag closes, in the right order, exactly once. */
@@ -73,6 +86,13 @@ describe('art modules', () => {
     ['cookie', MODULES['cookie'], '0 0 96 96', 96, 96],
     ['candle', MODULES['candle'], '0 0 96 112', 96, 112],
     ['backdrop', MODULES['backdrop'], '0 0 1024 768', 1024, 768],
+    // The glaze is laid on the very same box as the cake, so the two must match exactly.
+    ['cakeGlaze', MODULES['cakeGlaze'], '-7 44 274 182', 220, 146],
+    ['orderBubble', MODULES['orderBubble'], '0 0 480 148', 480, 148],
+    ['bubbleFruit', MODULES['bubbleFruit'], '0 0 116 88', 116, 88],
+    ['star', MODULES['star'], '0 0 40 40', 40, 40],
+    ['starsPill', MODULES['starsPill'], '0 0 160 64', 160, 64],
+    ['confettiPiece', MODULES['confettiPiece'], '0 0 18 18', 18, 18],
   ])('%s has the size the layout expects', (_name, markup, viewBox, width, height) => {
     expect(attribute(markup!, 'viewBox')).toBe(viewBox);
     expect(attribute(markup!, 'width')).toBe(String(width));
@@ -83,6 +103,17 @@ describe('art modules', () => {
     expect(cookie('K')).toContain('>K</text>');
     expect(candle('3')).toContain('>3</text>');
     expect(cookie('Š')).toContain('>Š</text>');
+  });
+
+  it('leaves the cookie and the candle blank when nothing is asked for', () => {
+    // What the order bubble shows: the kind of thing, never the answer (návrh 5.4). With the
+    // letter drawn here the child could fill the order by matching two pictures.
+    expect(cookie()).not.toContain('<text');
+    expect(candle()).not.toContain('<text');
+    expect(cookie()).toContain(PALETTE.dough);
+    expect(candle()).toContain(PALETTE.wax);
+    expect(attribute(cookie(), 'viewBox')).toBe(attribute(cookie('K'), 'viewBox'));
+    expect(attribute(candle(), 'viewBox')).toBe(attribute(candle('3'), 'viewBox'));
   });
 
   it('scales the fruit without stretching it', () => {
@@ -151,5 +182,48 @@ describe('art modules', () => {
   it('redraws the backdrop for the stage width it is given', () => {
     expect(attribute(kitchenBackdrop(1366), 'viewBox')).toBe('0 0 1366 768');
     expect(attribute(kitchenBackdrop(800), 'viewBox')).toBe('0 0 1024 768');
+  });
+
+  it('draws the order card with a tail that points down at the customer', () => {
+    // One closed outline for the card and the tail: two shapes would show a seam at the join.
+    expect(orderBubble().match(/<path/g)).toHaveLength(1);
+    expect(orderBubble()).toContain('L 110 146');
+  });
+
+  it('leaves the middle of the cake clear so the glaze hides nothing', () => {
+    // The band follows the front rim (y 64…107 of the view box); the fruit stands above it.
+    expect(cakeGlaze()).toContain('M62 64');
+    expect(cakeGlaze()).not.toContain('ellipse');
+  });
+
+  it('puts as much fruit in the bubble as the order asks for', () => {
+    const pieces = (markup: string) => markup.match(/<g transform="translate/g)?.length ?? 0;
+    expect(pieces(bubbleFruit('strawberry', 1))).toBe(1);
+    expect(pieces(bubbleFruit('cherry', 3))).toBe(3);
+    expect(pieces(bubbleFruit('blueberry', 5))).toBe(5);
+    // Out of range is clamped, never dropped: an order is always drawn.
+    expect(pieces(bubbleFruit('strawberry', 0))).toBe(1);
+    expect(pieces(bubbleFruit('strawberry', 9))).toBe(5);
+    expect(bubbleFruit('cherry', 2)).toContain(PALETTE.cherry);
+  });
+
+  it('shows the number of stars in the counter', () => {
+    expect(starsPill(0)).toContain('>0</text>');
+    expect(starsPill(7)).toContain('>7</text>');
+    expect(starsPill(12)).toContain('>12</text>');
+    expect(starsPill(-3)).toContain('>0</text>');
+    expect(star()).toContain(PALETTE.star);
+  });
+
+  it('gives every confetti piece a shape and a colour of its own', () => {
+    for (let index = 0; index < CONFETTI_COUNT; index += 1) {
+      const piece = confettiPiece(index);
+      expect(piece.trimStart().startsWith('<svg')).toBe(true);
+      expect(unbalancedTags(piece)).toEqual([]);
+    }
+    expect(confettiPiece(0)).toContain('<rect');
+    expect(confettiPiece(1)).toContain('<circle');
+    expect(confettiPiece(2)).toContain('<path');
+    expect(CONFETTI_SIZE).toBeGreaterThan(0);
   });
 });

@@ -26,7 +26,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-06 | [Položky „písmenko“ a „číslice“: výběr z police, chyba, nápověda](steps/STEP-06-letter-and-digit-items.md) | M1 | 05 | done |
 | STEP-07 | [Hlas: manifest hlášek, generátor z ElevenLabs, casting](steps/STEP-07-voice-manifest-and-generator.md) | M1 | 03 | done |
 | STEP-08 | [Hlas ve hře: fronta přehrávání, napojení kuchyně (objednávka, počítání nahlas, pochvala, oprava, nápověda)](steps/STEP-08-voice-playback-and-kitchen.md) | M1 | 05, 06, 07 | done |
-| STEP-09 | Dokončení objednávky: bublina s objednávkou, zákazník jí, hvězdička, jedna celá smyčka | M1 | 06, 08 | — |
+| STEP-09 | [Dokončení objednávky: bublina s objednávkou, zákazník jí, hvězdička, jedna celá smyčka](steps/STEP-09-order-completion-and-loop.md) | M1 | 06, 08 | done |
 | STEP-10 | Zvoneček, tři zákazníci a jejich repliky (+ efekty z ElevenLabs Sound Effects) | M2 | 09 | — |
 | STEP-11 | Generátor: délka objednávky, stupně Č2/P2, adaptivní výběr, distraktory | M2 | 09 | — |
 | STEP-12 | Konec sezení (limit 10), ukládání pokroku, obnova po reloadu | M2 | 10, 11 | — |
@@ -63,12 +63,18 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   okamžitá odezva na dotyk a hlas se k nim jen přidá. Nahradí je MP3 efekty ve **STEP-10**.
 - **Přečíslování se propsalo i do komentářů v kódu.** Při STEP-08 jsem srovnal odkazy, které po
   posunu o jedno ukazovaly na špatný krok (rodičovský koutek je 17, ne 16; „Kolik je" 21, ne 20;
-  diakritika 25, ne 24). Hláška „Otoč mě!" k overlay orientace v manifestu není – čeká na další
-  generovací běh (nejdřív STEP-10).
+  diakritika 25, ne 24). Hlášku „Otoč mě!" k overlay orientace vygeneroval **STEP-09** ve stejném
+  běhu jako hlášky k dokončení objednávky; overlay ji říká při přechodu do portrétu.
 - Kroky se stejným „Po“ (např. 13/14/15, 03/04) jdou dělat nezávisle na sobě.
 - **STEP-09** dostane navíc krátkou „dopékací“ pointu při dokončení objednávky (patro nebo
   poleva na výrobku, cinknutí trouby, konfety) – domluveno s autorem jako levná náhrada za
   mechaniku pečení, viz `navrh-hry.md` kap. 13 bod 2.
+- **Po STEP-09 naskočí další objednávka sama** (rozhodnutí autora, srpen 2026): bez zvonečku by
+  se smyčka nezavřela. STEP-10 mezi hvězdičku a další objednávku vloží zvoneček a princip
+  „dítě řídí tempo“ se vrátí. STEP-09 taky **jen zapisuje** skóre zvládnutí; zavádění nových
+  prvků (`maybeIntroduce`) a postup na další stupeň zůstávají na STEP-11.
+- **Manifest má po STEP-09 celkem 252 hlášek** (246 z M1 + 3× „hotovo“, 2× hvězdička, „Otoč mě!“).
+  Sada M1 je tím kompletní; další klipy přidá až STEP-10 (zákazníci) a STEP-12 (konec sezení).
 - **Borůvka a třešeň** se kreslí už ve STEP-05 (miska i ovoce na dortu podle druhu z objednávky),
   protože generátor ze STEP-03 vybírá ze všech tří startovních druhů; STEP-13 (obchůdek) pak řeší
   jen odemykání *dalšího* ovoce.

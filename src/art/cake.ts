@@ -27,3 +27,23 @@ export function cakeBase(): string {
     `,
   });
 }
+
+/**
+ * The glaze that runs over the finished cake (STEP-09, návrh kap. 13 point 2 – the cheap stand-in
+ * for a baking mechanic). Same view box as `cakeBase()`, so the scene lays it on the very same box.
+ * It follows the front rim of the sponge and drips down its sides; the middle of the top stays
+ * clear, otherwise it would hide the fruit, the cookie and the candle that stand there.
+ */
+export function cakeGlaze(): string {
+  return svg({
+    viewBox: CAKE_VIEW_BOX,
+    width: CAKE_WIDTH,
+    height: CAKE_HEIGHT,
+    children: `
+      <path d="M62 64 C62 73.4 92 81 130 81 C168 81 198 73.4 198 64 L198 76
+               Q184.5 100 171 86 Q157.5 106 144 92 Q130.5 107 117 93
+               Q103.5 102 90 88 Q76 96 62 76 Z"
+            fill="${PALETTE.frostingLight}" ${stroke(4)}></path>
+    `,
+  });
+}

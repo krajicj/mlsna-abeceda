@@ -27,6 +27,7 @@ import type { FruitKind } from '../../data/curriculum';
 import { addFruit, createCounting, type CountingState } from '../../game/counting';
 import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
 import type { OrderItem } from '../../game/orders';
+import type { ItemOutcome } from '../../game/progress';
 import {
   countSpeech,
   enoughSpeech,
@@ -35,6 +36,7 @@ import {
   type PraisePicker,
 } from '../../game/speech';
 import { createMotion, layer, place, prefersReducedMotion } from './dom';
+import { createPacer, type Pacer } from './pacing';
 
 const FLIGHT_MS = 420;
 /** A breath between the last piece landing and the lid, so the child sees the cake finished. */
@@ -46,10 +48,6 @@ const POP_MS = 260;
 const SPEAK_DELAY_MS = 350;
 /** From the last piece landing to the praise – long enough for "Tři." to be out of the way. */
 const PRAISE_DELAY_MS = 900;
-/** The praise waits for a line that is still running instead of cutting it in half. */
-const PRAISE_RETRY_MS = 250;
-/** …but not forever: after this much waiting it is said anyway (rule 2 – it is never dropped). */
-const PRAISE_MAX_WAITS = 16;
 
 /** What the narrator was asked to order – the amount is the clamped one, not the raw input. */
 type CountOrder = Extract<OrderItem, { readonly type: 'count' }>;
@@ -57,11 +55,21 @@ type CountOrder = Extract<OrderItem, { readonly type: 'count' }>;
 export interface CountItemHandle {
   /** Starts the item over: `amount` pieces of `kind`, empty cake, open bowl. */
   start(amount: number, kind: FruitKind): void;
-  /** No counting item in this order (STEP-09 onwards): the kitchen goes back to being a picture. */
+  /** No counting item in this order: the kitchen goes back to being a picture. */
   clear(): void;
   /** Called after every stage resize; re-places everything from the new layout. */
   layout(layout: KitchenLayout): void;
   state(): CountingState | null;
+  /**
+   * How the item went, or `null` while none is running or one is unfinished. Read at the moment
+   * progress is written, not when the item finishes: a tap on the covered bowl during the finale
+   * is still a recount and still counts.
+   */
+  outcome(): ItemOutcome | null;
+  /** What flies to the customer with the cake – the fruit that landed on it. */
+  plate(): readonly HTMLElement[];
+  /** Says the order again (a tap on the bubble) and restarts the idle watcher. */
+  repeat(): void;
   destroy(): void;
 }
 
@@ -75,6 +83,8 @@ export function createCountItem(options: {
   readonly audio: AudioEngine;
   readonly voice: VoicePlayer;
   readonly praise: PraisePicker;
+  /** The praise is out and the cake is finished – the kitchen may start the finale. */
+  readonly onDone: () => void;
 }): CountItemHandle {
   const cakeFruitLayer = layer('count-fruit');
   const pillLayer = layer('count-pills');
@@ -105,9 +115,14 @@ export function createCountItem(options: {
   let landed: HTMLDivElement[] = [];
   let pills: HTMLDivElement[] = [];
   let spoken: CountOrder | null = null;
-  /** Own handle: the praise has to be postponed on its own, `motion.after()` cancels everything. */
-  let praiseTimer: number | null = null;
-  let praiseWaits = 0;
+  /**
+   * The hint is an event of the scene, not of `CountingState` – counting knows nothing about a
+   * ring being shown. Kept here so `outcome()` can tell "found it alone" from "was shown where".
+   */
+  let hinted = false;
+  /** Own pacer: the praise has to wait out "to stačí" on its own, and `motion` cancels everything. */
+  const pacer: Pacer = createPacer({ voice: options.voice });
+  let praisePending = false;
 
   function speakOrder(): void {
     const item = spoken;
@@ -121,23 +136,22 @@ export function createCountItem(options: {
   }
 
   function clearPraise(): void {
-    if (praiseTimer !== null) window.clearTimeout(praiseTimer);
-    praiseTimer = null;
+    pacer.cancel();
+    praisePending = false;
   }
 
+  /**
+   * "Už máme tři jahody, to stačí!" must finish first; the praise only moves back, it is never
+   * dropped (the pacer caps the waiting). The item reports itself done right after it, so the
+   * finale queues up behind the praise instead of talking over it.
+   */
   function armPraise(delayMs: number): void {
-    clearPraise();
-    praiseTimer = window.setTimeout(() => {
-      praiseTimer = null;
-      // "Už máme tři jahody, to stačí!" must finish first; the praise only moves back, it is
-      // never dropped – and the waiting is capped so a stuck line cannot swallow it either.
-      if (options.voice.speaking && praiseWaits < PRAISE_MAX_WAITS) {
-        praiseWaits += 1;
-        armPraise(PRAISE_RETRY_MS);
-        return;
-      }
+    praisePending = true;
+    pacer.after(delayMs, () => {
+      praisePending = false;
       options.voice.say(options.praise.next());
-    }, delayMs);
+      options.onDone();
+    });
   }
 
   /**
@@ -318,6 +332,7 @@ export function createCountItem(options: {
 
   function showHint(): void {
     if (state === null || state.done) return;
+    hinted = true;
     hintEl.hidden = false;
     playCue(options.audio, 'pling', { step: 0 });
   }
@@ -396,10 +411,7 @@ export function createCountItem(options: {
       wobbleLid();
       playCue(options.audio, 'nope');
       options.voice.say(enoughSpeech(state.target, kind));
-      if (praiseTimer !== null) {
-        praiseWaits = 0;
-        armPraise(PRAISE_DELAY_MS); // the praise waits for "to stačí" and comes after it
-      }
+      if (praisePending) armPraise(PRAISE_DELAY_MS); // it waits for "to stačí" and comes after it
       return; // the watcher stopped when the item was finished – nothing left to remind about
     }
     const completed = step.result === 'completed';
@@ -416,7 +428,6 @@ export function createCountItem(options: {
       options.voice.say(countSpeech(placedIndex + 1));
       if (!completed) return;
       motion.after(LID_DELAY_MS, closeLid);
-      praiseWaits = 0;
       armPraise(PRAISE_DELAY_MS);
     });
   }
@@ -425,6 +436,7 @@ export function createCountItem(options: {
     motion.cancelAll();
     idle.stop();
     clearPraise();
+    hinted = false;
     landed = [];
     options.bowl.classList.remove('is-covered');
     cakeFruitLayer.replaceChildren();
@@ -460,6 +472,17 @@ export function createCountItem(options: {
       placeAll();
     },
     state: () => state,
+    outcome() {
+      if (!state || !state.done) return null;
+      if (state.extraTaps > 0) return 'mistaken'; // recounting: "I do not know when to stop"
+      return hinted ? 'hinted' : 'first-try';
+    },
+    plate: () => landed.filter((piece): piece is HTMLDivElement => Boolean(piece)),
+    repeat() {
+      if (!state || state.done) return;
+      repeatOrder();
+      idle.poke();
+    },
     destroy() {
       reset();
       for (const el of [cakeFruitLayer, pillLayer, targetEl, lidEl, hintEl, flightLayer]) {

@@ -5,6 +5,7 @@ import {
   CASTING_LINES,
   countAloudLine,
   countEnoughLine,
+  finishLines,
   hasLine,
   hintLine,
   letterWordLine,
@@ -14,6 +15,8 @@ import {
   orderLetterLine,
   praiseLines,
   seekLine,
+  starLines,
+  TURN_LINE,
   wrongLine,
   type PraiseGender,
 } from './lines.cs.ts';
@@ -38,9 +41,10 @@ function textOf(id: string): string {
 
 describe('manifest of voice lines', () => {
   it('holds exactly the groups the plan pays for', () => {
-    // 246 clips ≈ 4 600 characters (docs/steps/STEP-07). Adding lines means paying for them and
-    // regenerating – the number is here so that cost is a conscious edit, not a surprise.
-    expect(LINES).toHaveLength(246);
+    // 252 clips ≈ 4 700 characters (docs/steps/STEP-07, +6 in STEP-09). Adding lines means paying
+    // for them and regenerating – the number is here so that cost is a conscious edit, not a
+    // surprise.
+    expect(LINES).toHaveLength(252);
   });
 
   it('has unique ids usable as file names', () => {
@@ -133,6 +137,23 @@ describe('manifest of voice lines', () => {
     for (const gender of GENDERS) {
       for (const id of praiseLines(gender)) expect(hasLine(id), id).toBe(true);
     }
+  });
+
+  it('closes an order and hands over the star (STEP-09)', () => {
+    expect(finishLines()).toEqual(['finish.1', 'finish.2', 'finish.3']);
+    expect(starLines()).toEqual(['star.1', 'star.2']);
+    expect(textOf('finish.1')).toBe('Hotovo!');
+    expect(textOf('finish.2')).toBe('A je to!');
+    expect(textOf('finish.3')).toBe('Dortík je hotový!');
+    expect(textOf('star.1')).toBe('Máš hvězdičku!');
+    expect(textOf('star.2')).toBe('Hvězdička je tvoje!');
+    for (const id of [...finishLines(), ...starLines()]) expect(hasLine(id), id).toBe(true);
+  });
+
+  it('asks the child to turn the device over', () => {
+    expect(TURN_LINE).toBe('guard.turn');
+    expect(textOf(TURN_LINE)).toBe('Otoč mě!');
+    expect(hasLine(TURN_LINE)).toBe(true);
   });
 
   it('has five casting sentences outside LINES', () => {

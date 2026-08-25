@@ -47,6 +47,8 @@ export const PALETTE = {
   wax: '#FFF1DC',
   flame: '#FFC53D',
   flameCore: '#FFB703',
+  /** The reward star (STEP-09); the same value as --star in src/style.css. */
+  star: '#FFC53D',
   white: '#FFFFFF',
 } as const;
 

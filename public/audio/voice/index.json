@@ -252,6 +252,30 @@
           "bytes": 22823,
           "loudness": -18
         },
+        "finish.1": {
+          "hash": "32d57996b828c97e",
+          "text": "Hotovo!",
+          "bytes": 6941,
+          "loudness": -18
+        },
+        "finish.2": {
+          "hash": "00d982a811efb0b8",
+          "text": "A je to!",
+          "bytes": 7150,
+          "loudness": -18
+        },
+        "finish.3": {
+          "hash": "eeeb3efb9ab4d6e1",
+          "text": "Dortík je hotový!",
+          "bytes": 11747,
+          "loudness": -18
+        },
+        "guard.turn": {
+          "hash": "26584a34bdc40f99",
+          "text": "Otoč mě!",
+          "bytes": 7150,
+          "loudness": -18
+        },
         "hint.digit.1": {
           "hash": "2e1c5bb90b22b259",
           "text": "Jednička je tady!",
@@ -1294,6 +1318,18 @@
           "hash": "d77c0aaf1f3449c8",
           "text": "Hledáme zet.",
           "bytes": 10285,
+          "loudness": -18
+        },
+        "star.1": {
+          "hash": "1bc9e2c1f62a3c64",
+          "text": "Máš hvězdičku!",
+          "bytes": 10493,
+          "loudness": -18
+        },
+        "star.2": {
+          "hash": "3574cc8bbed2aa2e",
+          "text": "Hvězdička je tvoje!",
+          "bytes": 13210,
           "loudness": -18
         },
         "wrong.digit.1": {

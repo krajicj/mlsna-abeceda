@@ -13,7 +13,10 @@ import { createRng } from './rng';
 import {
   correctionSpeech,
   countSpeech,
+  createFinishPicker,
+  createLinePicker,
   createPraisePicker,
+  createStarPicker,
   enoughSpeech,
   hintSpeech,
   orderPreload,
@@ -149,6 +152,14 @@ describe('orderPreload', () => {
     expectKnown(ids);
   });
 
+  it('holds the sentences of the finale, whatever the item is', () => {
+    const ids = orderPreload(order([countItem(2, 'cherry')]));
+    for (const id of ['finish.1', 'finish.2', 'finish.3', 'star.1', 'star.2']) {
+      expect(ids).toContain(id);
+    }
+    expectKnown(ids);
+  });
+
   it('says every praise of the picked gender and never lists an id twice', () => {
     const ids = orderPreload(order([digitItem(3, [3, 5])]), 'female');
     expect(ids).toContain('praise.female.1');
@@ -182,5 +193,47 @@ describe('createPraisePicker', () => {
       expect(girl.next()[0]).toMatch(/^praise\.female\./);
       expect(boy.next()[0]).toMatch(/^praise\.male\./);
     }
+  });
+});
+
+describe('createLinePicker', () => {
+  it('stays silent for an empty set instead of throwing', () => {
+    expect(createLinePicker([]).next()).toEqual([]);
+  });
+
+  it('says the only line it has over and over', () => {
+    const picker = createLinePicker(['finish.1'], createRng(2));
+    expect(picker.next()).toEqual(['finish.1']);
+    expect(picker.next()).toEqual(['finish.1']);
+  });
+});
+
+describe('the pickers of the finale', () => {
+  it('never repeats a finish line and uses them all', () => {
+    const picker = createFinishPicker({ rng: createRng(4) });
+    const seen = new Set<string>();
+    let previous = '';
+    for (let draw = 0; draw < 60; draw += 1) {
+      const id = picker.next()[0]!;
+      expect(id).not.toBe(previous);
+      expect(hasLine(id)).toBe(true);
+      seen.add(id);
+      previous = id;
+    }
+    expect(seen.size).toBe(3);
+  });
+
+  it('alternates the two star lines', () => {
+    const picker = createStarPicker({ rng: createRng(9) });
+    const seen = new Set<string>();
+    let previous = '';
+    for (let draw = 0; draw < 20; draw += 1) {
+      const id = picker.next()[0]!;
+      expect(id).not.toBe(previous);
+      expect(hasLine(id)).toBe(true);
+      seen.add(id);
+      previous = id;
+    }
+    expect(seen.size).toBe(2);
   });
 });

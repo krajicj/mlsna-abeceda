@@ -43,8 +43,8 @@ function browserStorage(): StorageLike {
 const app = document.querySelector<HTMLElement>('#app');
 if (app) {
   const storage = browserStorage();
-  // Read once and hand to the scenes: the kitchen fills the order for the saved position and
-  // writes nothing back – progress is only recorded when an order is completed (STEP-09).
+  // One session for the whole run: it holds the order the kitchen is filling and is the only
+  // thing that writes the save – when an order is completed (rule 4).
   const session = createSession(storage);
 
   const stage = createStage(app);
@@ -58,7 +58,7 @@ if (app) {
     { stage, audio, voice, session },
     { title: titleScene, kitchen: kitchenScene },
   );
-  const orientation = createOrientationGuard(app);
+  const orientation = createOrientationGuard(app, { voice });
   scenes.go('title');
 
   if (import.meta.env.DEV) {
@@ -71,6 +71,10 @@ if (app) {
         say: (lines: string | readonly string[]): void => voice.say(lines),
         stop: (): void => voice.stop(),
         preload: (lines: readonly string[]): void => voice.preload(lines),
+        /** For the manual checks: "did that tap actually say anything?" */
+        get speaking(): boolean {
+          return voice.speaking;
+        },
       },
       __scenes: scenes,
       __orientation: orientation,

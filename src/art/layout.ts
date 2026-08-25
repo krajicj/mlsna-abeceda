@@ -26,6 +26,33 @@ export const MAX_PILLS = 5;
 /** The pills sit above the cake: y = cake.y − PILL_OFFSET_Y. */
 export const PILL_OFFSET_Y = 84;
 
+/**
+ * The order bubble above the bear (STEP-09). 480 px wide, not the 500 of the artboard: on a
+ * 1024 px stage the digit shelf starts at x = 562, and the layout invariant asks for 8 px between
+ * any two boxes – 480 leaves 22. Sizes live here, `art/bubble.ts` draws to them.
+ */
+export const BUBBLE_WIDTH = 480;
+export const BUBBLE_HEIGHT = 124;
+export const BUBBLE_PADDING = 20;
+export const BUBBLE_SPEAKER = 44;
+/** Where the pictures start: padding + the speaker icon + a gap. */
+export const BUBBLE_CONTENT_X = 80;
+export const BUBBLE_ITEM_WIDTH = 116;
+export const BUBBLE_ITEM_HEIGHT = 88;
+export const BUBBLE_ITEM_GAP = 12;
+/** Three pictures is what the card holds; orders that long arrive in STEP-11. */
+export const BUBBLE_MAX_ITEMS = 3;
+/** The tail of the bubble, measured from the left edge of the card – it points at the bear. */
+export const BUBBLE_TAIL_X = 110;
+/** Height of the tail below the card; the drawing is that much taller than `bubble`. */
+export const BUBBLE_TAIL_HEIGHT = 24;
+
+/** The star counter in the top right corner (návrh kap. 7). Never tapped – an indicator. */
+export const STARS_PILL_WIDTH = 160;
+export const STARS_PILL_HEIGHT = 64;
+export const STARS_PILL_MARGIN = 16;
+export const STAR_SIZE = 40;
+
 export const MAX_CAKE_FRUIT = 5;
 export const CAKE_FRUIT_HEIGHT = 44;
 export const CAKE_FRUIT_PITCH = 40;
@@ -58,6 +85,10 @@ export interface KitchenLayout {
   /** The whole shelf including the board; the slots sit on top of the board. */
   readonly shelfDigits: Rect;
   readonly shelfLetters: Rect;
+  /** The order card above the bear; the same place whatever the stage width. */
+  readonly bubble: Rect;
+  /** The star counter, held against the right edge, above the digit shelf. */
+  readonly stars: Rect;
 }
 
 /** The stage clamps its own width, but the dev console and tests can pass anything. */
@@ -83,6 +114,15 @@ export function kitchenLayout(stageWidth: number): KitchenLayout {
     bowl: { x: cake.x + 248, y: 400, width: 320, height: 140 },
     shelfDigits: { x: width - 462, y: 84, width: 448, height: 128 },
     shelfLetters: { x: width - 462, y: 252, width: 448, height: 112 },
+    bubble: { x: 60, y: 28, width: BUBBLE_WIDTH, height: BUBBLE_HEIGHT },
+    // 10 px above the digit shelf: the layout test guards 8 px between any two boxes, so moving
+    // the counter (or making it taller) means checking that gap again.
+    stars: {
+      x: width - STARS_PILL_WIDTH - STARS_PILL_MARGIN,
+      y: 10,
+      width: STARS_PILL_WIDTH,
+      height: STARS_PILL_HEIGHT,
+    },
   };
 }
 
@@ -203,6 +243,43 @@ export function pillSlots(cake: Rect, count: number): Rect[] {
     width: PILL_SIZE,
     height: PILL_SIZE,
   }));
+}
+
+/**
+ * The centred row of pictures inside the bubble: `count` (0…BUBBLE_MAX_ITEMS) boxes in the space
+ * left of the speaker icon, vertically centred in the card – the same rule as `shelfSlots()`.
+ */
+export function bubbleSlots(bubble: Rect, count: number): Rect[] {
+  const n = clampCount(count, BUBBLE_MAX_ITEMS);
+  const left = bubble.x + BUBBLE_CONTENT_X;
+  const available = bubble.width - BUBBLE_CONTENT_X - BUBBLE_PADDING;
+  const y = bubble.y + Math.round((bubble.height - BUBBLE_ITEM_HEIGHT) / 2);
+  return centeredRow(left, available, n, BUBBLE_ITEM_WIDTH, BUBBLE_ITEM_GAP).map((x) => ({
+    x,
+    y,
+    width: BUBBLE_ITEM_WIDTH,
+    height: BUBBLE_ITEM_HEIGHT,
+  }));
+}
+
+/** The speaker icon on the left of the card – "tap me and I will say it again". */
+export function bubbleSpeakerSlot(bubble: Rect): Rect {
+  return {
+    x: bubble.x + BUBBLE_PADDING,
+    y: bubble.y + Math.round((bubble.height - BUBBLE_SPEAKER) / 2),
+    width: BUBBLE_SPEAKER,
+    height: BUBBLE_SPEAKER,
+  };
+}
+
+/** Where the star flies to: the icon inside the counter. */
+export function starSlot(stars: Rect): Rect {
+  return {
+    x: stars.x + STARS_PILL_MARGIN,
+    y: stars.y + Math.round((stars.height - STAR_SIZE) / 2),
+    width: STAR_SIZE,
+    height: STAR_SIZE,
+  };
 }
 
 /** The box of the lid over the bowl (the rim of the dome sits exactly on the rim of the bowl). */

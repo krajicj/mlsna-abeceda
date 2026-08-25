@@ -1,11 +1,13 @@
+import type { VoicePlayer } from '../audio/voice';
+import { TURN_LINE } from '../data/lines.cs';
+
 export interface OrientationGuard {
   readonly portrait: boolean;
   destroy(): void;
 }
 
-// A phone that tips from portrait to landscape. No text – the player cannot read (rule 1).
-// TODO: play an "Otoč mě!" line while the overlay is up – it is not in the manifest yet, so it
-// waits for the next generator run (STEP-10 at the earliest).
+// A phone that tips from portrait to landscape. No text – the player cannot read (rule 1); the
+// picture is carried by "Otoč mě!" (STEP-09), said whenever the overlay comes up.
 const PHONE_SVG = `
 <svg class="rotate-phone" viewBox="0 0 200 200" width="200" height="200" aria-hidden="true"
      fill="none" stroke="#3B2A1A" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
@@ -18,8 +20,15 @@ const PHONE_SVG = `
   <path d="M146 158 L159 172 L172 158" stroke-width="7"></path>
 </svg>`;
 
-/** Full-screen overlay with a rotating phone; shown while the viewport is portrait. */
-export function createOrientationGuard(host: HTMLElement): OrientationGuard {
+/**
+ * Full-screen overlay with a rotating phone; shown while the viewport is portrait. With a narrator
+ * it also says "Otoč mě!" – but only once the audio is unlocked, which is what `speaking` cannot
+ * tell us; the player itself stays silent while it is locked (rule 6), so saying it is harmless.
+ */
+export function createOrientationGuard(
+  host: HTMLElement,
+  options?: { readonly voice?: VoicePlayer },
+): OrientationGuard {
   const el = document.createElement('div');
   el.className = 'orientation-guard';
   el.innerHTML = PHONE_SVG;
@@ -29,19 +38,23 @@ export function createOrientationGuard(host: HTMLElement): OrientationGuard {
   const query = window.matchMedia('(orientation: portrait)');
   let portrait = query.matches;
 
-  const update = (): void => {
+  const update = (announce: boolean): void => {
+    const was = portrait;
     portrait = query.matches;
     el.hidden = !portrait;
+    // Only on the way into portrait: a repeat on every media-query event would nag.
+    if (announce && portrait && !was) options?.voice?.say(TURN_LINE);
   };
-  update();
-  query.addEventListener('change', update);
+  const onChange = (): void => update(true);
+  update(false);
+  query.addEventListener('change', onChange);
 
   return {
     get portrait() {
       return portrait;
     },
     destroy() {
-      query.removeEventListener('change', update);
+      query.removeEventListener('change', onChange);
       el.remove();
     },
   };

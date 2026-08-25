@@ -31,6 +31,7 @@ import {
   type ChoiceState,
 } from '../../game/choice';
 import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
+import type { ItemOutcome } from '../../game/progress';
 import {
   correctionSpeech,
   hintSpeech,
@@ -62,6 +63,12 @@ export interface ChoiceItemHandle {
   /** Called after every stage resize; re-places everything from the new layout. */
   layout(layout: KitchenLayout): void;
   state(): ChoiceState | null;
+  /** How the item went, or `null` while none is running or one is unfinished. */
+  outcome(): ItemOutcome | null;
+  /** What flies to the customer with the cake – the cookie or the candle that landed on it. */
+  plate(): readonly HTMLElement[];
+  /** Says the order again (a tap on the bubble) and restarts the idle watcher. */
+  repeat(): void;
   destroy(): void;
 }
 
@@ -76,10 +83,19 @@ function other(shelf: Shelf): Shelf {
 export function createChoiceItem(options: {
   readonly root: HTMLElement;
   readonly shelves: { readonly digits: HTMLElement; readonly letters: HTMLElement };
-  readonly decoration: { readonly digits: readonly string[]; readonly letters: readonly string[] };
+  /**
+   * What stands on the shelf that is not in play. A function, not a list: the set the child is
+   * learning grows between orders, and the shelf has to show what the save says right now.
+   */
+  readonly decoration: () => {
+    readonly digits: readonly string[];
+    readonly letters: readonly string[];
+  };
   readonly audio: AudioEngine;
   readonly voice: VoicePlayer;
   readonly praise: PraisePicker;
+  /** The praise is out and the piece is on the cake – the kitchen may start the finale. */
+  readonly onDone: () => void;
 }): ChoiceItemHandle {
   const landedLayer = layer('choice-landed');
   const targetLayer = layer('choice-targets');
@@ -350,6 +366,7 @@ export function createChoiceItem(options: {
       land();
       playCue(options.audio, 'done');
       options.voice.say(options.praise.next());
+      options.onDone();
     });
   }
 
@@ -373,7 +390,7 @@ export function createChoiceItem(options: {
       spoken = item;
       state = createChoice(choiceTarget(item), choiceValues(item));
       drawShelf(active, state.choices);
-      drawShelf(other(active), options.decoration[other(active)]);
+      drawShelf(other(active), options.decoration()[other(active)]);
       buildTargets(state.choices.length);
       placeAll();
       idle = watcher();
@@ -384,8 +401,9 @@ export function createChoiceItem(options: {
       reset();
       state = null;
       spoken = null;
-      drawShelf('digits', options.decoration.digits);
-      drawShelf('letters', options.decoration.letters);
+      const shelves = options.decoration();
+      drawShelf('digits', shelves.digits);
+      drawShelf('letters', shelves.letters);
       placeAll();
     },
     layout(next) {
@@ -393,6 +411,19 @@ export function createChoiceItem(options: {
       placeAll();
     },
     state: () => state,
+    outcome() {
+      if (!state || !state.done) return null;
+      if (state.mistakes > 0) return 'mistaken';
+      return state.revealed ? 'hinted' : 'first-try'; // revealed without a mistake = the 40 s hint
+    },
+    plate: () =>
+      [...landedLayer.children].filter((el): el is HTMLElement => el instanceof HTMLElement),
+    repeat() {
+      if (!state || state.done) return;
+      // The word stays out of a repeat, the same as the 15 s nudge: the child needs the order.
+      if (spoken) options.voice.say(repeatSpeech(spoken));
+      idle.poke();
+    },
     destroy() {
       reset();
       for (const el of [landedLayer, targetLayer, hintEl, flightLayer]) el.remove();

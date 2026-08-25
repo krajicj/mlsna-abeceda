@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { countItemOf, MAX_COUNT } from './counting';
+import { createTrack } from './mastery';
+import { itemResult } from './progress';
 import { createRng } from './rng';
-import { createSave, type StorageLike } from './save';
+import { createSave, parseSave, type SaveData, type StorageLike } from './save';
 import { createSession } from './session';
 import { SAVE_KEY } from './version';
 
@@ -17,6 +19,18 @@ function memoryStorage(initial?: unknown): StorageLike & { readonly writes: stri
       map.set(key, value);
     },
     removeItem: (key) => void map.delete(key),
+  };
+}
+
+/** A track with exactly two elements, so "not the same one twice in a row" has a real choice. */
+function twoElementSave(): SaveData {
+  const base = createSave();
+  return {
+    ...base,
+    tracks: {
+      numbers: createTrack(1, ['2', '3']),
+      letters: createTrack(1, base.tracks.letters.active.slice(0, 2)),
+    },
   };
 }
 
@@ -40,12 +54,12 @@ describe('createSession', () => {
   });
 
   it('is reproducible with a seeded rng', () => {
-    const a = createSession(memoryStorage(), createRng(7));
-    const b = createSession(memoryStorage(), createRng(7));
+    const a = createSession(memoryStorage(), { rng: createRng(7) });
+    const b = createSession(memoryStorage(), { rng: createRng(7) });
     expect(a.order).toEqual(b.order);
   });
 
-  it('never writes to the storage', () => {
+  it('never writes to the storage before an order is finished', () => {
     const storage = memoryStorage();
     createSession(storage);
     expect(storage.writes).toEqual([]);
@@ -58,5 +72,87 @@ describe('createSession', () => {
     const session = createSession(storage);
     expect(session.order.index).toBe(1);
     expect(storage.writes).toEqual([]);
+  });
+});
+
+describe('session.complete', () => {
+  it('writes the record exactly once and hands back a new save', () => {
+    const storage = memoryStorage();
+    const session = createSession(storage);
+    const before = session.save;
+    session.complete([]);
+    expect(storage.writes).toEqual([SAVE_KEY]);
+    expect(session.save).not.toBe(before);
+    expect(session.save.progress).toEqual({
+      ordersCompleted: 1,
+      stars: 1,
+      lastPlayed: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) as unknown as string,
+    });
+    expect(parseSave(storage.getItem(SAVE_KEY))?.progress.stars).toBe(1);
+  });
+
+  it('scores the item of the order it is told about', () => {
+    const storage = memoryStorage();
+    const session = createSession(storage, { rng: createRng(11) });
+    const item = session.order.items[0]!;
+    session.complete([itemResult(item, 'first-try')]);
+    const element = countItemOf({ index: 1, items: [item] })?.amount;
+    expect(session.save.tracks.numbers.scores[String(element)]).toBe(1);
+  });
+
+  it('moves on to the next position in the session', () => {
+    const session = createSession(memoryStorage());
+    const next = session.complete([]);
+    expect(next.index).toBe(2);
+    expect(session.order).toBe(next);
+    expect(next.index).toBe(session.save.progress.ordersCompleted + 1);
+    expect(session.complete([]).index).toBe(3);
+  });
+
+  it('does not ask for the same element or the same fruit twice in a row', () => {
+    for (let seed = 1; seed <= 20; seed += 1) {
+      const session = createSession(memoryStorage(twoElementSave()), { rng: createRng(seed) });
+      const first = session.order.items[0]!;
+      // Position 1 is counting, 2 is a letter, 3 is a digit – so compare over the numbers track.
+      session.complete([]);
+      session.complete([]);
+      const third = session.order.items[0]!;
+      expect(first.type).toBe('count');
+      expect(third.type).toBe('digit');
+      if (first.type !== 'count' || third.type !== 'digit') continue;
+      expect(String(third.value)).not.toBe(String(first.amount));
+    }
+  });
+
+  it('avoids the fruit of the last counting order', () => {
+    // Counting comes back only every fourth order (1 count, 2 letter, 3 digit, 4 letter, 5 count),
+    // so the fruit is remembered across the orders in between.
+    const session = createSession(memoryStorage(), { rng: createRng(5) });
+    const first = countItemOf(session.order);
+    for (let round = 0; round < 4; round += 1) session.complete([]);
+    const fifth = countItemOf(session.order);
+    expect(first).not.toBeNull();
+    expect(fifth).not.toBeNull();
+    expect(fifth!.fruit).not.toBe(first!.fruit);
+  });
+
+  it('stamps the day from the injected clock', () => {
+    const session = createSession(memoryStorage(), { now: () => new Date(2026, 0, 9, 20, 30) });
+    session.complete([]);
+    expect(session.save.progress.lastPlayed).toBe('2026-01-09');
+  });
+
+  it('keeps the loop running when the storage refuses to write', () => {
+    const storage: StorageLike = {
+      getItem: () => null,
+      setItem: () => {
+        throw new Error('quota');
+      },
+      removeItem: () => undefined,
+    };
+    const session = createSession(storage);
+    const next = session.complete([]);
+    expect(next.index).toBe(2);
+    expect(session.save.progress.ordersCompleted).toBe(1);
   });
 });

@@ -75,6 +75,12 @@ zvoneček → přijde zákazník → řekne objednávku (hlas + obrázky v bubli
 
 - **Zvoneček** na pultu přivolá dalšího zákazníka. Dítě řídí tempo; bez klepnutí se nic neděje.
 - Jedna objednávka = 1–3 položky (kap. 5.3). Pořadí plnění je volné; bublina odškrtává hotové.
+- **Bublina ukazuje druh věci, nikdy odpověď.** Ovoce ano i s počtem (kolik, to stejně říkají
+  kolečka nad výrobkem), ale perníček a svíčka jsou v bublině **prázdné** – které písmenko nebo
+  číslice se chce, nese jen hlas a police. S písmenkem nakresleným v bublině by úloha „najdi ká,
+  které slyšíš“ byla „najdi stejný obrázek“ a dítě by splnilo celou hru bez jediného písmene
+  (kap. 5.4). Výjimka je až **vzor u skládání slov (P3)** – tam se učí pořadí písmen, ne poznávání,
+  a i ten vzor později zmizí (kap. 5.1).
 - Výrobek se staví uprostřed pultu; položky na něj přilétají z polic (písmenka, číslice)
   a z misky na pultu (ovoce – kvůli velikosti terčů, viz STEP-04). **Terčem je celá miska**,
   ne jednotlivý kus ovoce: dítě klepne kamkoli na misku a jeden kus (ten nejbližší) vyletí.
@@ -149,7 +155,12 @@ Generátor objednávek si bere položky z obou drah podle toho, kde zrovna kter�
 ### 5.4 Adaptivní výběr
 
 Každé písmeno a číslo má **skóre zvládnutí** 0–5:
-- správně na první pokus +1, po chybě −1 (ne pod 0).
+- správně na první pokus +1, po chybě −1 (ne pod 0, ne nad 5).
+- Co se počítá jako chyba: špatný perníček nebo svíčka **a taky přepočítání** (klepnutí navíc na
+  přiklopenou misku – dítě neví, kdy přestat). Samotná **nápověda** po 40 s je mírnější: bod
+  nepřidá, ale ani nebere.
+- Skóre se zapisuje **až když je celá objednávka hotová** (spolu s hvězdičkou), ne po jednotlivé
+  položce – klepnutí navíc během finále se tak do skóre ještě vejde.
 - Nové prvky se zavádějí, když ≥ 80 % aktuální sady má skóre ≥ 3, vždy jeden nový.
   Nový prvek se objeví nejpozději do 2 objednávek od zavedení.
 - Výběr z „pytlíku“: prvky se skóre < 3 mají 3× vyšší váhu; nic se neopakuje dvakrát za sebou.
@@ -176,9 +187,11 @@ Chyba nikdy nezastaví hru a nikdy nezní jako výtka.
   zacinkají – signál „stop“. Když dítě přesto klepne na misku, víčko se zahoupá, kolečka
   poskočí a vypravěč řekne „Už máme tři jahody, to stačí!“ (s druhem ovoce – bez něj by
   u jedničky nesedělo skloňování, klip je proto na každý druh zvlášť) – ovoce už
-  z přiklopené misky ven nejde.
+  z přiklopené misky ven nejde. Do skóre se přepočítání počítá jako chyba
+  (−1, viz 5.4); pro dítě to ale zůstává jen mírná poznámka, nikde se to neukazuje.
 - **Nečinnost 15 s:** vypravěč zopakuje položku, položka v bublině zabliká.
-- **Nečinnost 40 s:** nápověda (cíl se rozsvítí). Nikdy nic neudělá za dítě.
+- **Nečinnost 40 s:** nápověda (cíl se rozsvítí). Nikdy nic neudělá za dítě. Skóre nemění –
+  položka splněná po nápovědě zůstane na svém (5.4).
 
 ### 5.6 Obsah
 

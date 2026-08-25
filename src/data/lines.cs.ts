@@ -166,6 +166,16 @@ const PRAISE: Readonly<Record<PraiseGender, readonly string[]>> = {
   ],
 };
 
+/** The order is done (návrh kap. 4): the finale of the cake, before the star flies. */
+const FINISH: readonly string[] = ['Hotovo!', 'A je to!', 'Dortík je hotový!'];
+
+/** The reward lands in the counter (návrh kap. 7). */
+const STAR: readonly string[] = ['Máš hvězdičku!', 'Hvězdička je tvoje!'];
+
+/** The portrait overlay of `stage/orientation.ts` – a picture plus this one sentence (rule 1). */
+export const TURN_LINE = 'guard.turn';
+const TURN_TEXT = 'Otoč mě!';
+
 /**
  * Five sample sentences for the casting (návrh kap. 8): they are never generated together with
  * LINES, only under `--casting`, and they cover an order, a praise, a correction, the stop of
@@ -249,6 +259,14 @@ export function praiseLines(gender: PraiseGender): readonly string[] {
   return PRAISE[gender].map((_, index) => `praise.${gender}.${index + 1}`);
 }
 
+export function finishLines(): readonly string[] {
+  return FINISH.map((_, index) => `finish.${index + 1}`);
+}
+
+export function starLines(): readonly string[] {
+  return STAR.map((_, index) => `star.${index + 1}`);
+}
+
 const lines: Line[] = [];
 const ids = new Set<string>();
 
@@ -304,6 +322,10 @@ for (const gender of ['neutral', 'female', 'male'] as const) {
   const texts = PRAISE[gender];
   for (const [index, text] of texts.entries()) add(`praise.${gender}.${index + 1}`, text);
 }
+
+for (const [index, text] of FINISH.entries()) add(`finish.${index + 1}`, text);
+for (const [index, text] of STAR.entries()) add(`star.${index + 1}`, text);
+add(TURN_LINE, TURN_TEXT);
 
 export const LINES: readonly Line[] = lines;
 

@@ -5,6 +5,15 @@ import {
   BOWL_FRONT_FRUIT_HEIGHT,
   BOWL_FRUIT_CENTER_Y,
   BOWL_RIM_Y,
+  BUBBLE_CONTENT_X,
+  BUBBLE_HEIGHT,
+  BUBBLE_ITEM_GAP,
+  BUBBLE_ITEM_HEIGHT,
+  BUBBLE_ITEM_WIDTH,
+  BUBBLE_MAX_ITEMS,
+  BUBBLE_PADDING,
+  BUBBLE_SPEAKER,
+  BUBBLE_WIDTH,
   CAKE_COOKIE_CENTER_Y,
   CAKE_FRUIT_HEIGHT,
   CAKE_TOP_CENTER_X,
@@ -26,7 +35,12 @@ import {
   SHELF_GAP,
   SHELF_HIT_WIDTH,
   SHELF_ITEM_WIDTH,
+  STARS_PILL_HEIGHT,
+  STARS_PILL_WIDTH,
+  STAR_SIZE,
   bowlFruitSpots,
+  bubbleSlots,
+  bubbleSpeakerSlot,
   cakeCandleSlot,
   cakeCookieSlot,
   cakeFruitSlots,
@@ -38,6 +52,7 @@ import {
   pillSlots,
   shelfHitSlots,
   shelfSlots,
+  starSlot,
 } from './layout';
 import { CANDLE_HEIGHT, CANDLE_WIDTH } from './candle';
 import { COOKIE_SIZE } from './cookie';
@@ -111,6 +126,116 @@ describe('kitchenLayout', () => {
   it('matches the worked example from the step plan', () => {
     expect(kitchenLayout(1024).cake).toEqual({ x: 332, y: 384, width: 220, height: 146 });
     expect(kitchenLayout(1024).shelfLetters).toEqual({ x: 562, y: 252, width: 448, height: 112 });
+    expect(kitchenLayout(1024).bubble).toEqual({ x: 60, y: 28, width: 480, height: 124 });
+    expect(kitchenLayout(1024).stars).toEqual({ x: 848, y: 10, width: 160, height: 64 });
+    expect(kitchenLayout(1366).stars).toEqual({ x: 1190, y: 10, width: 160, height: 64 });
+  });
+
+  it('hangs the bubble in the same place whatever the stage width', () => {
+    for (const width of WIDTHS)
+      expect(kitchenLayout(width).bubble).toEqual(kitchenLayout(1024).bubble);
+  });
+
+  it('keeps the star counter clear of the digit shelf', () => {
+    for (const width of WIDTHS) {
+      const { stars, shelfDigits } = kitchenLayout(width);
+      expect(stars.y + stars.height).toBeLessThanOrEqual(shelfDigits.y - 8);
+      expect(stars.x + stars.width).toBeLessThanOrEqual(width);
+    }
+  });
+
+  it('leaves the digit shelf room next to the bubble', () => {
+    for (const width of WIDTHS) {
+      const { bubble, shelfDigits } = kitchenLayout(width);
+      expect(bubble.x + bubble.width).toBeLessThanOrEqual(shelfDigits.x - 8);
+    }
+  });
+});
+
+describe('bubbleSlots', () => {
+  const bubble = kitchenLayout(1024).bubble;
+
+  it('is empty for a count of zero or less', () => {
+    expect(bubbleSlots(bubble, 0)).toEqual([]);
+    expect(bubbleSlots(bubble, -2)).toEqual([]);
+  });
+
+  it('never shows more pictures than the card holds', () => {
+    expect(bubbleSlots(bubble, 9)).toHaveLength(BUBBLE_MAX_ITEMS);
+  });
+
+  it('matches the worked example from the step plan', () => {
+    expect(bubbleSlots(bubble, 1)).toEqual([{ x: 272, y: 46, width: 116, height: 88 }]);
+    expect(bubbleSlots(bubble, 2).map((slot) => slot.x)).toEqual([208, 336]);
+    expect(bubbleSlots(bubble, 3).map((slot) => slot.x)).toEqual([144, 272, 400]);
+  });
+
+  it('centres the row between the speaker and the right padding', () => {
+    for (let count = 1; count <= BUBBLE_MAX_ITEMS; count += 1) {
+      const slots = bubbleSlots(bubble, count);
+      const first = slots[0]!;
+      const last = slots[slots.length - 1]!;
+      const leftGap = first.x - (bubble.x + BUBBLE_CONTENT_X);
+      const rightGap = bubble.x + bubble.width - BUBBLE_PADDING - (last.x + last.width);
+      expect(Math.abs(leftGap - rightGap)).toBeLessThanOrEqual(1);
+      expect(leftGap).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('keeps every picture inside the card', () => {
+    for (const slot of bubbleSlots(bubble, BUBBLE_MAX_ITEMS)) {
+      expect(slot.x).toBeGreaterThanOrEqual(bubble.x);
+      expect(slot.x + slot.width).toBeLessThanOrEqual(bubble.x + bubble.width);
+      expect(slot.y).toBeGreaterThanOrEqual(bubble.y);
+      expect(slot.y + slot.height).toBeLessThanOrEqual(bubble.y + bubble.height);
+    }
+  });
+
+  it('leaves the gap the constants promise between two pictures', () => {
+    const [first, second] = bubbleSlots(bubble, 2);
+    expect(second!.x - (first!.x + first!.width)).toBe(BUBBLE_ITEM_GAP);
+    expect(first!.width).toBe(BUBBLE_ITEM_WIDTH);
+    expect(first!.height).toBe(BUBBLE_ITEM_HEIGHT);
+  });
+});
+
+describe('bubbleSpeakerSlot', () => {
+  const bubble = kitchenLayout(1024).bubble;
+
+  it('matches the worked example from the step plan', () => {
+    expect(bubbleSpeakerSlot(bubble)).toEqual({ x: 80, y: 68, width: 44, height: 44 });
+  });
+
+  it('sits inside the card, left of the first picture', () => {
+    const speaker = bubbleSpeakerSlot(bubble);
+    expect(speaker.x).toBeGreaterThanOrEqual(bubble.x);
+    expect(speaker.y).toBeGreaterThanOrEqual(bubble.y);
+    expect(speaker.y + speaker.height).toBeLessThanOrEqual(bubble.y + bubble.height);
+    expect(speaker.x + speaker.width).toBeLessThanOrEqual(bubbleSlots(bubble, 3)[0]!.x);
+    expect(speaker.width).toBe(BUBBLE_SPEAKER);
+  });
+
+  it('makes the whole card the target, far over the 88 px of rule 3', () => {
+    expect(Math.min(BUBBLE_WIDTH, BUBBLE_HEIGHT)).toBeGreaterThanOrEqual(MIN_TARGET);
+  });
+});
+
+describe('starSlot', () => {
+  const stars = kitchenLayout(1024).stars;
+
+  it('matches the worked example from the step plan', () => {
+    expect(starSlot(stars)).toEqual({ x: 864, y: 22, width: 40, height: 40 });
+  });
+
+  it('lands inside the counter', () => {
+    const slot = starSlot(stars);
+    expect(slot.x).toBeGreaterThanOrEqual(stars.x);
+    expect(slot.y).toBeGreaterThanOrEqual(stars.y);
+    expect(slot.x + slot.width).toBeLessThanOrEqual(stars.x + stars.width);
+    expect(slot.y + slot.height).toBeLessThanOrEqual(stars.y + stars.height);
+    expect(slot.width).toBe(STAR_SIZE);
+    expect(stars.width).toBe(STARS_PILL_WIDTH);
+    expect(stars.height).toBe(STARS_PILL_HEIGHT);
   });
 });
 

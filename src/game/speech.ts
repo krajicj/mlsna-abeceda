@@ -8,6 +8,7 @@ import type { FruitKind } from '../data/curriculum';
 import {
   countAloudLine,
   countEnoughLine,
+  finishLines,
   hintLine,
   letterWordLine,
   orderCountLine,
@@ -15,6 +16,7 @@ import {
   orderLetterLine,
   praiseLines,
   seekLine,
+  starLines,
   wrongLine,
   type PraiseGender,
 } from '../data/lines.cs';
@@ -72,7 +74,7 @@ export function hintSpeech(target: string): readonly string[] {
 /**
  * Everything this order can possibly need, so the clips are on the device before the child taps:
  * the order itself, counting up to the target, "to stačí", the corrections for every piece on the
- * shelf and the whole set of praises.
+ * shelf, the whole set of praises and the two sets the finale draws from (STEP-09).
  */
 export function orderPreload(order: Order, gender: PraiseGender = 'neutral'): readonly string[] {
   const ids = new Set<string>();
@@ -89,27 +91,46 @@ export function orderPreload(order: Order, gender: PraiseGender = 'neutral'): re
     for (const choice of item.choices) ids.add(wrongLine(String(choice)));
   }
   for (const id of praiseLines(gender)) ids.add(id);
+  for (const id of finishLines()) ids.add(id);
+  for (const id of starLines()) ids.add(id);
   return [...ids];
 }
 
-export interface PraisePicker {
-  /** Never the same one twice in a row (unless there is only one praise to give). */
+export interface LinePicker {
+  /** Never the same one twice in a row (unless there is only one line to pick from). */
   next(): readonly string[];
+}
+
+/** The kitchen items were written against this name; a praise picker is just a line picker. */
+export type PraisePicker = LinePicker;
+
+/** One sentence out of a set, never the same one twice running. An empty set stays silent. */
+export function createLinePicker(ids: readonly string[], rng: Rng = systemRng): LinePicker {
+  let last: string | null = null;
+  return {
+    next() {
+      if (ids.length === 0) return [];
+      const pool = ids.filter((id) => id !== last);
+      const id = pick(rng, pool.length > 0 ? pool : ids);
+      last = id;
+      return [id];
+    },
+  };
 }
 
 export function createPraisePicker(options?: {
   readonly gender?: PraiseGender;
   readonly rng?: Rng;
-}): PraisePicker {
-  const all = praiseLines(options?.gender ?? 'neutral');
-  const rng = options?.rng ?? systemRng;
-  let last: string | null = null;
-  return {
-    next() {
-      const pool = all.filter((id) => id !== last);
-      const id = pick(rng, pool.length > 0 ? pool : all);
-      last = id;
-      return [id];
-    },
-  };
+}): LinePicker {
+  return createLinePicker(praiseLines(options?.gender ?? 'neutral'), options?.rng ?? systemRng);
+}
+
+/** "Hotovo!" – the order is finished, said while the glaze runs over the cake. */
+export function createFinishPicker(options?: { readonly rng?: Rng }): LinePicker {
+  return createLinePicker(finishLines(), options?.rng ?? systemRng);
+}
+
+/** "Máš hvězdičku!" – said while the star flies into the counter. */
+export function createStarPicker(options?: { readonly rng?: Rng }): LinePicker {
+  return createLinePicker(starLines(), options?.rng ?? systemRng);
 }
