@@ -4,7 +4,8 @@ export interface OrientationGuard {
 }
 
 // A phone that tips from portrait to landscape. No text – the player cannot read (rule 1).
-// TODO STEP-07: play the "Otoč mě!" voice line while the overlay is up.
+// TODO: play an "Otoč mě!" line while the overlay is up – it is not in the manifest yet, so it
+// waits for the next generator run (STEP-10 at the earliest).
 const PHONE_SVG = `
 <svg class="rotate-phone" viewBox="0 0 200 200" width="200" height="200" aria-hidden="true"
      fill="none" stroke="#3B2A1A" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">

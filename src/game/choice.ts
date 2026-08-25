@@ -93,7 +93,7 @@ export function revealChoice(state: ChoiceState): ChoiceState {
   return { ...state, revealed: true };
 }
 
-/** No mistake and no hint → STEP-08 adds a mastery point. */
+/** No mistake and no hint → STEP-09 adds a mastery point. */
 export function isFirstTry(state: ChoiceState): boolean {
   return state.mistakes === 0 && !state.revealed;
 }

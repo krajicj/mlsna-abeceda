@@ -13,6 +13,7 @@ import {
 } from '../../game/choice';
 import { countItemOf, type CountingState } from '../../game/counting';
 import { letterWord } from '../../game/curriculum';
+import { createPraisePicker } from '../../game/speech';
 import type { Scene } from '../../stage/scenes';
 import { createChoiceItem } from './choice-item';
 import { createCountItem } from './count-item';
@@ -25,7 +26,7 @@ interface KitchenDevHandle {
   digit(value: number, choices?: readonly number[]): void;
   /** Replays the counting item with any amount and kind, whatever the order says. */
   count(amount: number, kind?: FruitKind): void;
-  /** An order without a playable item (STEP-08 onwards): the kitchen goes static. */
+  /** An order without a playable item (STEP-09 onwards): the kitchen goes static. */
   clear(): void;
   state(): CountingState | null;
   choice(): ChoiceState | null;
@@ -64,7 +65,17 @@ export const kitchenScene: Scene = (ctx) => {
   }
 
   const tracks = ctx.session.save.tracks;
-  const countItem = createCountItem({ root: el, bowl: bowlEl, audio: ctx.audio });
+  // One picker for the whole scene, so two praises in a row are never the same one – whichever
+  // item earned them. The gender comes from the settings in STEP-17; until then everyone is
+  // praised neutrally.
+  const praise = createPraisePicker();
+  const countItem = createCountItem({
+    root: el,
+    bowl: bowlEl,
+    audio: ctx.audio,
+    voice: ctx.voice,
+    praise,
+  });
   const choiceItem = createChoiceItem({
     root: el,
     shelves: { digits: digitShelf, letters: letterShelf },
@@ -74,6 +85,8 @@ export const kitchenScene: Scene = (ctx) => {
       letters: shelfDecoration(tracks.letters),
     },
     audio: ctx.audio,
+    voice: ctx.voice,
+    praise,
   });
 
   let layout = kitchenLayout(0);
@@ -131,6 +144,7 @@ export const kitchenScene: Scene = (ctx) => {
       countItem.start(amount, kind ?? countOrder?.fruit ?? 'strawberry');
     },
     clear() {
+      ctx.voice.stop();
       countItem.clear();
       choiceItem.clear();
     },
@@ -154,6 +168,8 @@ export const kitchenScene: Scene = (ctx) => {
       choiceItem.layout(layout);
     },
     destroy() {
+      // The scene does not own the narrator, but nothing it started may outlive it.
+      ctx.voice.stop();
       countItem.destroy();
       choiceItem.destroy();
       // Leave the handle alone when a newer kitchen has already claimed it (crossfade order).

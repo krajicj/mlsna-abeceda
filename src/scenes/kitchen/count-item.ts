@@ -6,6 +6,7 @@
  */
 import type { AudioEngine } from '../../audio/context';
 import { playCue } from '../../audio/tones';
+import type { VoicePlayer } from '../../audio/voice';
 import { fruitBowl } from '../../art/bowl';
 import { fruit } from '../../art/fruit';
 import { hintRing } from '../../art/hint';
@@ -25,6 +26,14 @@ import { countPill } from '../../art/pill';
 import type { FruitKind } from '../../data/curriculum';
 import { addFruit, createCounting, type CountingState } from '../../game/counting';
 import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
+import type { OrderItem } from '../../game/orders';
+import {
+  countSpeech,
+  enoughSpeech,
+  orderSpeech,
+  repeatSpeech,
+  type PraisePicker,
+} from '../../game/speech';
 import { createMotion, layer, place, prefersReducedMotion } from './dom';
 
 const FLIGHT_MS = 420;
@@ -33,11 +42,22 @@ const LID_DELAY_MS = 250;
 const BLINK_MS = 960;
 const BOUNCE_MS = 260;
 const POP_MS = 260;
+/** A beat before the order is spoken, so the sentence does not start over the scene fading in. */
+const SPEAK_DELAY_MS = 350;
+/** From the last piece landing to the praise – long enough for "Tři." to be out of the way. */
+const PRAISE_DELAY_MS = 900;
+/** The praise waits for a line that is still running instead of cutting it in half. */
+const PRAISE_RETRY_MS = 250;
+/** …but not forever: after this much waiting it is said anyway (rule 2 – it is never dropped). */
+const PRAISE_MAX_WAITS = 16;
+
+/** What the narrator was asked to order – the amount is the clamped one, not the raw input. */
+type CountOrder = Extract<OrderItem, { readonly type: 'count' }>;
 
 export interface CountItemHandle {
   /** Starts the item over: `amount` pieces of `kind`, empty cake, open bowl. */
   start(amount: number, kind: FruitKind): void;
-  /** No counting item in this order (STEP-08 onwards): the kitchen goes back to being a picture. */
+  /** No counting item in this order (STEP-09 onwards): the kitchen goes back to being a picture. */
   clear(): void;
   /** Called after every stage resize; re-places everything from the new layout. */
   layout(layout: KitchenLayout): void;
@@ -53,6 +73,8 @@ export function createCountItem(options: {
   readonly root: HTMLElement;
   readonly bowl: HTMLElement;
   readonly audio: AudioEngine;
+  readonly voice: VoicePlayer;
+  readonly praise: PraisePicker;
 }): CountItemHandle {
   const cakeFruitLayer = layer('count-fruit');
   const pillLayer = layer('count-pills');
@@ -82,12 +104,61 @@ export function createCountItem(options: {
   let kind: FruitKind = 'strawberry';
   let landed: HTMLDivElement[] = [];
   let pills: HTMLDivElement[] = [];
+  let spoken: CountOrder | null = null;
+  /** Own handle: the praise has to be postponed on its own, `motion.after()` cancels everything. */
+  let praiseTimer: number | null = null;
+  let praiseWaits = 0;
+
+  function speakOrder(): void {
+    const item = spoken;
+    if (!item) return;
+    motion.after(SPEAK_DELAY_MS, () => options.voice.say(orderSpeech(item)));
+  }
+
+  /** The nudge and the hint both repeat the order – there is no "tap the bowl" clip to play. */
+  function repeatOrder(): void {
+    if (spoken) options.voice.say(repeatSpeech(spoken));
+  }
+
+  function clearPraise(): void {
+    if (praiseTimer !== null) window.clearTimeout(praiseTimer);
+    praiseTimer = null;
+  }
+
+  function armPraise(delayMs: number): void {
+    clearPraise();
+    praiseTimer = window.setTimeout(() => {
+      praiseTimer = null;
+      // "Už máme tři jahody, to stačí!" must finish first; the praise only moves back, it is
+      // never dropped – and the waiting is capped so a stuck line cannot swallow it either.
+      if (options.voice.speaking && praiseWaits < PRAISE_MAX_WAITS) {
+        praiseWaits += 1;
+        armPraise(PRAISE_RETRY_MS);
+        return;
+      }
+      options.voice.say(options.praise.next());
+    }, delayMs);
+  }
 
   /**
    * One watcher per item: `stop()` is final by design (the item is over and nothing may nudge the
    * child any more), so starting the next item builds a fresh one.
    */
-  let idle: IdleWatcher = createIdleWatcher({ onRemind: blinkPills, onHint: showHint });
+  let idle: IdleWatcher = watcher();
+
+  function watcher(): IdleWatcher {
+    return createIdleWatcher({
+      onRemind: () => {
+        blinkPills();
+        repeatOrder();
+      },
+      onHint: () => {
+        if (state === null || state.done) return;
+        showHint();
+        repeatOrder();
+      },
+    });
+  }
 
   function renderPill(index: number): void {
     const pill = pills[index];
@@ -324,6 +395,11 @@ export function createCountItem(options: {
     if (step.result === 'too-many') {
       wobbleLid();
       playCue(options.audio, 'nope');
+      options.voice.say(enoughSpeech(state.target, kind));
+      if (praiseTimer !== null) {
+        praiseWaits = 0;
+        armPraise(PRAISE_DELAY_MS); // the praise waits for "to stačí" and comes after it
+      }
       return; // the watcher stopped when the item was finished – nothing left to remind about
     }
     const completed = step.result === 'completed';
@@ -337,13 +413,18 @@ export function createCountItem(options: {
     fly(source, placedIndex, () => {
       land(placedIndex);
       playCue(options.audio, 'pling', { step: placedIndex });
-      if (completed) motion.after(LID_DELAY_MS, closeLid);
+      options.voice.say(countSpeech(placedIndex + 1));
+      if (!completed) return;
+      motion.after(LID_DELAY_MS, closeLid);
+      praiseWaits = 0;
+      armPraise(PRAISE_DELAY_MS);
     });
   }
 
   function reset(): void {
     motion.cancelAll();
     idle.stop();
+    clearPraise();
     landed = [];
     options.bowl.classList.remove('is-covered');
     cakeFruitLayer.replaceChildren();
@@ -357,15 +438,18 @@ export function createCountItem(options: {
       reset();
       state = createCounting(amount);
       kind = nextKind;
+      spoken = { type: 'count', fruit: kind, amount: state.target };
       options.bowl.innerHTML = fruitBowl({ kind });
       drawPills();
       placeAll();
-      idle = createIdleWatcher({ onRemind: blinkPills, onHint: showHint });
+      idle = watcher();
       idle.poke();
+      speakOrder();
     },
     clear() {
       reset();
       state = null;
+      spoken = null;
       kind = 'strawberry';
       options.bowl.innerHTML = fruitBowl();
       drawPills();

@@ -25,7 +25,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-05 | [Položka „počítání“: miska → výrobek, kolečka, přepočítání, nečinnost (zatím bez hlasu)](steps/STEP-05-counting-item.md) | M1 | 03, 04 | done |
 | STEP-06 | [Položky „písmenko“ a „číslice“: výběr z police, chyba, nápověda](steps/STEP-06-letter-and-digit-items.md) | M1 | 05 | done |
 | STEP-07 | [Hlas: manifest hlášek, generátor z ElevenLabs, casting](steps/STEP-07-voice-manifest-and-generator.md) | M1 | 03 | done |
-| STEP-08 | Hlas ve hře: fronta přehrávání, napojení kuchyně (objednávka, počítání nahlas, pochvala, oprava, nápověda) | M1 | 05, 06, 07 | — |
+| STEP-08 | [Hlas ve hře: fronta přehrávání, napojení kuchyně (objednávka, počítání nahlas, pochvala, oprava, nápověda)](steps/STEP-08-voice-playback-and-kitchen.md) | M1 | 05, 06, 07 | done |
 | STEP-09 | Dokončení objednávky: bublina s objednávkou, zákazník jí, hvězdička, jedna celá smyčka | M1 | 06, 08 | — |
 | STEP-10 | Zvoneček, tři zákazníci a jejich repliky (+ efekty z ElevenLabs Sound Effects) | M2 | 09 | — |
 | STEP-11 | Generátor: délka objednávky, stupně Č2/P2, adaptivní výběr, distraktory | M2 | 09 | — |
@@ -58,6 +58,13 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   **Free tarif nestačí** – hlasy z Voice Library přes API nepustí (HTTP 402); casting
   i generování potřebují Starter. Klíč zůstává v `~/.config/mlsna-abeceda/elevenlabs.env`
   (v repu na něj vede gitignorovaný symlink `elevenlabs.env`).
+- **Placeholder tóny zůstávají.** Původně je měl STEP-08 smazat; autor rozhodl (srpen 2026),
+  že syntetické tóny (`audio/tones.ts`) i úvodní cinknutí (`audio/chime.ts`) zůstanou jako
+  okamžitá odezva na dotyk a hlas se k nim jen přidá. Nahradí je MP3 efekty ve **STEP-10**.
+- **Přečíslování se propsalo i do komentářů v kódu.** Při STEP-08 jsem srovnal odkazy, které po
+  posunu o jedno ukazovaly na špatný krok (rodičovský koutek je 17, ne 16; „Kolik je" 21, ne 20;
+  diakritika 25, ne 24). Hláška „Otoč mě!" k overlay orientace v manifestu není – čeká na další
+  generovací běh (nejdřív STEP-10).
 - Kroky se stejným „Po“ (např. 13/14/15, 03/04) jdou dělat nezávisle na sobě.
 - **STEP-09** dostane navíc krátkou „dopékací“ pointu při dokončení objednávky (patro nebo
   poleva na výrobku, cinknutí trouby, konfety) – domluveno s autorem jako levná náhrada za

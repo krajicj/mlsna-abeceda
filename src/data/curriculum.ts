@@ -4,7 +4,7 @@
  */
 import type { FamilyRole } from '../game/settings';
 
-/** The 22 base letters the game teaches. Diacritics (Š, Č, …) only from stage P4 – STEP-24. */
+/** The 22 base letters the game teaches. Diacritics (Š, Č, …) only from stage P4 – STEP-25. */
 export const BASE_LETTERS = [
   'A',
   'B',

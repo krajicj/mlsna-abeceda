@@ -72,7 +72,7 @@ export function letterPool(settings: Settings, level: Level): Letter[] {
       return order.slice(0, Math.max(LEVEL2_MIN_LETTERS, personalLetters(settings).length));
     case 3:
     case 4:
-      // P4 adds the diacritics of the child's name on top of these – STEP-24.
+      // P4 adds the diacritics of the child's name on top of these – STEP-25.
       return order.slice(0, LEVEL3_LETTERS);
     case 5:
       return order;

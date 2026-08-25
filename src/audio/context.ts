@@ -14,14 +14,14 @@ export interface AudioEngine {
   readonly unlocked: boolean;
   /** null until unlock() succeeds. */
   readonly context: AudioContext | null;
-  /** Master gain – voice, sfx and music buses connect here in STEP-07. */
+  /** Master gain – the voice bus hangs here (STEP-08), sfx and music follow in STEP-10. */
   readonly master: GainNode | null;
   readonly masterVolume: number;
   /** Call from a user-gesture handler. Idempotent, never rejects; false = still silent. */
   unlock(): Promise<boolean>;
   /**
    * 0..1; remembered and applied when the context appears. Scaffolding for the volume sliders
-   * in STEP-16 – nothing in STEP-02 calls it except the manual check.
+   * in STEP-17 – nothing calls it yet except the manual check.
    */
   setMasterVolume(volume: number): void;
   destroy(): void;

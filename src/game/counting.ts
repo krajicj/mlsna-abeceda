@@ -5,14 +5,14 @@
  */
 import type { Order, OrderItem } from './orders';
 
-/** Č1 counts to 5; Č2 (to 10) needs a second row on the cake – STEP-20. */
+/** Č1 counts to 5; Č2 (to 10) needs a second row on the cake – STEP-21. */
 export const MAX_COUNT = 5;
 
 export interface CountingState {
   /** 1…MAX_COUNT. */
   readonly target: number;
   readonly placed: number;
-  /** Taps after the target was reached (recounting); STEP-08 turns those into a score. */
+  /** Taps after the target was reached (recounting); STEP-09 turns those into a score. */
   readonly extraTaps: number;
   readonly done: boolean;
 }
@@ -43,7 +43,7 @@ export function addFruit(state: CountingState): {
 }
 
 /**
- * The first `count` item of an order, or `null`. From STEP-08 on, when `ordersCompleted` starts to
+ * The first `count` item of an order, or `null`. From STEP-09 on, when `ordersCompleted` starts to
  * grow, an order can hold only a letter or a digit – the kitchen then stays static. A pure
  * function so that branch can be tested without a DOM.
  */

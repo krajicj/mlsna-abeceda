@@ -33,7 +33,7 @@ a napojení kuchyně dělá STEP-08 (plán zatím není).
 **Mimo rozsah**
 
 - Přehrávání ve hře: `src/audio/voice.ts`, fronta, přerušení dotykem, napojení kuchyně,
-  odstranění `tones.ts` → STEP-08.
+  odstranění `tones.ts` → původně STEP-08, po rozhodnutí autora až STEP-10 (viz dodatek na konci).
 - Zvukové efekty (ElevenLabs Sound Effects: zvoneček, „mňam“, cvak foťáku) → STEP-10 se zákazníky;
   generátor se ale navrhne tak, aby druhý manifest šel přidat bez přepisu.
 - Klipy se jmény (`personal.json`, `--names`) → STEP-18. V repozitáři nesmí být žádné jméno.
@@ -467,3 +467,8 @@ mimo rozsah** tohohle kroku (chce portréty a ukázky, tedy vlastní krok).
   to nevadí.
 - STEP-08: `src/audio/voice.ts`, fronta, přerušení dotykem, napojení kuchyně a odstranění
   `src/audio/tones.ts`.
+
+**Dodatek (25. 8. 2026):** k odstranění `tones.ts` ve STEP-08 nedošlo – autor rozhodl, že
+syntetické tóny i úvodní cinknutí (`audio/chime.ts`) zůstanou jako okamžitá odezva na dotyk
+a hlas se k nim jen přidá. Nahradí je nahrané efekty ve **STEP-10**; viz
+[STEP-08](./STEP-08-voice-playback-and-kitchen.md) a poznámky v [plan.md](../plan.md).

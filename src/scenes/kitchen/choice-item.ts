@@ -8,6 +8,7 @@
  */
 import type { AudioEngine } from '../../audio/context';
 import { playCue } from '../../audio/tones';
+import type { VoicePlayer } from '../../audio/voice';
 import { candle } from '../../art/candle';
 import { cookie } from '../../art/cookie';
 import { hintRing } from '../../art/hint';
@@ -30,6 +31,13 @@ import {
   type ChoiceState,
 } from '../../game/choice';
 import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
+import {
+  correctionSpeech,
+  hintSpeech,
+  orderSpeech,
+  repeatSpeech,
+  type PraisePicker,
+} from '../../game/speech';
 import { createMotion, layer, place, prefersReducedMotion } from './dom';
 
 /** The ring is wider than the piece it points at: on a cookie of its own size it would land on
@@ -40,6 +48,8 @@ const SHAKE_MS = 360;
 const HOP_MS = 420;
 /** One wave of the bobbing offer, including the delay of the last piece (see style.css). */
 const BOB_MS = 1150;
+/** A beat before the order is spoken, so the sentence does not start over the scene fading in. */
+const SPEAK_DELAY_MS = 350;
 
 /** Which shelf a piece belongs on: digits are candles (top), letters are cookies (bottom). */
 type Shelf = 'digits' | 'letters';
@@ -68,6 +78,8 @@ export function createChoiceItem(options: {
   readonly shelves: { readonly digits: HTMLElement; readonly letters: HTMLElement };
   readonly decoration: { readonly digits: readonly string[]; readonly letters: readonly string[] };
   readonly audio: AudioEngine;
+  readonly voice: VoicePlayer;
+  readonly praise: PraisePicker;
 }): ChoiceItemHandle {
   const landedLayer = layer('choice-landed');
   const targetLayer = layer('choice-targets');
@@ -83,12 +95,36 @@ export function createChoiceItem(options: {
   let state: ChoiceState | null = null;
   let active: Shelf = 'letters';
   let targets: HTMLDivElement[] = [];
+  /** The item as the narrator got it – the word ("Ká jako kočka.") is only in here. */
+  let spoken: ChoiceItem | null = null;
+
+  function speakOrder(): void {
+    const item = spoken;
+    if (!item) return;
+    motion.after(SPEAK_DELAY_MS, () => options.voice.say(orderSpeech(item)));
+  }
 
   /**
    * One watcher per item: `stop()` is final by design (the item is over and nothing may nudge the
    * child any more), so starting the next item builds a fresh one.
    */
-  let idle: IdleWatcher = createIdleWatcher({ onRemind: bobOffer, onHint: () => reveal(false) });
+  let idle: IdleWatcher = watcher();
+
+  function watcher(): IdleWatcher {
+    return createIdleWatcher({
+      onRemind: () => {
+        bobOffer();
+        // The word stays out of the nudge: after 15 s the child needs the order, not the lesson.
+        if (spoken) options.voice.say(repeatSpeech(spoken));
+      },
+      onHint: () => {
+        if (!state || state.done) return;
+        const target = state.target;
+        reveal(false);
+        options.voice.say(hintSpeech(target));
+      },
+    });
+  }
 
   function shelfEl(shelf: Shelf): HTMLElement {
     return shelf === 'digits' ? options.shelves.digits : options.shelves.letters;
@@ -299,6 +335,9 @@ export function createChoiceItem(options: {
       playCue(options.audio, 'nope');
       idle.poke();
       if (state.revealed) reveal(true);
+      // Once the right piece is lit up, "Hledáme ká." would send the child looking for something
+      // they can already see – the hint sentence takes its place (speech.ts).
+      options.voice.say(correctionSpeech(state.target, value, state.revealed));
       return;
     }
     if (step.result !== 'correct') return;
@@ -310,6 +349,7 @@ export function createChoiceItem(options: {
     fly(index, () => {
       land();
       playCue(options.audio, 'done');
+      options.voice.say(options.praise.next());
     });
   }
 
@@ -330,17 +370,20 @@ export function createChoiceItem(options: {
     start(item) {
       reset();
       active = item.type === 'digit' ? 'digits' : 'letters';
+      spoken = item;
       state = createChoice(choiceTarget(item), choiceValues(item));
       drawShelf(active, state.choices);
       drawShelf(other(active), options.decoration[other(active)]);
       buildTargets(state.choices.length);
       placeAll();
-      idle = createIdleWatcher({ onRemind: bobOffer, onHint: () => reveal(false) });
+      idle = watcher();
       idle.poke();
+      speakOrder();
     },
     clear() {
       reset();
       state = null;
+      spoken = null;
       drawShelf('digits', options.decoration.digits);
       drawShelf('letters', options.decoration.letters);
       placeAll();

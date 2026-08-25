@@ -1,15 +1,22 @@
 import type { AudioEngine } from '../audio/context';
+import type { VoicePlayer } from '../audio/voice';
 import type { Session } from '../game/session';
 import type { StageSize } from './layout';
 import type { Stage } from './stage';
 
 export type SceneName = 'title' | 'kitchen';
 
-export interface SceneContext {
+/** What every scene is handed. Owned by main.ts – a scene never builds one of these itself. */
+export interface SceneDeps {
   readonly stage: Stage;
   readonly audio: AudioEngine;
+  /** The narrator; a scene may speak and stop it, but it lives longer than any scene. */
+  readonly voice: VoicePlayer;
   /** The saved game and the current order; scenes never touch localStorage themselves. */
   readonly session: Session;
+}
+
+export interface SceneContext extends SceneDeps {
   /** Switch scenes; a no-op for the current scene or while a transition runs. */
   go(name: SceneName): void;
 }
@@ -39,11 +46,10 @@ function prefersReducedMotion(): boolean {
 }
 
 export function createSceneManager(
-  stage: Stage,
-  audio: AudioEngine,
-  session: Session,
+  deps: SceneDeps,
   scenes: Readonly<Record<SceneName, Scene>>,
 ): SceneManager {
+  const stage = deps.stage;
   let current: SceneName | null = null;
   let active: SceneHandle | null = null;
   let transitioning = false;
@@ -58,7 +64,7 @@ export function createSceneManager(
     }
     if (name === current || transitioning) return;
 
-    const next = factory({ stage, audio, session, go });
+    const next = factory({ ...deps, go });
     next.el.classList.add('scene');
     stage.root.append(next.el);
     next.resize?.(stage.size);

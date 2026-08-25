@@ -1,7 +1,8 @@
 /**
- * Placeholder sound effects, synthesised so the counting item has feedback before the recorded
- * files arrive. STEP-07 brings `sfx.ts` (MP3 by id) and voice, and this module goes away – it
- * deliberately does not take that name. Silent while the engine is locked (rule 6).
+ * Placeholder sound effects, synthesised so every tap answers instantly. The voice (STEP-08) only
+ * speaks over them; the recorded effects arrive with `sfx.ts` (MP3 by id) in STEP-10 and this
+ * module goes away then – which is why it deliberately does not take that name. Silent while the
+ * engine is locked (rule 6).
  */
 import type { AudioEngine } from './context';
 

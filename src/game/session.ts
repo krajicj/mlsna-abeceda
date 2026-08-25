@@ -1,6 +1,6 @@
 /**
- * One playing session: the saved record plus the order the kitchen is currently filling. STEP-05
- * only reads – the save is written when an order is completed (STEP-08), so a session that is
+ * One playing session: the saved record plus the order the kitchen is currently filling. So far it
+ * only reads – the save is written when an order is completed (STEP-09), so a session that is
  * merely opened never touches the child's progress (rule 4).
  */
 import { generateOrder, type Order } from './orders';

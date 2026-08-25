@@ -1,6 +1,6 @@
 import type { AudioEngine } from './context';
 
-/** Two sine notes, E5 then B5 – a friendly "we are on" cue. STEP-07 replaces it with voice. */
+/** Two sine notes, E5 then B5 – a friendly "we are on" cue. STEP-10 replaces it with a clip. */
 const NOTES = [
   { frequency: 659.25, start: 0, duration: 0.18 },
   { frequency: 987.77, start: 0.14, duration: 0.22 },
