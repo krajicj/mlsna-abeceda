@@ -29,6 +29,7 @@ import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
 import type { OrderItem } from '../../game/orders';
 import type { ItemOutcome } from '../../game/progress';
 import {
+  askAgainSpeech,
   countSpeech,
   enoughSpeech,
   orderSpeech,
@@ -480,7 +481,9 @@ export function createCountItem(options: {
     plate: () => landed.filter((piece): piece is HTMLDivElement => Boolean(piece)),
     repeat() {
       if (!state || state.done) return;
-      repeatOrder();
+      // A counting order is one sentence, so this is the same as the nudge – but it goes through
+      // the same helper, so the two never drift apart.
+      if (spoken) options.voice.say(askAgainSpeech(spoken));
       idle.poke();
     },
     destroy() {

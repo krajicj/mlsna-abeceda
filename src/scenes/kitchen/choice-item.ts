@@ -33,6 +33,7 @@ import {
 import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
 import type { ItemOutcome } from '../../game/progress';
 import {
+  askAgainSpeech,
   correctionSpeech,
   hintSpeech,
   orderSpeech,
@@ -420,8 +421,9 @@ export function createChoiceItem(options: {
       [...landedLayer.children].filter((el): el is HTMLElement => el instanceof HTMLElement),
     repeat() {
       if (!state || state.done) return;
-      // The word stays out of a repeat, the same as the 15 s nudge: the child needs the order.
-      if (spoken) options.voice.say(repeatSpeech(spoken));
+      // The whole order, "Ká jako kočka." included – the child tapped because they do not know
+      // which letter it was. Only the unasked-for 15 s nudge keeps the short version.
+      if (spoken) options.voice.say(askAgainSpeech(spoken));
       idle.poke();
     },
     destroy() {

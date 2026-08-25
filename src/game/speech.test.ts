@@ -11,6 +11,7 @@ import { hasLine } from '../data/lines.cs';
 import type { Order, OrderItem } from './orders';
 import { createRng } from './rng';
 import {
+  askAgainSpeech,
   correctionSpeech,
   countSpeech,
   createFinishPicker,
@@ -68,10 +69,26 @@ describe('orderSpeech', () => {
     expect(orderSpeech(countItem(3, 'strawberry'))).toEqual(['order.count.3.strawberry']);
   });
 
-  it('repeats only the first sentence', () => {
+  it('repeats only the first sentence in the 15 s nudge', () => {
     expect(repeatSpeech(letterItem('K', 'kočka'))).toEqual(['order.letter.k']);
     expect(repeatSpeech(digitItem(3))).toEqual(['order.digit.3']);
     expect(repeatSpeech(countItem(2, 'cherry'))).toEqual(['order.count.2.cherry']);
+  });
+
+  it('says the whole order when the child asks for it (a tap on the bubble)', () => {
+    // The nudge drops "Ká jako kočka." because nobody asked; a tap is the child saying they do
+    // not know any more, and that sentence is the one that gives the letter a meaning.
+    expect(askAgainSpeech(letterItem('K', 'kočka'))).toEqual([
+      'order.letter.k',
+      'letter.word.k.kocka',
+    ]);
+    expect(askAgainSpeech(letterItem('K', 'kočka')).length).toBeGreaterThan(
+      repeatSpeech(letterItem('K', 'kočka')).length,
+    );
+    // A digit and a counting order are one sentence either way.
+    expect(askAgainSpeech(digitItem(3))).toEqual(repeatSpeech(digitItem(3)));
+    expect(askAgainSpeech(countItem(2, 'cherry'))).toEqual(repeatSpeech(countItem(2, 'cherry')));
+    expectKnown(askAgainSpeech(letterItem('K', 'kočka')));
   });
 });
 

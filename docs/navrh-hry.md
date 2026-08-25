@@ -81,6 +81,9 @@ zvoneček → přijde zákazník → řekne objednávku (hlas + obrázky v bubli
   které slyšíš“ byla „najdi stejný obrázek“ a dítě by splnilo celou hru bez jediného písmene
   (kap. 5.4). Výjimka je až **vzor u skládání slov (P3)** – tam se učí pořadí písmen, ne poznávání,
   a i ten vzor později zmizí (kap. 5.1).
+- **Klepnutí na bublinu zopakuje objednávku celou**, i s větou „Ká jako kočka.“ – dítě klepne
+  právě proto, že si písmenko nepamatuje. Nevyžádané připomenutí po 15 s naopak říká jen první
+  větu (kap. 5.5): tam se nikdo neptal a lekce by byla otravná.
 - Výrobek se staví uprostřed pultu; položky na něj přilétají z polic (písmenka, číslice)
   a z misky na pultu (ovoce – kvůli velikosti terčů, viz STEP-04). **Terčem je celá miska**,
   ne jednotlivý kus ovoce: dítě klepne kamkoli na misku a jeden kus (ten nejbližší) vyletí.

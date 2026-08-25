@@ -43,6 +43,17 @@ export function repeatSpeech(item: OrderItem): readonly string[] {
   return orderSpeech(item).slice(0, 1);
 }
 
+/**
+ * The child asked for the order again (a tap on the bubble) – the whole thing, the word sentence
+ * included. The 15 s nudge drops it on purpose (nobody asked, so do not lecture), but a tap is the
+ * child saying "I do not know any more": "Prosím perníček s písmenkem ká." alone repeats exactly
+ * the part they could not hold on to, and "Ká jako kočka." is what gives the letter a meaning
+ * (návrh 5.6).
+ */
+export function askAgainSpeech(item: OrderItem): readonly string[] {
+  return orderSpeech(item);
+}
+
 /** Counting out loud after the `placed`-th piece has landed. */
 export function countSpeech(placed: number): readonly string[] {
   return [countAloudLine(placed)];
