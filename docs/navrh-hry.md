@@ -72,7 +72,8 @@ zvoneček → přijde zákazník → řekne objednávku (hlas + obrázky v bubli
 - **Zvoneček** na pultu přivolá dalšího zákazníka. Dítě řídí tempo; bez klepnutí se nic neděje.
 - Jedna objednávka = 1–3 položky (kap. 5.3). Pořadí plnění je volné; bublina odškrtává hotové.
 - Výrobek se staví uprostřed pultu; položky na něj přilétají z polic (písmenka, číslice)
-  a z misky na pultu (ovoce – kvůli velikosti terčů, viz STEP-04).
+  a z misky na pultu (ovoce – kvůli velikosti terčů, viz STEP-04). **Terčem je celá miska**,
+  ne jednotlivý kus ovoce: dítě klepne kamkoli na misku a jeden kus (ten nejbližší) vyletí.
 - Po splnění všech položek zacinká „hotovo“ + konfety, zákazník si dobrotu vezme.
 
 ### Výrobky (co se staví)
@@ -167,9 +168,9 @@ Chyba nikdy nezastaví hru a nikdy nezní jako výtka.
 
 - **Špatný perníček / svíčka:** zatřese se, vypravěč: „To je A. Hledáme K.“ Druhá chyba: správný
   se rozsvítí a poskočí: „K je tady!“ Po klepnutí normální pochvala (ne slabší).
-- **Přepočítání:** když už výrobek má 3 jahody a dítě klepne na další, jahoda skočí zpátky:
-  „Už máme tři, to stačí!“ Po dosažení počtu se miska jemně přiklopí víčkem a kolečka
-  nad výrobkem zacinkají – signál „stop“.
+- **Přepočítání:** po dosažení počtu se miska jemně přiklopí víčkem a kolečka nad výrobkem
+  zacinkají – signál „stop“. Když dítě přesto klepne na misku, víčko se zahoupá, kolečka
+  poskočí a vypravěč řekne „Už máme tři, to stačí!“ – ovoce už z přiklopené misky ven nejde.
 - **Nečinnost 15 s:** vypravěč zopakuje položku, položka v bublině zabliká.
 - **Nečinnost 40 s:** nápověda (cíl se rozsvítí). Nikdy nic neudělá za dítě.
 
@@ -305,3 +306,10 @@ ElevenLabs, grafika v SVG stylu z návrhu.
 1. **Účet ElevenLabs:** až ho založíte a uložíte klíč do `~/.config/mlsna-abeceda/elevenlabs.env`
    (nikdy do chatu ani do repozitáře), spustím
    casting hlasů (STEP-07). Do té doby se staví s tichým placeholderem.
+2. **Pečení jako mechanika (nápad, zatím odloženo).** Místo počítání ovoce na hotový korpus
+   by se dal výrobek péct: „dej 1 mléko, pak 2 vejce“ a přibude patro. Do v1 to nejde ze dvou
+   důvodů: (a) spočítané kusy by zmizely v těstě, takže by se nedaly přepočítat, na čemž stojí
+   Č1 i pozdější „Kolik je“ (kap. 5.1); (b) rozmanitost už řeší nové výrobky z obchůdku.
+   Vrátit se k tomu má smysl v M3–M5 jako **samostatný výrobek s troubou** (těsto, patra,
+   míchání) vedle palačinek a koktejlu. Mezitím dostane dokončení objednávky krátkou
+   „dopékací“ pointu (patro/poleva, cinknutí trouby, konfety) – to je jen animace, ne mechanika.

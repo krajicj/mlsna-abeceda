@@ -22,7 +22,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-02 | [Responzivní scéna, přepínání scén, odemčení audia, orientace](steps/STEP-02-stage-scenes-and-audio-unlock.md) | M0 | 01 | done |
 | STEP-03 | [Herní logika: kurikulum, dvě dráhy, generátor objednávek (Č1/P1), ukládání](steps/STEP-03-game-logic-and-save.md) | M1 | 01 | done |
 | STEP-04 | [Kuchyně – statická scéna ze SVG (medvídek, pult, police, miska, perníčky, svíčky) + self-host fontu Fredoka](steps/STEP-04-kitchen-scene-and-font.md) | M1 | 02 | done |
-| STEP-05 | Položka „počítání“: miska → výrobek, kolečka, přepočítání, nečinnost (zatím bez hlasu) | M1 | 03, 04 | — |
+| STEP-05 | [Položka „počítání“: miska → výrobek, kolečka, přepočítání, nečinnost (zatím bez hlasu)](steps/STEP-05-counting-item.md) | M1 | 03, 04 | done |
 | STEP-06 | Položky „písmenko“ a „číslice“: výběr z police, chyba, nápověda | M1 | 05 | — |
 | STEP-07 | Hlas: manifest hlášek, generátor z ElevenLabs, casting, fronta přehrávání | M1 | 02 | — |
 | STEP-08 | Dokončení objednávky: bublina s objednávkou, zákazník jí, hvězdička, jedna celá smyčka | M1 | 06, 07 | — |
@@ -49,6 +49,12 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 - STEP-07 (hlas) potřebuje účet ElevenLabs a klíč v `~/.config/mlsna-abeceda/elevenlabs.env`; do té doby
   se dá stavět s tichým placeholderem (STEP-05/06 nejsou na hlasu závislé).
 - Kroky se stejným „Po“ (např. 12/13/14, 03/04) jdou dělat nezávisle na sobě.
+- **STEP-08** dostane navíc krátkou „dopékací“ pointu při dokončení objednávky (patro nebo
+  poleva na výrobku, cinknutí trouby, konfety) – domluveno s autorem jako levná náhrada za
+  mechaniku pečení, viz `navrh-hry.md` kap. 13 bod 2.
+- **Borůvka a třešeň** se kreslí už ve STEP-05 (miska i ovoce na dortu podle druhu z objednávky),
+  protože generátor ze STEP-03 vybírá ze všech tří startovních druhů; STEP-12 (obchůdek) pak řeší
+  jen odemykání *dalšího* ovoce.
 - **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-19 do STEP-04: zatím se
   vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
   kuchyně nešlo posoudit. STEP-19 řeší jen PWA a offline.

@@ -5,6 +5,7 @@ import { type Letter } from './data/curriculum';
 import { letterOrder } from './game/curriculum';
 import { generateOrder, type Order } from './game/orders';
 import { createRng, systemRng } from './game/rng';
+import { createSession } from './game/session';
 import {
   readSave,
   resetSave,
@@ -40,11 +41,16 @@ function browserStorage(): StorageLike {
 const app = document.querySelector<HTMLElement>('#app');
 if (app) {
   const storage = browserStorage();
-  readSave(storage); // loads and repairs the record early; the scenes start using it in STEP-05
+  // Read once and hand to the scenes: the kitchen fills the order for the saved position and
+  // writes nothing back – progress is only recorded when an order is completed (STEP-08).
+  const session = createSession(storage);
 
   const stage = createStage(app);
   const audio = createAudioEngine();
-  const scenes = createSceneManager(stage, audio, { title: titleScene, kitchen: kitchenScene });
+  const scenes = createSceneManager(stage, audio, session, {
+    title: titleScene,
+    kitchen: kitchenScene,
+  });
   const orientation = createOrientationGuard(app);
   scenes.go('title');
 
@@ -56,6 +62,7 @@ if (app) {
       __audio: audio,
       __scenes: scenes,
       __orientation: orientation,
+      __session: session,
       __save: {
         read: (): SaveData => readSave(storage),
         write: (data: SaveData): void => writeSave(storage, data),

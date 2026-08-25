@@ -4,6 +4,7 @@
  * numbers to animate a strawberry from the bowl onto the cake or to fill the shelves.
  */
 import { STAGE_MAX_WIDTH, STAGE_MIN_WIDTH } from '../stage/layout';
+import { fruitWidth } from './fruit';
 import type { Rect } from './svg';
 
 export const SHELF_ITEM_WIDTH = 96; // ≥ 88 (CLAUDE.md, rule 3)
@@ -13,6 +14,29 @@ export const MAX_CHOICES = 4;
 export const FRUIT_SLOT = 96; // strawberry hit box, ≥ 88
 export const FRUIT_GAP = 16;
 export const MAX_FRUIT_SLOTS = 3; // more would not fit a 320 px bowl without overlapping
+
+/** The counter above the cake: indicators, never touched, so they may be smaller than 88. */
+export const PILL_SIZE = 40;
+export const PILL_GAP = 6;
+export const MAX_PILLS = 5;
+/** The pills sit above the cake: y = cake.y − PILL_OFFSET_Y. */
+export const PILL_OFFSET_Y = 84;
+
+export const MAX_CAKE_FRUIT = 5;
+export const CAKE_FRUIT_HEIGHT = 44;
+export const CAKE_FRUIT_PITCH = 40;
+/** Centre of the top of the cake inside its 220×146 box (read off cake.ts). */
+export const CAKE_TOP_CENTER_X = 110;
+/** Bottom edges of the two rows of fruit, measured from the top of the cake box. */
+const CAKE_FRUIT_FRONT_BOTTOM = 22;
+const CAKE_FRUIT_BACK_BOTTOM = 10;
+const CAKE_FRUIT_FRONT_MAX = 3;
+
+/** The rim line of the bowl; everything below it is the bowl itself (see bowl.ts). */
+export const BOWL_RIM_Y = 56;
+export const LID_HEIGHT = 80;
+/** The rim of the dome inside the lid box – it lands exactly on the rim of the bowl. */
+export const LID_RIM_Y = 76;
 
 export const COUNTER_TOP = 500; // top of the wooden worktop
 export const COUNTER_EDGE_TOP = 546; // dark edge under the worktop
@@ -79,6 +103,106 @@ export function fruitSlots(bowl: Rect, count: number = MAX_FRUIT_SLOTS): Rect[] 
     width: FRUIT_SLOT,
     height: FRUIT_SLOT,
   }));
+}
+
+/** A slot is always `fruitWidth(CAKE_FRUIT_HEIGHT)` wide, i.e. 34 px – fruit is never stretched. */
+export interface CakeSlot extends Rect {
+  /** Back row – drawn under the front one (z-index 0 × 1). */
+  readonly back: boolean;
+}
+
+function clampCount(count: number, max: number): number {
+  const n = Math.floor(count);
+  return Number.isFinite(n) ? Math.min(Math.max(n, 0), max) : 0;
+}
+
+/**
+ * Where the fruit lands on the cake, in the order it arrives: the first three into the front row,
+ * the rest (at most two) into the back one. The front row has a pitch of CAKE_FRUIT_PITCH and is
+ * centred on the top of the cake; every back piece sits in a gap of the front row, so it peeks out
+ * between two front ones and the child can still count all of them.
+ */
+export function cakeFruitSlots(cake: Rect, count: number): CakeSlot[] {
+  const n = clampCount(count, MAX_CAKE_FRUIT);
+  const width = fruitWidth(CAKE_FRUIT_HEIGHT);
+  const center = cake.x + CAKE_TOP_CENTER_X;
+  const frontCount = Math.min(n, CAKE_FRUIT_FRONT_MAX);
+  const frontCenters = Array.from(
+    { length: frontCount },
+    (_, index) => center + (index - (frontCount - 1) / 2) * CAKE_FRUIT_PITCH,
+  );
+  const backCenters = frontCenters
+    .slice(1)
+    .map((x, index) => (x + (frontCenters[index] ?? x)) / 2)
+    .slice(0, n - frontCount);
+  const slot = (cx: number, back: boolean): CakeSlot => ({
+    x: Math.round(cx - width / 2),
+    y: cake.y + (back ? CAKE_FRUIT_BACK_BOTTOM : CAKE_FRUIT_FRONT_BOTTOM) - CAKE_FRUIT_HEIGHT,
+    width,
+    height: CAKE_FRUIT_HEIGHT,
+    back,
+  });
+  return [...frontCenters.map((cx) => slot(cx, false)), ...backCenters.map((cx) => slot(cx, true))];
+}
+
+/** The row of pills above the cake, centred on it; `count` is clamped to 0…MAX_PILLS. */
+export function pillSlots(cake: Rect, count: number): Rect[] {
+  const n = clampCount(count, MAX_PILLS);
+  return centeredRow(cake.x, cake.width, n, PILL_SIZE, PILL_GAP).map((x) => ({
+    x,
+    y: cake.y - PILL_OFFSET_Y,
+    width: PILL_SIZE,
+    height: PILL_SIZE,
+  }));
+}
+
+/** The box of the lid over the bowl (the rim of the dome sits exactly on the rim of the bowl). */
+export function lidRect(bowl: Rect): Rect {
+  return {
+    x: bowl.x,
+    y: bowl.y + BOWL_RIM_Y - LID_RIM_Y,
+    width: bowl.width,
+    height: LID_HEIGHT,
+  };
+}
+
+/**
+ * Local y of every fruit centre inside the bowl: the near rim of the bowl (BOWL_RIM_Y) then cuts
+ * each piece roughly in half, which is what reads as "fruit *in* the bowl". The far rim is drawn
+ * behind the fruit (see bowl.ts) – over it, it looked like a wire across the fruit.
+ */
+export const BOWL_FRUIT_CENTER_Y = 48;
+export const BOWL_FRONT_FRUIT_HEIGHT = 88;
+export const BOWL_BACK_FRUIT_HEIGHT = 72;
+
+export interface BowlSpot {
+  readonly cx: number;
+  readonly cy: number;
+  readonly height: number;
+  /** Back row: smaller, tucked into a gap of the front row and drawn under it. */
+  readonly back: boolean;
+}
+
+/**
+ * Every piece of fruit the bowl shows, front row first (those stand on the slots of `fruitSlots`),
+ * then the smaller back ones in the gaps between them. The bowl draws from this and the scene taps
+ * from it, so what the child sees and what answers a tap can never drift apart.
+ */
+export function bowlFruitSpots(bowl: Rect, slots: number = MAX_FRUIT_SLOTS): BowlSpot[] {
+  const cy = bowl.y + BOWL_FRUIT_CENTER_Y;
+  const front = fruitSlots(bowl, slots).map((slot) => ({
+    cx: slot.x + slot.width / 2,
+    cy,
+    height: BOWL_FRONT_FRUIT_HEIGHT,
+    back: false,
+  }));
+  const back = front.slice(1).map((spot, index) => ({
+    cx: (spot.cx + (front[index]?.cx ?? spot.cx)) / 2,
+    cy,
+    height: BOWL_BACK_FRUIT_HEIGHT,
+    back: true,
+  }));
+  return [...front, ...back];
 }
 
 const PANEL_WIDTH = 300;

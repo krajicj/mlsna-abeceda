@@ -1,20 +1,30 @@
 import { describe, expect, it } from 'vitest';
+import { FRUITS } from '../data/curriculum';
 import { bear } from './bear';
 import { fruitBowl } from './bowl';
 import { cakeBase } from './cake';
 import { candle } from './candle';
 import { cookie } from './cookie';
+import { hintRing } from './hint';
 import { kitchenBackdrop } from './kitchen';
-import { strawberry } from './fruit';
+import { bowlLid } from './lid';
+import { countPill } from './pill';
+import { fruit, fruitWidth } from './fruit';
+import { PALETTE } from './svg';
 
 /** Every art module returns one <svg> element as a string. */
 const MODULES: Record<string, string> = {
   bear: bear(),
   cakeBase: cakeBase(),
   fruitBowl: fruitBowl(),
-  strawberry: strawberry(88),
+  strawberry: fruit('strawberry', 88),
+  blueberry: fruit('blueberry', 88),
+  cherry: fruit('cherry', 88),
   cookie: cookie('K'),
   candle: candle('3'),
+  countPill: countPill({ digit: '3', done: false }),
+  bowlLid: bowlLid(),
+  hintRing: hintRing(96),
   backdrop: kitchenBackdrop(1024),
 };
 
@@ -55,6 +65,11 @@ describe('art modules', () => {
     ['cakeBase', MODULES['cakeBase'], '-7 44 274 182', 220, 146],
     ['fruitBowl', MODULES['fruitBowl'], '0 0 320 140', 320, 140],
     ['strawberry', MODULES['strawberry'], '0 -6 40 52', 68, 88],
+    ['blueberry', MODULES['blueberry'], '0 -6 40 52', 68, 88],
+    ['cherry', MODULES['cherry'], '0 -6 40 52', 68, 88],
+    ['countPill', MODULES['countPill'], '0 0 40 40', 40, 40],
+    ['bowlLid', MODULES['bowlLid'], '0 0 320 80', 320, 80],
+    ['hintRing', MODULES['hintRing'], '0 0 96 96', 96, 96],
     ['cookie', MODULES['cookie'], '0 0 96 96', 96, 96],
     ['candle', MODULES['candle'], '0 0 96 112', 96, 112],
     ['backdrop', MODULES['backdrop'], '0 0 1024 768', 1024, 768],
@@ -70,17 +85,62 @@ describe('art modules', () => {
     expect(cookie('Š')).toContain('>Š</text>');
   });
 
-  it('scales the strawberry without stretching it', () => {
-    expect(attribute(strawberry(52), 'width')).toBe('40');
-    expect(attribute(strawberry(26), 'width')).toBe('20');
+  it('scales the fruit without stretching it', () => {
+    expect(attribute(fruit('strawberry', 52), 'width')).toBe('40');
+    expect(attribute(fruit('cherry', 26), 'width')).toBe('20');
+    expect(fruitWidth(44)).toBe(34);
   });
 
-  it('puts as many berries in the bowl as it has slots', () => {
+  it.each(FRUITS)('draws the %s in its own colour', (kind) => {
+    expect(fruit(kind, 88)).toContain(PALETTE[kind]);
+  });
+
+  it('puts as many pieces of fruit in the bowl as it has slots', () => {
     const front = (markup: string) => markup.match(/data-fruit="front"/g)?.length ?? 0;
     expect(front(fruitBowl())).toBe(3);
     expect(front(fruitBowl({ slots: 2 }))).toBe(2);
     expect(front(fruitBowl({ slots: 1 }))).toBe(1);
     expect(front(fruitBowl({ slots: 0 }))).toBe(0);
+  });
+
+  it('numbers every piece of fruit in the bowl so a tap can bounce exactly that one', () => {
+    const spots = [...fruitBowl().matchAll(/data-spot="(\d)"/g)].map((match) => Number(match[1]));
+    expect(spots.slice().sort()).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it('draws the far rim of the bowl behind the fruit and the near wall in front of it', () => {
+    const markup = fruitBowl();
+    const farRim = markup.indexOf('A154 22');
+    const firstFruit = markup.indexOf('data-fruit=');
+    const nearWall = markup.indexOf('Q30 136');
+    expect(farRim).toBeGreaterThan(-1);
+    expect(farRim).toBeLessThan(firstFruit);
+    expect(firstFruit).toBeLessThan(nearWall);
+  });
+
+  it.each(FRUITS)('fills the bowl with the %s the order asks for', (kind) => {
+    const bowl = fruitBowl({ kind });
+    expect(bowl.match(/data-fruit="front"/g)).toHaveLength(3);
+    expect(bowl).toContain(PALETTE[kind]);
+    for (const other of FRUITS.filter((k) => k !== kind)) {
+      expect(bowl).not.toContain(PALETTE[other]);
+    }
+  });
+
+  it('marks the pill as done by its fill and its digit colour', () => {
+    const empty = countPill({ digit: '2', done: false });
+    const done = countPill({ digit: '2', done: true });
+    expect(empty).toContain('>2</text>');
+    expect(done).toContain('>2</text>');
+    expect(empty).toContain(PALETTE.pillMuted);
+    expect(done).toContain(PALETTE.pillDone);
+    expect(done).not.toContain(PALETTE.pillMuted);
+  });
+
+  it('dashes the hint ring and keeps it inside its box', () => {
+    expect(hintRing(96)).toContain('stroke-dasharray="7 6"');
+    expect(hintRing(96)).toContain('r="42"');
+    expect(hintRing(40)).toContain('r="14"');
   });
 
   it('redraws the backdrop for the stage width it is given', () => {

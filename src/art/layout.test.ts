@@ -1,21 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import { STAGE_HEIGHT } from '../stage/layout';
 import {
+  BOWL_BACK_FRUIT_HEIGHT,
+  BOWL_FRONT_FRUIT_HEIGHT,
+  BOWL_FRUIT_CENTER_Y,
+  BOWL_RIM_Y,
+  CAKE_FRUIT_HEIGHT,
   COUNTER_EDGE_TOP,
   COUNTER_FRONT_TOP,
   COUNTER_TOP,
   FRUIT_GAP,
   FRUIT_SLOT,
+  LID_HEIGHT,
+  LID_RIM_Y,
+  MAX_CAKE_FRUIT,
   MAX_CHOICES,
   MAX_FRUIT_SLOTS,
+  MAX_PILLS,
+  PILL_GAP,
+  PILL_OFFSET_Y,
+  PILL_SIZE,
   SHELF_GAP,
   SHELF_ITEM_WIDTH,
+  bowlFruitSpots,
+  cakeFruitSlots,
   counterPanels,
   floorColumns,
   fruitSlots,
   kitchenLayout,
+  lidRect,
+  pillSlots,
   shelfSlots,
 } from './layout';
+import { fruitWidth } from './fruit';
 import type { Rect } from './svg';
 
 const WIDTHS = [1024, 1200, 1366];
@@ -201,5 +218,186 @@ describe('counterPanels', () => {
 describe('floorColumns', () => {
   it.each(WIDTHS)('covers the whole %i px floor', (width) => {
     expect(floorColumns(width) * 64).toBeGreaterThanOrEqual(width);
+  });
+});
+
+describe('pillSlots', () => {
+  it.each(WIDTHS)('centres the row over the cake at %i px', (width) => {
+    const { cake } = kitchenLayout(width);
+    for (let count = 1; count <= MAX_PILLS; count += 1) {
+      const slots = pillSlots(cake, count);
+      expect(slots).toHaveLength(count);
+      const first = slots[0]!;
+      const last = slots[slots.length - 1]!;
+      expect(first.x - cake.x).toBe(cake.x + cake.width - (last.x + last.width));
+      for (const slot of slots) {
+        expect(slot.y).toBe(cake.y - PILL_OFFSET_Y);
+        expect(slot.width).toBe(PILL_SIZE);
+        expect(slot.height).toBe(PILL_SIZE);
+      }
+      for (let i = 1; i < slots.length; i += 1) {
+        expect(slots[i]!.x - (slots[i - 1]!.x + PILL_SIZE)).toBe(PILL_GAP);
+      }
+    }
+  });
+
+  it.each(WIDTHS)('leaves 8 px between the full row, the bear and the shelf at %i px', (width) => {
+    const { bear, cake, shelfLetters } = kitchenLayout(width);
+    const slots = pillSlots(cake, MAX_PILLS);
+    const first = slots[0]!;
+    const last = slots[slots.length - 1]!;
+    expect(first.x - (bear.x + bear.width)).toBeGreaterThanOrEqual(8);
+    expect(shelfLetters.x - (last.x + last.width)).toBeGreaterThanOrEqual(8);
+    expect(first.y).toBeGreaterThanOrEqual(0);
+  });
+
+  it('clamps the count', () => {
+    const { cake } = kitchenLayout(1024);
+    expect(pillSlots(cake, 0)).toEqual([]);
+    expect(pillSlots(cake, -2)).toEqual([]);
+    expect(pillSlots(cake, Number.NaN)).toEqual([]);
+    expect(pillSlots(cake, 9)).toHaveLength(MAX_PILLS);
+  });
+
+  it('matches the worked example from the step plan', () => {
+    expect(pillSlots(kitchenLayout(1024).cake, 5).map((slot) => slot.x)).toEqual([
+      330, 376, 422, 468, 514,
+    ]);
+    expect(pillSlots(kitchenLayout(1024).cake, 5)[0]).toEqual({
+      x: 330,
+      y: 300,
+      width: 40,
+      height: 40,
+    });
+  });
+});
+
+describe('cakeFruitSlots', () => {
+  it.each(WIDTHS)('fills the front row first, then the back one at %i px', (width) => {
+    const { cake } = kitchenLayout(width);
+    for (let count = 1; count <= MAX_CAKE_FRUIT; count += 1) {
+      const slots = cakeFruitSlots(cake, count);
+      expect(slots).toHaveLength(count);
+      expect(slots.map((slot) => slot.back)).toEqual(
+        Array.from({ length: count }, (_, index) => index >= 3),
+      );
+      for (const slot of slots) {
+        expect(slot.width).toBe(fruitWidth(CAKE_FRUIT_HEIGHT));
+        expect(slot.height).toBe(CAKE_FRUIT_HEIGHT);
+        expect(slot.x).toBeGreaterThanOrEqual(cake.x);
+        expect(slot.x + slot.width).toBeLessThanOrEqual(cake.x + cake.width);
+        expect(slot.y).toBeGreaterThan(cake.y - CAKE_FRUIT_HEIGHT);
+        expect(slot.y + slot.height).toBeLessThan(cake.y + cake.height);
+      }
+      const back = slots.filter((slot) => slot.back);
+      const front = slots.filter((slot) => !slot.back);
+      for (const row of [front, back]) {
+        for (let i = 1; i < row.length; i += 1) {
+          expect(row[i]!.x).toBeGreaterThanOrEqual(row[i - 1]!.x + row[i - 1]!.width);
+        }
+      }
+      for (const slot of back) expect(slot.y).toBeLessThan(front[0]!.y);
+    }
+  });
+
+  it.each(WIDTHS)('keeps the fruit away from the bowl and the pills at %i px', (width) => {
+    const { bowl, cake } = kitchenLayout(width);
+    const pills = pillSlots(cake, MAX_PILLS);
+    const pillBottom = pills[0]!.y + pills[0]!.height;
+    for (const slot of cakeFruitSlots(cake, MAX_CAKE_FRUIT)) {
+      expect(slot.x + slot.width).toBeLessThan(bowl.x);
+      expect(slot.y).toBeGreaterThan(pillBottom);
+    }
+  });
+
+  it('centres both rows on the top of the cake', () => {
+    const { cake } = kitchenLayout(1024);
+    const center = (slots: Rect[]) =>
+      (slots[0]!.x + slots[slots.length - 1]!.x + slots[0]!.width) / 2;
+    const slots = cakeFruitSlots(cake, MAX_CAKE_FRUIT);
+    expect(center(slots.filter((slot) => !slot.back))).toBe(442);
+    expect(center(slots.filter((slot) => slot.back))).toBe(442);
+  });
+
+  it('clamps the count', () => {
+    const { cake } = kitchenLayout(1024);
+    expect(cakeFruitSlots(cake, 0)).toEqual([]);
+    expect(cakeFruitSlots(cake, -1)).toEqual([]);
+    expect(cakeFruitSlots(cake, Number.NaN)).toEqual([]);
+    expect(cakeFruitSlots(cake, 9)).toHaveLength(MAX_CAKE_FRUIT);
+  });
+
+  it('matches the worked example from the step plan', () => {
+    const slots = cakeFruitSlots(kitchenLayout(1024).cake, 5);
+    expect(slots).toEqual([
+      { x: 385, y: 362, width: 34, height: 44, back: false },
+      { x: 425, y: 362, width: 34, height: 44, back: false },
+      { x: 465, y: 362, width: 34, height: 44, back: false },
+      { x: 405, y: 350, width: 34, height: 44, back: true },
+      { x: 445, y: 350, width: 34, height: 44, back: true },
+    ]);
+  });
+});
+
+describe('lidRect', () => {
+  it.each(WIDTHS)('sits the dome exactly on the rim of the bowl at %i px', (width) => {
+    const { bowl } = kitchenLayout(width);
+    const lid = lidRect(bowl);
+    expect(lid.x).toBe(bowl.x);
+    expect(lid.width).toBe(bowl.width);
+    expect(lid.height).toBe(LID_HEIGHT);
+    expect(lid.y + LID_RIM_Y).toBe(bowl.y + BOWL_RIM_Y);
+    expect(lid.y).toBeGreaterThan(0);
+  });
+
+  it('matches the worked example from the step plan', () => {
+    expect(lidRect(kitchenLayout(1024).bowl)).toEqual({
+      x: 580,
+      y: 380,
+      width: 320,
+      height: 80,
+    });
+  });
+});
+
+describe('bowlFruitSpots', () => {
+  const bowl = kitchenLayout(1024).bowl;
+
+  it('shows the front row first and tucks the back row into its gaps', () => {
+    const spots = bowlFruitSpots(bowl);
+    expect(spots.map((spot) => spot.back)).toEqual([false, false, false, true, true]);
+    const front = spots.filter((spot) => !spot.back);
+    const back = spots.filter((spot) => spot.back);
+    expect(front.map((spot) => spot.cx)).toEqual([628, 740, 852]);
+    expect(back.map((spot) => spot.cx)).toEqual([684, 796]);
+    for (const spot of spots) expect(spot.cy).toBe(bowl.y + BOWL_FRUIT_CENTER_Y);
+    for (const spot of front) expect(spot.height).toBe(BOWL_FRONT_FRUIT_HEIGHT);
+    for (const spot of back) expect(spot.height).toBe(BOWL_BACK_FRUIT_HEIGHT);
+  });
+
+  it('stands every piece of fruit on a slot of fruitSlots', () => {
+    const centers = fruitSlots(bowl).map((slot) => slot.x + slot.width / 2);
+    expect(
+      bowlFruitSpots(bowl)
+        .filter((spot) => !spot.back)
+        .map((spot) => spot.cx),
+    ).toEqual(centers);
+  });
+
+  it('keeps every piece inside the bowl and reachable by one tap on it', () => {
+    for (const spot of bowlFruitSpots(bowl)) {
+      expect(spot.cx - spot.height / 2).toBeGreaterThanOrEqual(bowl.x);
+      expect(spot.cx + spot.height / 2).toBeLessThanOrEqual(bowl.x + bowl.width);
+      expect(spot.cy - spot.height / 2).toBeGreaterThanOrEqual(bowl.y);
+      expect(spot.cy + spot.height / 2).toBeLessThanOrEqual(bowl.y + bowl.height);
+    }
+    // The tap target is the whole bowl, so it clears the 88 px of rule 3 many times over.
+    expect(Math.min(bowl.width, bowl.height)).toBeGreaterThanOrEqual(MIN_TARGET);
+  });
+
+  it('follows the number of slots it is given', () => {
+    expect(bowlFruitSpots(bowl, 1)).toHaveLength(1);
+    expect(bowlFruitSpots(bowl, 2)).toHaveLength(3);
+    expect(bowlFruitSpots(bowl, 0)).toEqual([]);
   });
 });

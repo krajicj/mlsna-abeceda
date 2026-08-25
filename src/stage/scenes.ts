@@ -1,4 +1,5 @@
 import type { AudioEngine } from '../audio/context';
+import type { Session } from '../game/session';
 import type { StageSize } from './layout';
 import type { Stage } from './stage';
 
@@ -7,6 +8,8 @@ export type SceneName = 'title' | 'kitchen';
 export interface SceneContext {
   readonly stage: Stage;
   readonly audio: AudioEngine;
+  /** The saved game and the current order; scenes never touch localStorage themselves. */
+  readonly session: Session;
   /** Switch scenes; a no-op for the current scene or while a transition runs. */
   go(name: SceneName): void;
 }
@@ -38,6 +41,7 @@ function prefersReducedMotion(): boolean {
 export function createSceneManager(
   stage: Stage,
   audio: AudioEngine,
+  session: Session,
   scenes: Readonly<Record<SceneName, Scene>>,
 ): SceneManager {
   let current: SceneName | null = null;
@@ -54,7 +58,7 @@ export function createSceneManager(
     }
     if (name === current || transitioning) return;
 
-    const next = factory({ stage, audio, go });
+    const next = factory({ stage, audio, session, go });
     next.el.classList.add('scene');
     stage.root.append(next.el);
     next.resize?.(stage.size);

@@ -7,7 +7,8 @@ export const INK = '#3B2A1A';
 
 /**
  * The only source of colour for the art modules. `wax`, `flame` and `flameCore` are not on the
- * artboard (it has no candle); they were picked for STEP-04 in the same warm key.
+ * artboard (it has no candle); they were picked for STEP-04 in the same warm key. The blueberry
+ * and the cherry are not there either – STEP-05 picked them to sit next to the strawberry.
  */
 export const PALETTE = {
   wall: '#FFE9D1',
@@ -20,6 +21,11 @@ export const PALETTE = {
   floorA: '#FBEBD6',
   floorB: '#F1D4B4',
   strawberry: '#E5484D',
+  blueberry: '#5C6BC0',
+  blueberryDark: '#3F4A9C',
+  blueberryLight: '#B7C0EC',
+  cherry: '#B3261E',
+  cherryLight: '#E2726B',
   stem: '#3F8F3A',
   leaf: '#4CAF50',
   seed: '#FFE08A',
@@ -36,6 +42,8 @@ export const PALETTE = {
   spongeLight: '#FFF3D6',
   dough: '#C98A4B',
   doughLight: '#E0AC74',
+  pillDone: '#FF8FAB',
+  pillMuted: '#B9A697',
   wax: '#FFF1DC',
   flame: '#FFC53D',
   flameCore: '#FFB703',

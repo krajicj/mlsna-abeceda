@@ -53,3 +53,80 @@
   border-right: 2px dashed rgb(228 72 77 / 45%);
   pointer-events: none;
 }
+
+/* The counting item (STEP-05): hit boxes over the bowl, the counter above the cake, the lid. */
+.count-fruit,
+.count-pills,
+.count-flight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.count-fruit-piece,
+.count-flyer,
+.count-pill,
+.count-target,
+.count-lid,
+.count-hint {
+  position: absolute;
+}
+
+/* The whole bowl is the target: 320×140, far over the 88 px of rule 3, and every piece of fruit
+   the bowl shows answers a tap – including the smaller ones in the back row. */
+.count-target {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.count-target[hidden] {
+  display: none;
+}
+
+/* Decoration: the lid must never swallow a tap meant for the bowl underneath it. */
+.count-lid,
+.count-hint {
+  pointer-events: none;
+}
+
+.count-lid[hidden],
+.count-hint[hidden] {
+  display: none;
+}
+
+.count-flyer {
+  z-index: 2;
+}
+
+/* Lid on = the fruit is inside the bowl and out of sight (STEP-05). */
+.scene-kitchen .kitchen-bowl.is-covered [data-fruit] {
+  display: none;
+}
+
+/* The counter blinks after 15 s of silence; the hint ring comes 25 s later. */
+.count-pills.is-blinking .count-pill {
+  animation: pill-blink 320ms ease-in-out 3;
+}
+
+@keyframes pill-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Wrapper inside the fruit groups: it carries no transform of its own, so the bowl fruit can
+   bounce without losing the position its parent group sets. */
+.scene-kitchen .art-fruit-body {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .count-pills.is-blinking .count-pill {
+    animation: none;
+  }
+}
