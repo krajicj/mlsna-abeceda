@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { FRUITS } from '../data/curriculum';
+import { STARTER_CUSTOMERS } from '../data/customers';
 import { bear } from './bear';
+import { cat } from './cat';
+import { customerArt, CUSTOMER_HEIGHT, CUSTOMER_WIDTH } from './customers';
+import { rabbit } from './rabbit';
 import { fruitBowl } from './bowl';
 import { bubbleFruit, orderBubble, orderCheck, speakerIcon } from './bubble';
 import { cakeBase, cakeGlaze } from './cake';
@@ -13,11 +17,13 @@ import { bowlLid } from './lid';
 import { countPill } from './pill';
 import { star, starsPill } from './star';
 import { fruit, fruitWidth } from './fruit';
-import { PALETTE } from './svg';
+import { INK, PALETTE } from './svg';
 
 /** Every art module returns one <svg> element as a string. */
 const MODULES: Record<string, string> = {
   bear: bear(),
+  rabbit: rabbit(),
+  cat: cat(),
   cakeBase: cakeBase(),
   fruitBowl: fruitBowl(),
   strawberry: fruit('strawberry', 88),
@@ -75,6 +81,8 @@ describe('art modules', () => {
 
   it.each([
     ['bear', MODULES['bear'], '0 0 260 320', 260, 320],
+    ['rabbit', MODULES['rabbit'], '0 0 260 320', 260, 320],
+    ['cat', MODULES['cat'], '0 0 260 320', 260, 320],
     ['cakeBase', MODULES['cakeBase'], '-7 44 274 182', 220, 146],
     ['fruitBowl', MODULES['fruitBowl'], '0 0 320 140', 320, 140],
     ['strawberry', MODULES['strawberry'], '0 -6 40 52', 68, 88],
@@ -97,6 +105,36 @@ describe('art modules', () => {
     expect(attribute(markup!, 'viewBox')).toBe(viewBox);
     expect(attribute(markup!, 'width')).toBe(String(width));
     expect(attribute(markup!, 'height')).toBe(String(height));
+  });
+
+  it.each(Object.entries(MODULES))('%s paints only with the palette', (_name, markup) => {
+    const allowed = new Set<string>([INK, ...Object.values(PALETTE)].map((c) => c.toUpperCase()));
+    const used = [...markup.matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map((match) =>
+      match[0].toUpperCase(),
+    );
+    expect([...new Set(used)].filter((colour) => !allowed.has(colour))).toEqual([]);
+  });
+
+  it.each(STARTER_CUSTOMERS)('draws %s on the shared customer box', (id) => {
+    const markup = customerArt(id);
+    expect(attribute(markup, 'viewBox')).toBe(`0 0 ${CUSTOMER_WIDTH} ${CUSTOMER_HEIGHT}`);
+    expect(attribute(markup, 'width')).toBe(String(CUSTOMER_WIDTH));
+    expect(attribute(markup, 'height')).toBe(String(CUSTOMER_HEIGHT));
+  });
+
+  it('gives every customer its own clip path, so two of them never collide in the DOM', () => {
+    const ids = STARTER_CUSTOMERS.map(
+      (id) => /<clipPath id="([^"]+)"/.exec(customerArt(id))?.[1] ?? '',
+    );
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('tells the three customers apart by their fur', () => {
+    expect(customerArt('bear')).toContain(PALETTE.fur);
+    expect(customerArt('rabbit')).toContain(PALETTE.furRabbit);
+    expect(customerArt('cat')).toContain(PALETTE.furCat);
+    expect(customerArt('rabbit')).not.toContain(PALETTE.fur);
+    expect(customerArt('cat')).not.toContain(PALETTE.furRabbit);
   });
 
   it('draws the letter on the cookie and the digit on the candle', () => {

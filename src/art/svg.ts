@@ -30,6 +30,10 @@ export const PALETTE = {
   leaf: '#4CAF50',
   seed: '#FFE08A',
   fur: '#A0643A',
+  /** The rabbit and the cat (STEP-10); three customers have to be told apart at a glance. */
+  furRabbit: '#F0E4D2',
+  furCat: '#E8A33D',
+  furCatDark: '#C9822A',
   earInner: '#E8A98A',
   muzzle: '#E9C9A3',
   blush: '#F48FB1',
