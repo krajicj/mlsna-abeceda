@@ -639,6 +639,14 @@ s písmenky. `bellRect()` proto zvoneček staví vlevo od dortu, kde je aspoň `
 
 Autor rozhodl s vědomím, že se tím zvoneček mezi zařízeními stěhuje.
 
+Autor si po nasazení všiml, že **medvěd skoro nechodí**. Naměřeno: `nextCustomer()` s pravidlem
+„jen ne ten, co právě odešel“ je sice v průměru férové (968/1008/1024 ze 3000), ale ze tří zvířátek
+nechává dvě na minci, takže **25 % sezení o čtyřech objednávkách** vidí jen dvě zvířata a nejdelší
+řada bez medvěda byla 12 objednávek. Nahrazeno `createCustomerQueue()` – **míchaný pytlík**
+(kolo = všichni právě jednou, pořadí uvnitř kola losované, na švu se nikdo neopakuje). Po opravě:
+0 % sezení jen se dvěma zvířaty, 1000/1000/1000 ze 3000, nejdelší řada bez medvěda 4. Pravidlo je
+zapsané v `navrh-hry.md` kap. 6.
+
 ### Návrhy mimo rozsah
 
 - Police si drží ozdobu i s prázdným pultem. Není to lež (je to inertní obsah), ale prázdná

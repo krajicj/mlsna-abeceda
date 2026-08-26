@@ -3,7 +3,7 @@
  * a finished order is written back (rule 4 – progress is sacred, so nothing else touches storage).
  * A session that is merely opened never writes; only `complete()` does.
  */
-import { nextCustomer } from './customers';
+import { createCustomerQueue } from './customers';
 import { generateOrder, type Order } from './orders';
 import {
   completeOrder,
@@ -67,10 +67,12 @@ export function createSession(
     });
   }
 
-  let order = nextOrder();
-  // Drawn here and not in the scene: this is the one place with an injected rng, so a seeded
+  // Built here and not in the scene: this is the one place with an injected rng, so a seeded
   // session replays the customers as exactly as it replays the orders.
-  let customer = nextCustomer({ available: STARTER_CUSTOMERS, rng });
+  const customers = createCustomerQueue({ available: STARTER_CUSTOMERS, rng });
+
+  let order = nextOrder();
+  let customer = customers.next();
 
   return {
     get save() {
@@ -89,7 +91,7 @@ export function createSession(
       save = completeOrder(save, results, todayStamp(now()));
       writeSave(storage, save);
       order = nextOrder();
-      customer = nextCustomer({ available: STARTER_CUSTOMERS, avoid: customer, rng });
+      customer = customers.next();
       return order;
     },
   };

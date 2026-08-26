@@ -158,6 +158,19 @@ describe('session.complete', () => {
     }
   });
 
+  it('shows all three animals inside any three orders', () => {
+    // The complaint that started this rule: over a short sitting the bear never turned up.
+    for (let seed = 0; seed < 30; seed += 1) {
+      const session = createSession(memoryStorage(), { rng: createRng(seed) });
+      const window = Array.from({ length: 3 }, () => {
+        const who = session.customer;
+        session.complete([]);
+        return who;
+      });
+      expect(new Set(window).size, `seed ${seed}: ${window.join(' ')}`).toBe(3);
+    }
+  });
+
   it('replays the same customers from the same seed', () => {
     const run = (): string[] => {
       const session = createSession(memoryStorage(), { rng: createRng(21) });

@@ -231,6 +231,14 @@ Vracející se zákazník občas řekne něco osobního („Minule to bylo výbo
 Zákazníci jsou **jen zvířátka** (žádné figurky rodiny); rodina se do hry dostává jen
 v hláškách („dvě jahody pro bráchu“).
 
+**Kdo přijde na řadu (srpen 2026).** Zákazníci se rozdávají z **míchaného pytlíku**: každé kolo
+projdou všichni dostupní právě jednou a pořadí uvnitř kola se losuje znovu. Na švu mezi koly nikdy
+nepřijde dvakrát po sobě ten samý. Pouhé „jen ne ten, co právě odešel“ nestačí – ze tří zvířátek
+zbydou dvě, mezi kterými se hází mincí, takže nejčastějším krátkým vzorcem je pingpong dvou a třetí
+jako by ze hry zmizel: naměřeno **25 % sezení o čtyřech objednávkách**, kde se jedno zvíře vůbec
+neukázalo. Vynechat *dva poslední* zas fairness spraví, ale pořadí ztuhne na věčné
+medvídek–zajíček–kočička. Pytlík dá obojí: rovný podíl i pestré pořadí.
+
 ## 7. Odměny
 
 1. **Okamžitá (každá akce):** zvuk + animace – jahoda svištivě přiletí, perníček poskočí,
