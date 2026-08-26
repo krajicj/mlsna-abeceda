@@ -3,6 +3,7 @@
  * a finished order is written back (rule 4 – progress is sacred, so nothing else touches storage).
  * A session that is merely opened never writes; only `complete()` does.
  */
+import { nextCustomer } from './customers';
 import { generateOrder, type Order } from './orders';
 import {
   completeOrder,
@@ -15,12 +16,18 @@ import {
 import type { Rng } from './rng';
 import { readSave, writeSave, type SaveData, type StorageLike } from './save';
 import type { FruitKind } from '../data/curriculum';
+import { STARTER_CUSTOMERS, type CustomerId } from '../data/customers';
 
 export interface Session {
   /** The record as it stands; a new one after every `complete()`. */
   readonly save: SaveData;
   /** The order for position `save.progress.ordersCompleted + 1`. */
   readonly order: Order;
+  /**
+   * Who is carrying the current order (návrh kap. 6). Deliberately NOT in the save: after a reload
+   * any animal may walk in, and restoring the session is STEP-12's job.
+   */
+  readonly customer: CustomerId;
   /** Writes the finished order into the save and generates the next one; returns it. */
   complete(results: readonly ItemResult[]): Order;
 }
@@ -61,6 +68,9 @@ export function createSession(
   }
 
   let order = nextOrder();
+  // Drawn here and not in the scene: this is the one place with an injected rng, so a seeded
+  // session replays the customers as exactly as it replays the orders.
+  let customer = nextCustomer({ available: STARTER_CUSTOMERS, rng });
 
   return {
     get save() {
@@ -69,6 +79,9 @@ export function createSession(
     get order() {
       return order;
     },
+    get customer() {
+      return customer;
+    },
     complete(results) {
       remember(order);
       // A storage that refuses to write does not stop the loop: the session keeps the new record
@@ -76,6 +89,7 @@ export function createSession(
       save = completeOrder(save, results, todayStamp(now()));
       writeSave(storage, save);
       order = nextOrder();
+      customer = nextCustomer({ available: STARTER_CUSTOMERS, avoid: customer, rng });
       return order;
     },
   };

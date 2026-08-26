@@ -27,7 +27,7 @@ export const MAX_PILLS = 5;
 export const PILL_OFFSET_Y = 84;
 
 /**
- * The order bubble above the bear (STEP-09). 480 px wide, not the 500 of the artboard: on a
+ * The order bubble above the customer (STEP-09). 480 px wide, not the 500 of the artboard: on a
  * 1024 px stage the digit shelf starts at x = 562, and the layout invariant asks for 8 px between
  * any two boxes – 480 leaves 22. Sizes live here, `art/bubble.ts` draws to them.
  */
@@ -42,7 +42,7 @@ export const BUBBLE_ITEM_HEIGHT = 88;
 export const BUBBLE_ITEM_GAP = 12;
 /** Three pictures is what the card holds; orders that long arrive in STEP-11. */
 export const BUBBLE_MAX_ITEMS = 3;
-/** The tail of the bubble, measured from the left edge of the card – it points at the bear. */
+/** The tail of the bubble, measured from the left edge of the card – it points at the customer. */
 export const BUBBLE_TAIL_X = 110;
 /** Height of the tail below the card; the drawing is that much taller than `bubble`. */
 export const BUBBLE_TAIL_HEIGHT = 24;
@@ -79,13 +79,14 @@ export const COUNTER_FRONT_TOP = 560; // mint front with the doors
 export const FLOOR_TOP = 692;
 
 export interface KitchenLayout {
-  readonly bear: Rect;
+  /** Whoever is at the counter right now; every animal is drawn on the same box. */
+  readonly customer: Rect;
   readonly cake: Rect;
   readonly bowl: Rect;
   /** The whole shelf including the board; the slots sit on top of the board. */
   readonly shelfDigits: Rect;
   readonly shelfLetters: Rect;
-  /** The order card above the bear; the same place whatever the stage width. */
+  /** The order card above the customer; the same place whatever the stage width. */
   readonly bubble: Rect;
   /** The star counter, held against the right edge, above the digit shelf. */
   readonly stars: Rect;
@@ -109,7 +110,7 @@ export function kitchenLayout(stageWidth: number): KitchenLayout {
   const width = clampStageWidth(stageWidth);
   const cake: Rect = { x: Math.round(width / 2) - 180, y: 384, width: 220, height: 146 };
   return {
-    bear: { x: 60, y: 200, width: 260, height: 320 },
+    customer: { x: 60, y: 200, width: 260, height: 320 },
     cake,
     bowl: { x: cake.x + 248, y: 400, width: 320, height: 140 },
     shelfDigits: { x: width - 462, y: 84, width: 448, height: 128 },

@@ -1,4 +1,4 @@
-/* Colours, the bear's breathing and the dev guide; every position comes from src/art/layout.ts. */
+/* Colours, the customer's breathing and the dev guide; every position comes from src/art/layout.ts. */
 .scene-kitchen {
   background: var(--wall);
   background-image: radial-gradient(var(--wall-dot) 3px, transparent 3.5px);
@@ -19,13 +19,13 @@
   top: 0;
 }
 
-/* Idle: the bear breathes, nothing else moves. */
-.kitchen-bear {
+/* Idle: the customer breathes, nothing else moves. */
+.kitchen-customer {
   transform-origin: 50% 100%;
-  animation: bear-breathe 3.6s ease-in-out infinite;
+  animation: customer-breathe 3.6s ease-in-out infinite;
 }
 
-@keyframes bear-breathe {
+@keyframes customer-breathe {
   0%,
   100% {
     transform: scale(1);
@@ -36,7 +36,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kitchen-bear {
+  .kitchen-customer {
     animation: none;
   }
 }

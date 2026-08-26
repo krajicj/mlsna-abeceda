@@ -1,5 +1,4 @@
 import { fruitBowl } from '../../art/bowl';
-import { bear } from '../../art/bear';
 import { cakeBase } from '../../art/cake';
 import { kitchenBackdrop } from '../../art/kitchen';
 import { kitchenLayout, type KitchenLayout } from '../../art/layout';
@@ -24,6 +23,7 @@ import {
 import type { Scene } from '../../stage/scenes';
 import { createBubble } from './bubble';
 import { createChoiceItem } from './choice-item';
+import { createCustomer } from './customer';
 import { createCountItem } from './count-item';
 import { createFinale } from './finale';
 import { layer, place } from './dom';
@@ -33,8 +33,6 @@ import './style.css';
 
 /** From the praise of the last item to the start of the finale – it waits out the praise first. */
 const FINALE_DELAY_MS = 400;
-/** From the cleared counter to the next order (STEP-10 puts the bell in this gap). */
-const NEXT_ORDER_MS = 400;
 
 interface KitchenDevHandle {
   /** Replays the letter item; without an offer it takes the one of the order or the shelf. */
@@ -71,12 +69,13 @@ export const kitchenScene: Scene = (ctx) => {
 
   const backdrop = document.createElement('div');
   backdrop.className = 'kitchen-backdrop';
-  const bearEl = prop('kitchen-bear', bear());
   const cakeEl = prop('kitchen-cake', cakeBase());
   const bowlEl = prop('kitchen-bowl', fruitBowl());
   const digitShelf = layer('kitchen-shelf');
   const letterShelf = layer('kitchen-shelf');
-  el.append(backdrop, bearEl, cakeEl, bowlEl, digitShelf, letterShelf);
+  el.append(backdrop, cakeEl, bowlEl, digitShelf, letterShelf);
+  // Owns its own element and appends it here, so it can walk in and out without the scene helping.
+  const customer = createCustomer({ root: el, sfx: ctx.sfx });
 
   if (import.meta.env.DEV) {
     const guide = document.createElement('div');
@@ -133,7 +132,7 @@ export const kitchenScene: Scene = (ctx) => {
   const finale = createFinale({
     root: el,
     cake: cakeEl,
-    bear: bearEl,
+    customer,
     sfx: ctx.sfx,
     voice: ctx.voice,
     finish,
@@ -152,7 +151,6 @@ export const kitchenScene: Scene = (ctx) => {
   let backdropWidth = 0;
 
   function draw(): void {
-    place(bearEl, layout.bear);
     place(cakeEl, layout.cake);
     place(bowlEl, layout.bowl);
   }
@@ -187,8 +185,12 @@ export const kitchenScene: Scene = (ctx) => {
     choiceItem.clear();
     bubble.show(null);
     ctx.voice.preload(orderPreload(order));
-    // No bell yet – the next customer walks straight in (STEP-10 gives the child the pace back).
-    pacer.after(NEXT_ORDER_MS, () => startOrder(order));
+    // Whoever is standing there is the one who leaves: `session.complete()` ran when the star
+    // landed, so `session.customer` is already the NEXT customer. The bell goes into this gap in
+    // the last part of STEP-10; until then the next one walks in by itself.
+    customer.leave(() => {
+      customer.arrive(ctx.session.customer, () => startOrder(order));
+    });
   }
 
   /** Puts one order on the counter: the bubble, the playable item and the narrator. */
@@ -220,6 +222,8 @@ export const kitchenScene: Scene = (ctx) => {
   bubble.layout(layout);
   stars.layout(layout);
   finale.layout(layout);
+  customer.layout(layout);
+  customer.show(ctx.session.customer);
   startOrder(order);
 
   /** DEV only: the offer of the order when it fits, otherwise what stands on the shelf. */
@@ -294,12 +298,14 @@ export const kitchenScene: Scene = (ctx) => {
       bubble.layout(layout);
       stars.layout(layout);
       finale.layout(layout);
+      customer.layout(layout);
     },
     destroy() {
       // The scene does not own the narrator, but nothing it started may outlive it.
       ctx.voice.stop();
       pacer.cancel();
       finale.destroy();
+      customer.destroy();
       countItem.destroy();
       choiceItem.destroy();
       bubble.destroy();

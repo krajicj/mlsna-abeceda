@@ -467,15 +467,18 @@ describe('pillSlots', () => {
     }
   });
 
-  it.each(WIDTHS)('leaves 8 px between the full row, the bear and the shelf at %i px', (width) => {
-    const { bear, cake, shelfLetters } = kitchenLayout(width);
-    const slots = pillSlots(cake, MAX_PILLS);
-    const first = slots[0]!;
-    const last = slots[slots.length - 1]!;
-    expect(first.x - (bear.x + bear.width)).toBeGreaterThanOrEqual(8);
-    expect(shelfLetters.x - (last.x + last.width)).toBeGreaterThanOrEqual(8);
-    expect(first.y).toBeGreaterThanOrEqual(0);
-  });
+  it.each(WIDTHS)(
+    'leaves 8 px between the full row, the customer and the shelf at %i px',
+    (width) => {
+      const { customer, cake, shelfLetters } = kitchenLayout(width);
+      const slots = pillSlots(cake, MAX_PILLS);
+      const first = slots[0]!;
+      const last = slots[slots.length - 1]!;
+      expect(first.x - (customer.x + customer.width)).toBeGreaterThanOrEqual(8);
+      expect(shelfLetters.x - (last.x + last.width)).toBeGreaterThanOrEqual(8);
+      expect(first.y).toBeGreaterThanOrEqual(0);
+    },
+  );
 
   it('clamps the count', () => {
     const { cake } = kitchenLayout(1024);

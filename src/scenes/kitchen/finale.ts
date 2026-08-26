@@ -16,6 +16,7 @@ import { starSlot, STAR_SIZE, type KitchenLayout } from '../../art/layout';
 import { star } from '../../art/star';
 import type { Rect } from '../../art/svg';
 import { plingRate } from '../../data/sfx';
+import type { CustomerHandle } from './customer';
 import type { LinePicker } from '../../game/speech';
 import { createMotion, layer, place } from './dom';
 import type { StarsHandle } from './stars';
@@ -24,7 +25,6 @@ import type { StarsHandle } from './stars';
 const GLAZE_MS = 380;
 const EAT_AT_MS = 820;
 const FLIGHT_MS = 560;
-const MUNCH_MS = 640;
 const STAR_AT_MS = 1700;
 const STAR_FLIGHT_MS = 700;
 const COUNT_AT_MS = 2400;
@@ -54,7 +54,7 @@ function centerOf(rect: Rect): { readonly x: number; readonly y: number } {
 export function createFinale(options: {
   readonly root: HTMLElement;
   readonly cake: HTMLElement;
-  readonly bear: HTMLElement;
+  readonly customer: CustomerHandle;
   readonly sfx: SfxPlayer;
   readonly voice: VoicePlayer;
   readonly finish: LinePicker;
@@ -86,19 +86,13 @@ export function createFinale(options: {
   /**
    * The flight animations, kept here on purpose: they hold their last frame (`fill: 'forwards'`)
    * and `createMotion()` forgets an animation the moment it finishes, so `cancelAll()` would leave
-   * the cake sitting invisible in the bear's mouth for the next order.
+   * the cake sitting invisible in the customer's mouth for the next order.
    */
   let flight: Animation[] = [];
   let running = false;
 
   function placeGlaze(): void {
     if (current) place(glazeEl, current.cake);
-  }
-
-  /** The customer's mouth, in the bear's own 260×320 drawing: the muzzle sits at (130, 150). */
-  function mouth(): { readonly x: number; readonly y: number } {
-    const bear = current?.bear ?? boxOf(options.bear);
-    return { x: bear.x + (bear.width * 130) / 260, y: bear.y + (bear.height * 150) / 320 };
   }
 
   function showGlaze(): void {
@@ -155,7 +149,7 @@ export function createFinale(options: {
     flight = [];
     const cakeBox = boxOf(options.cake);
     const from = centerOf(cakeBox);
-    const to = mouth();
+    const to = options.customer.mouth();
     flown = [options.cake, glazeEl, ...options.plate()];
     for (const el of flown) {
       const own = centerOf(boxOf(el));
@@ -181,28 +175,16 @@ export function createFinale(options: {
     options.sfx.play('whoosh');
     motion.after(FLIGHT_MS, () => {
       for (const el of flown) el.style.opacity = '0';
-      munch();
+      // The bite, the chewing and the animal's own "yum" all live with the customer: this is the
+      // one place that knows WHO is eating.
+      options.customer.munch();
     });
-  }
-
-  function munch(): void {
-    motion.animate(
-      options.bear,
-      [
-        { transform: 'scale(1, 1)' },
-        { transform: 'scale(1.03, 0.96)' },
-        { transform: 'scale(0.99, 1.02)' },
-        { transform: 'scale(1.02, 0.97)' },
-        { transform: 'scale(1, 1)' },
-      ],
-      { duration: MUNCH_MS, easing: 'ease-in-out' },
-    );
   }
 
   function flyStar(): void {
     if (!current) return;
     const slot = starSlot(current.stars);
-    const paw = mouth();
+    const paw = options.customer.mouth();
     starEl.hidden = false;
     place(starEl, slot);
     const dx = paw.x - (slot.x + slot.width / 2);
@@ -220,6 +202,7 @@ export function createFinale(options: {
       ],
       { duration: STAR_FLIGHT_MS, easing: 'cubic-bezier(0.3, 0, 0.3, 1)' },
     );
+    options.sfx.play('sparkle');
     options.voice.say(options.star.next());
   }
 

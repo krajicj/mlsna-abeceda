@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { STARTER_CUSTOMERS } from '../data/customers';
 import { countItemOf, MAX_COUNT } from './counting';
 import { createTrack } from './mastery';
 import { itemResult } from './progress';
@@ -140,6 +141,40 @@ describe('session.complete', () => {
     const session = createSession(memoryStorage(), { now: () => new Date(2026, 0, 9, 20, 30) });
     session.complete([]);
     expect(session.save.progress.lastPlayed).toBe('2026-01-09');
+  });
+
+  it('opens with one of the starter customers', () => {
+    const session = createSession(memoryStorage(), { rng: createRng(4) });
+    expect(STARTER_CUSTOMERS).toContain(session.customer);
+  });
+
+  it('sends a different animal in after every order', () => {
+    const session = createSession(memoryStorage(), { rng: createRng(9) });
+    let previous = session.customer;
+    for (let i = 0; i < 20; i += 1) {
+      session.complete([]);
+      expect(session.customer).not.toBe(previous);
+      previous = session.customer;
+    }
+  });
+
+  it('replays the same customers from the same seed', () => {
+    const run = (): string[] => {
+      const session = createSession(memoryStorage(), { rng: createRng(21) });
+      return Array.from({ length: 8 }, () => {
+        const who = session.customer;
+        session.complete([]);
+        return who;
+      });
+    };
+    expect(run()).toEqual(run());
+  });
+
+  it('keeps the customer out of the save – a reload may bring anybody', () => {
+    const storage = memoryStorage();
+    const session = createSession(storage, { rng: createRng(2) });
+    session.complete([]);
+    expect(storage.getItem(SAVE_KEY) ?? '').not.toContain(session.customer);
   });
 
   it('keeps the loop running when the storage refuses to write', () => {
