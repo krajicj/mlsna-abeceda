@@ -45,6 +45,21 @@
 .kitchen-bell {
   pointer-events: auto;
   cursor: pointer;
+  transition: opacity 220ms ease-out;
+}
+
+/* Asleep while an order runs: still on the counter, but dimmed and deaf, so a stray tap cannot
+   call a second customer. The child reads one rule off the picture – bright bell, ring it. */
+.kitchen-bell.is-asleep {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kitchen-bell {
+    transition: none;
+  }
 }
 
 .kitchen-bell-hint {
@@ -52,7 +67,6 @@
   pointer-events: none;
 }
 
-.kitchen-bell[hidden],
 .kitchen-bell-hint[hidden] {
   display: none;
 }

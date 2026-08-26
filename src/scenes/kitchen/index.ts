@@ -83,6 +83,16 @@ export const kitchenScene: Scene = (ctx) => {
   el.append(backdrop, cakeEl, bowlEl, digitShelf, letterShelf);
   // Owns its own element and appends it here, so it can walk in and out without the scene helping.
   const customer = createCustomer({ root: el, sfx: ctx.sfx });
+  // Built before the items and the finale on purpose: the bell stays on the counter all the time
+  // now, so the fruit and the cake have to fly IN FRONT of it, not behind it.
+  const bell = createBellHandle({
+    root: el,
+    sfx: ctx.sfx,
+    voice: ctx.voice,
+    line: createBellPicker(),
+    // Declared further down; only ever called when the child taps, long after the scene is built.
+    onRing: () => ringBell(),
+  });
 
   if (import.meta.env.DEV) {
     const guide = document.createElement('div');
@@ -95,7 +105,6 @@ export const kitchenScene: Scene = (ctx) => {
   const praise = createPraisePicker();
   const finish = createFinishPicker();
   const starLine = createStarPicker();
-  const bellLine = createBellPicker();
   /** Delays that never talk over the narrator: the finale and the next order both use it. */
   const pacer = createPacer({ voice: ctx.voice });
 
@@ -149,13 +158,6 @@ export const kitchenScene: Scene = (ctx) => {
     plate: () => [...countItem.plate(), ...choiceItem.plate()],
     onStar: () => writeProgress(),
     onDone: () => finishOrder(),
-  });
-  const bell = createBellHandle({
-    root: el,
-    sfx: ctx.sfx,
-    voice: ctx.voice,
-    line: bellLine,
-    onRing: () => ringBell(),
   });
 
   // The context is unlocked by now (the title screen saw to that), so this is where the bytes

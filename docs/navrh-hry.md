@@ -74,6 +74,9 @@ zvoneček → přijde zákazník → řekne objednávku (hlas + obrázky v bubli
 ```
 
 - **Zvoneček** na pultu přivolá dalšího zákazníka. Dítě řídí tempo; bez klepnutí se nic neděje.
+  Z pultu **nikdy nemizí** – během objednávky jen „spí“ (ztlumený a hluchý, aby se nedal omylem
+  přivolat druhý zákazník) a s prázdným pultem se probudí do plné barvy. Věci v kuchyni se
+  neztrácejí; dítě si tak přečte jediné pravidlo z obrázku – barevný zvoneček znamená „zazvoň“.
 - Jedna objednávka = 1–3 položky (kap. 5.3). Pořadí plnění je volné; bublina odškrtává hotové.
 - **Bublina ukazuje druh věci, nikdy odpověď.** Ovoce ano i s počtem (kolik, to stejně říkají
   kolečka nad výrobkem), ale perníček a svíčka jsou v bublině **prázdné** – které písmenko nebo

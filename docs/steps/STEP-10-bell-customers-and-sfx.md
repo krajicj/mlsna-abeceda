@@ -647,6 +647,14 @@ nechává dvě na minci, takže **25 % sezení o čtyřech objednávkách** vid�
 0 % sezení jen se dvěma zvířaty, 1000/1000/1000 ze 3000, nejdelší řada bez medvěda 4. Pravidlo je
 zapsané v `navrh-hry.md` kap. 6.
 
+Autorovi vadilo, že zvoneček **mizí a objevuje se**. Nechává se teď na pultu natrvalo a jen mění
+stav: během objednávky `is-asleep` (opacity 0,4, `pointer-events: none` – klepnutí projde skrz na
+pozadí a nic neudělá), s prázdným pultem plná barva a poskočení. Při té příležitosti se opravila
+skrytá vada: animace „popnutí“ startovala na `opacity: 0`, a když je záložka na pozadí, Web
+Animations zamrznou – zvoneček by zůstal neviditelný. Animuje se proto **jen `transform`**;
+o viditelnosti rozhoduje třída, pohyb je jen dekorace. Zvoneček se taky staví dřív než položky
+a finále, aby přes něj ovoce a dortík létaly zepředu. Pravidlo je v `navrh-hry.md` kap. 4.
+
 ### Návrhy mimo rozsah
 
 - Police si drží ozdobu i s prázdným pultem. Není to lež (je to inertní obsah), ale prázdná
