@@ -84,6 +84,12 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 - **Rod dítěte** (holčička / kluk / neutrální) přibyl do nastavení kvůli tvarům pochval
   (`navrh-hry.md` kap. 3 a 9). STEP-07 vygeneruje všechny tři sady, přepínač je v STEP-17;
   do té doby hra chválí neutrálně.
+- **Ukládání postupu (srpen 2026):** `localStorage` sám nestačí – dcera hraje na víc zařízeních
+  a WebKit maže script-writable úložiště po sedmi dnech používání Safari bez interakce se
+  stránkou (web apka na ploše má vlastní počítadlo a té se to netýká). Návrh dostal kap. 9.1:
+  save musí jít **slučovat**, ne jen přepisovat, a hvězdičky se neukládají jako zůstatek, ale jako
+  `earned` + `purchases`. Formát je potřeba mít hotový **před obchůdkem** (STEP-13); čím se postup
+  přenáší (ruční soubor × vlastní endpoint s rodinným kódem) je otevřená otázka, viz kap. 13.
 - **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-20 do STEP-04: zatím se
   vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
   kuchyně nešlo posoudit. STEP-20 řeší jen PWA a offline.

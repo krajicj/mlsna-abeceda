@@ -298,6 +298,60 @@ Zámek: podržet hvězdičky vpravo nahoře 3 s → „Kolik je 4 × 3?“ s č�
 - **Sezení:** limit objednávek / minut, nebo bez limitu.
 - **Zvuk:** hlasitost hlasu, efektů, hudby; který vypravěč mluví, když je hlasů víc (kap. 8).
 - **Data:** export (JSON), import, „smazat vše“ s dvojím potvrzením.
+
+### 9.1 Uložený postup: trvanlivost a slučitelnost
+
+`localStorage` na jednom zařízení sám nestačí, a to ze dvou nezávislých důvodů.
+
+**1. Víc zařízení.** Dcera hraje na tabletu i na notebooku. Dnes má každé zařízení vlastní
+oddělený postup a o ten druhý neví.
+
+**2. Prohlížeč data smaže sám.** WebKit maže veškeré script-writable úložiště (IndexedDB,
+localStorage, sessionStorage, media keys, registrace service workeru i jeho cache) po **sedmi
+dnech používání Safari bez interakce s tou stránkou**. Nejsou to kalendářní dny – počítají se
+dny, kdy se Safari použilo; kdo prohlížeč týden nezapne, tomu se lhůta neposouvá. Web aplikace
+**přidaná na plochu má vlastní počítadlo**, které se posouvá skutečným používáním té aplikace,
+a u ní se smazání nečeká. Dvě věci z toho plynou: ikona na ploše (PWA) není kosmetika, ale
+ochrana postupu, a i tak musí jít postup obnovit odjinud.
+
+**Pravidlo: uložený stav musí jít slučovat, ne jen přepisovat.** Jakmile existují dvě zařízení,
+vždycky se rozejdou, a „poslední zápis vyhrává“ znamená ztracený postup. Formát se proto
+navrhuje tak, aby sloučení dvou záznamů dalo stejný výsledek nezávisle na pořadí:
+
+| co | jak se slučuje |
+|---|---|
+| skóre zvládnutí prvku (0–5) | vyšší vyhrává |
+| stupeň dráhy, aktivní sada prvků | vyšší stupeň, sjednocení sady |
+| odemčená zvířátka, ovoce, výrobky, fotky v albu | sjednocení |
+| počet objednávek, poslední hraní | vyšší, resp. pozdější |
+| **hvězdičky jako měna** | **nejde přímo – viz níže** |
+
+**Hvězdičky se neukládají jako zůstatek.** Zůstatek se sloučit nedá: sečíst dvě zařízení znamená
+vyrobit hvězdičky z ničeho, vzít vyšší znamená sebrat dceři, co si mezitím koupila. Ukládá se
+proto zvlášť **`earned`** (jen roste, slučuje se jako vyšší… viz pozn.) a **`purchases`**
+(množina koupených věcí, slučuje se sjednocením); zůstatek se dopočítá jako
+`earned − cena(purchases)`. Sloučení je pak idempotentní a nezávislé na pořadí.
+
+> Pozn.: „vyšší vyhrává“ u `earned` podhodnotí součet, když dcera hraje na obou zařízeních mezi
+> dvěma sloučeními (10 + 8 → 10, ne 18). Poctivější je počítat `earned` **per zařízení**
+> (`{ tablet: 10, notebook: 8 }`, sloučení = vyšší hodnota pro každý klíč, součet přes klíče).
+> Rozhodne se, až bude jasné, jestli se bude synchronizovat automaticky, nebo ručně.
+
+**Čím se postup přenáší, rozhodnuté není.** Ve hře jsou dvě cesty a liší se v tom, jestli
+projekt smí mít server:
+
+- **Ruční export/import souboru** v rodičovském koutku (kap. 9, „Data“). Nulová infrastruktura,
+  drží všechna dosavadní pravidla, ale rodič si musí vzpomenout.
+- **Automatická synchronizace** proti drobnému vlastnímu endpointu s rodinným kódem, volitelná
+  a ve výchozím stavu vypnutá. Znamená to server a síťový požadavek za běhu – tedy změnu
+  zakládajících pravidel projektu (`CLAUDE.md`: žádný backend, žádné účty, žádné externí
+  requesty za běhu), a proto je to samostatné rozhodnutí, ne implementační detail.
+
+Než přibude obchůdek, musí být hotový aspoň **formát** (tabulka výše a `earned`/`purchases`);
+zpětně se mergeovatelnost do formátu navrženého na přepis dodělává draze. Levná vyztužení, která
+na rozhodnutí o přenosu nečekají: `navigator.storage.persist()`, zrcadlo v IndexedDB a export
+dřív, než ho bude potřeba.
+
 - Verze hry.
 
 ## 10. Výtvarný styl
@@ -337,6 +391,12 @@ Zodpovězeno a zapracováno: jména přes nastavení, co umí, zařízení, dort
 TypeScript, název Mlsná abeceda, veřejný repozitář, jen zvířecí zákazníci, diakritika
 později, limit 10 objednávek, hudba později (Suno), pohled z první osoby, hlas z nabídky
 ElevenLabs, grafika v SVG stylu z návrhu.
+
+**Otevřeno – přenos postupu mezi zařízeními (srpen 2026, kap. 9.1).** Stačí ruční export/import
+souboru, nebo se má hra umět synchronizovat sama proti vlastnímu endpointu s rodinným kódem?
+Druhá varianta mění tři zakládající pravidla projektu (žádný backend, žádné účty, žádné externí
+requesty za běhu). Rozhodnout je potřeba **před obchůdkem** (M3), protože tehdy hvězdičky přestanou
+být jen počítadlo a stanou se měnou.
 
 1. **Účet ElevenLabs:** až ho založíte a uložíte klíč do `~/.config/mlsna-abeceda/elevenlabs.env`
    (nikdy do chatu ani do repozitáře), spustím
