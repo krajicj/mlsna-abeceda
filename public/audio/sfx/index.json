@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "model": "eleven_text_to_sound_v2",
+  "format": "mp3_44100_64",
+  "effects": {
+    "bell": {
+      "hash": "7db2eaf2894ecb62",
+      "prompt": "small brass shop counter desk bell rung once, bright ding",
+      "durationSeconds": 1.5,
+      "promptInfluence": 0.3,
+      "bytes": 12374,
+      "loudness": -22
+    },
+    "customer.bear.hello": {
+      "hash": "ee710f9e74e91594",
+      "prompt": "friendly low cartoon bear grunt, warm and short, no words",
+      "durationSeconds": 1,
+      "promptInfluence": 0.3,
+      "bytes": 8613,
+      "loudness": -22
+    },
+    "customer.bear.yum": {
+      "hash": "59afb6f546e528c5",
+      "prompt": "happy cartoon bear contented low hum, no words",
+      "durationSeconds": 1,
+      "promptInfluence": 0.3,
+      "bytes": 8613,
+      "loudness": -22
+    },
+    "customer.cat.hello": {
+      "hash": "a8e67525907eedad",
+      "prompt": "soft friendly cartoon cat meow, short, no words",
+      "durationSeconds": 1,
+      "promptInfluence": 0.3,
+      "bytes": 8613,
+      "loudness": -22
+    },
+    "customer.cat.yum": {
+      "hash": "a93e43ad3867ef2e",
+      "prompt": "contented cartoon cat purr with a small mrrp, short",
+      "durationSeconds": 1,
+      "promptInfluence": 0.3,
+      "bytes": 8613,
+      "loudness": -22
+    },
+    "customer.rabbit.hello": {
+      "hash": "08f4712b1cd51c4f",
+      "prompt": "cute high cartoon rabbit squeak, friendly and short, no words",
+      "durationSeconds": 1,
+      "promptInfluence": 0.3,
+      "bytes": 8613,
+      "loudness": -22
+    },
+    "customer.rabbit.yum": {
+      "hash": "be30a3814bacbdcd",
+      "prompt": "happy cartoon rabbit nibble squeak, cheerful, no words",
+      "durationSeconds": 1,
+      "promptInfluence": 0.3,
+      "bytes": 8613,
+      "loudness": -22
+    },
+    "done": {
+      "hash": "a3c4f3d9915710c0",
+      "prompt": "warm friendly two-note kitchen oven timer ping, cheerful, clean",
+      "durationSeconds": 1.2,
+      "promptInfluence": 0.3,
+      "bytes": 10076,
+      "loudness": -22
+    },
+    "munch": {
+      "hash": "db6d5eab82a597a1",
+      "prompt": "cute cartoon character taking a bite and chewing happily, soft",
+      "durationSeconds": 1.5,
+      "promptInfluence": 0.3,
+      "bytes": 12374,
+      "loudness": -22
+    },
+    "nope": {
+      "hash": "c5e61b5fc494aa26",
+      "prompt": "soft low wooden bump, gentle and encouraging, cartoon, not harsh",
+      "durationSeconds": 0.6,
+      "promptInfluence": 0.3,
+      "bytes": 5269,
+      "loudness": -22
+    },
+    "pling": {
+      "hash": "49814c53b3e68634",
+      "prompt": "short bright glockenspiel ding, single clean note, no reverb tail",
+      "durationSeconds": 0.8,
+      "promptInfluence": 0.3,
+      "bytes": 6941,
+      "loudness": -22
+    },
+    "sparkle": {
+      "hash": "27edbefafe21617e",
+      "prompt": "short magical sparkle twinkle, bright, cartoon reward",
+      "durationSeconds": 1,
+      "promptInfluence": 0.3,
+      "bytes": 8613,
+      "loudness": -22
+    },
+    "steps": {
+      "hash": "4c2ce144cbd23b5c",
+      "prompt": "soft padding footsteps of a small animal on a wooden floor, four light steps",
+      "durationSeconds": 1.5,
+      "promptInfluence": 0.3,
+      "bytes": 12374,
+      "loudness": -22
+    },
+    "whoosh": {
+      "hash": "17c84e4af98577c9",
+      "prompt": "soft quick whoosh of a small object flying through the air, cartoon, clean, no music",
+      "durationSeconds": 0.6,
+      "promptInfluence": 0.3,
+      "bytes": 5269,
+      "loudness": -22
+    }
+  }
+}

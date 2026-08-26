@@ -68,7 +68,7 @@ personal.json              # names for voice clips – git-ignored (template: pe
 public/
   audio/voice/<id>.mp3     # generated voice lines (committed)
   audio/voice/names/       # name clips (first names only) + index.json – committed
-  audio/sfx/<id>.mp3       # sound effects
+  audio/sfx/<id>.mp3       # generated sound effects + index.json – committed
   fonts/                   # Fredoka
 src/
   main.ts                  # bootstrap, stage scaling, audio unlock
@@ -82,8 +82,12 @@ src/
     lines.cs.ts            # manifest of ALL voice lines: { id, text, voice } – the only source for generation
     curriculum.ts          # letter/number order, words for letters ("M jako maminka")
     customers.ts           # customers and their lines
+  data/
+    sfx.ts                 # manifest of ALL sound effects: { id, prompt, durationSeconds }
 scripts/
+  lib/audio.mjs            # shared by both generators: ffmpeg loudness pass, atomic write, fingerprint, retries
   generate-voice.mjs       # ElevenLabs via plain fetch (no SDK): lines.cs.ts → public/audio/voice/; --names for personal.json
+  generate-sfx.mjs         # ElevenLabs Sound Effects: sfx.ts → public/audio/sfx/
 docs/navrh-hry.md          # game design (Czech)
 docs/plan.md               # step roadmap and statuses (Czech)
 docs/steps/                # one implementation plan per step (Czech)
@@ -106,11 +110,13 @@ docker compose run --rm build            # vite build → dist/  (network: none)
 docker compose run --rm fonts            # download Fredoka (woff2 + OFL) into public/fonts/; run once, result is committed
 docker compose run --rm voice            # generate voice lines; reads ~/.config/mlsna-abeceda/elevenlabs.env
 docker compose run --rm normalize        # re-gain committed clips to -18 LUFS (ffmpeg, no key, no network)
+docker compose run --rm sfx              # generate sound effects (same key); -22 LUFS, 4 dB under the narrator
+docker compose run --rm normalize-sfx    # re-gain committed effects (ffmpeg, no key, no network)
 docker compose run --rm add <pkg>@<ver>  # add a dependency (needs internet) – only with a justification in the step plan
 ```
 
 The ElevenLabs key lives in `~/.config/mlsna-abeceda/elevenlabs.env` on the host — outside the
-repository and outside the bind mount — and is passed only to the `voice` service.
+repository and outside the bind mount — and is passed only to the `voice` and `sfx` services.
 
 ## Non-negotiable rules
 
@@ -160,8 +166,8 @@ project. Rules:
    justification in the step plan; Vite/esbuild/rolldown work without scripts.
 5. **Isolation.** All toolchain commands run in Docker (`compose.yaml`): dev/test/build/check
    containers have no network (`internal` network + socat port proxy for the dev server),
-   run as user `node` with all capabilities dropped; only `install`, `add` and `voice` get
-   internet. Node image pinned by digest. Nothing from npm is ever executed on the host.
+   run as user `node` with all capabilities dropped; only `install`, `add`, `voice` and `sfx`
+   get internet. Node image pinned by digest. Nothing from npm is ever executed on the host.
 6. **CI.** GitHub Actions pinned to commit SHAs (with a version comment), minimal
    `permissions`, no secrets, `--frozen-lockfile`, tests before deploy.
 7. **Updates** are manual and rare (roughly quarterly), one step plan per update round,

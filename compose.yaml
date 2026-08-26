@@ -75,6 +75,29 @@ services:
     entrypoint:
       ['node', '--disable-warning=ExperimentalWarning', 'scripts/generate-voice.mjs', '--normalize']
 
+  sfx: # internet (ElevenLabs Sound Effects); the same key and the same rules as `voice`
+    <<: *toolchain
+    build:
+      context: .
+      target: media # ffmpeg: every generated clip goes through the loudness pass
+    image: mlsna-abeceda-media
+    profiles: [cli]
+    env_file:
+      - path: elevenlabs.env # gitignored symlink to ~/.config/mlsna-abeceda/elevenlabs.env
+        required: false # so `--dry-run` runs where there is no key, see the note at `voice`
+    entrypoint: ['node', '--disable-warning=ExperimentalWarning', 'scripts/generate-sfx.mjs']
+
+  normalize-sfx: # re-gain the committed effects; needs no key and no network, only ffmpeg
+    <<: *toolchain
+    build:
+      context: .
+      target: media
+    image: mlsna-abeceda-media
+    profiles: [cli]
+    network_mode: none
+    entrypoint:
+      ['node', '--disable-warning=ExperimentalWarning', 'scripts/generate-sfx.mjs', '--normalize']
+
   vite: # dev server on an internal network – no DNS, no egress
     <<: *toolchain
     profiles: [dev]

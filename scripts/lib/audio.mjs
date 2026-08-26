@@ -102,9 +102,16 @@ export function ffmpeg(args, input) {
   return run;
 }
 
+/** ffmpeg prints "-inf" for a measurement its gate threw away; Number() would make that a NaN. */
+function decibels(value) {
+  return value === '-inf' ? Number.NEGATIVE_INFINITY : Number(value);
+}
+
 /**
  * EBU R128 integrated loudness and true peak of one clip. The gate of R128 ignores the silence
  * around the sentence, which plain RMS does not – a clip with a long lead-in would look quiet.
+ * On a very short effect the gate can throw away everything and report `-inf`; that is a real
+ * answer, not an error, so it comes back as -Infinity and the caller decides what to do with it.
  */
 export function measureLoudness(bytes) {
   const stderr = String(
@@ -112,23 +119,46 @@ export function measureLoudness(bytes) {
   );
   // Only the summary at the end; the per-frame lines carry an "I:" of their own.
   const summary = stderr.slice(stderr.lastIndexOf('Summary:'));
-  const lufs = /^\s*I:\s*(-?\d+(?:\.\d+)?) LUFS/m.exec(summary);
-  const peak = /^\s*Peak:\s*(-?\d+(?:\.\d+)?) dBFS/m.exec(summary);
+  const lufs = /^\s*I:\s*(-?\d+(?:\.\d+)?|-inf) LUFS/m.exec(summary);
+  const peak = /^\s*Peak:\s*(-?\d+(?:\.\d+)?|-inf) dBFS/m.exec(summary);
   if (lufs === null || peak === null) fail('ffmpeg printed no loudness summary for a clip');
-  return { lufs: Number(lufs[1]), truePeak: Number(peak[1]) };
+  return { lufs: decibels(lufs[1]), truePeak: decibels(peak[1]) };
 }
+
+/** Below this the R128 gate has thrown away so much that its answer says nothing about the clip. */
+const LOUDNESS_FLOOR = -70;
 
 /**
  * One constant gain, never compression: the whole clip moves to `target.lufs` unless its true peak
  * would cross `target.truePeak` first (a few clips with a sharp consonant stop there, ~1.5 dB
  * short). Returns the clip unchanged when it is already in place or the format has no encoder here.
+ *
+ * `target.peakCeiling` switches on the fallback the short effects need: the R128 gate is built for
+ * speech and on a 0.6 s click it reports -inf or something absurd. When that happens the clip is
+ * lined up by its true peak instead, and `mode` says `'peak'` so the index can record which of the
+ * two measurements the file was gained by. Without a `peakCeiling` an unusable measurement is an
+ * error – silently gaining a clip by Infinity is the one outcome nobody wants.
  */
 export function normalizeClip(bytes, target) {
   const format = mp3Format(target.format);
-  if (format === null) return { bytes, gain: null };
+  if (format === null) return { bytes, gain: null, mode: null };
   const measured = measureLoudness(bytes);
-  const gain = Math.min(target.lufs - measured.lufs, target.truePeak - measured.truePeak);
-  if (Math.abs(gain) < GAIN_EPSILON) return { bytes, gain: 0 };
+  const usable = Number.isFinite(measured.lufs) && measured.lufs > LOUDNESS_FLOOR;
+  let mode = 'lufs';
+  let gain;
+  if (usable) {
+    gain = Math.min(target.lufs - measured.lufs, target.truePeak - measured.truePeak);
+  } else if (target.peakCeiling !== undefined && Number.isFinite(measured.truePeak)) {
+    mode = 'peak';
+    gain = target.peakCeiling - measured.truePeak;
+  } else if (target.peakCeiling !== undefined) {
+    return { bytes, gain: 0, mode: 'silent' }; // nothing measurable at all: leave it alone
+  } else {
+    return fail(
+      `the loudness gate measured ${measured.lufs} LUFS – too short or too quiet to gain safely`,
+    );
+  }
+  if (Math.abs(gain) < GAIN_EPSILON) return { bytes, gain: 0, mode };
   const out = ffmpeg(
     [
       '-i',
@@ -147,7 +177,7 @@ export function normalizeClip(bytes, target) {
     ],
     bytes,
   );
-  return { bytes: new Uint8Array(out.stdout), gain };
+  return { bytes: new Uint8Array(out.stdout), gain, mode };
 }
 
 export async function readError(response) {
