@@ -4,8 +4,7 @@
  * `game/counting.ts`, the geometry in `art/layout.ts`; this module only turns them into elements,
  * animations and cues. Nothing here can block the child – an extra tap only wobbles the lid.
  */
-import type { AudioEngine } from '../../audio/context';
-import { playCue } from '../../audio/tones';
+import type { SfxPlayer } from '../../audio/sfx';
 import type { VoicePlayer } from '../../audio/voice';
 import { fruitBowl } from '../../art/bowl';
 import { fruit } from '../../art/fruit';
@@ -24,6 +23,7 @@ import {
 import { bowlLid } from '../../art/lid';
 import { countPill } from '../../art/pill';
 import type { FruitKind } from '../../data/curriculum';
+import { plingRate } from '../../data/sfx';
 import { addFruit, createCounting, type CountingState } from '../../game/counting';
 import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
 import type { OrderItem } from '../../game/orders';
@@ -81,7 +81,7 @@ export interface CountItemHandle {
 export function createCountItem(options: {
   readonly root: HTMLElement;
   readonly bowl: HTMLElement;
-  readonly audio: AudioEngine;
+  readonly sfx: SfxPlayer;
   readonly voice: VoicePlayer;
   readonly praise: PraisePicker;
   /** The praise is out and the cake is finished – the kitchen may start the finale. */
@@ -335,7 +335,7 @@ export function createCountItem(options: {
     if (state === null || state.done) return;
     hinted = true;
     hintEl.hidden = false;
-    playCue(options.audio, 'pling', { step: 0 });
+    options.sfx.play('pling', { rate: plingRate(0) });
   }
 
   function hideHint(): void {
@@ -347,7 +347,7 @@ export function createCountItem(options: {
     lidEl.hidden = false;
     // A covered bowl shows no fruit: the dome dips at its ends, so a stem would poke out over it.
     options.bowl.classList.add('is-covered');
-    playCue(options.audio, 'done');
+    options.sfx.play('done');
     motion.animate(
       lidEl,
       [
@@ -410,7 +410,7 @@ export function createCountItem(options: {
     state = step.state;
     if (step.result === 'too-many') {
       wobbleLid();
-      playCue(options.audio, 'nope');
+      options.sfx.play('nope');
       options.voice.say(enoughSpeech(state.target, kind));
       if (praisePending) armPraise(PRAISE_DELAY_MS); // it waits for "to stačí" and comes after it
       return; // the watcher stopped when the item was finished – nothing left to remind about
@@ -421,11 +421,11 @@ export function createCountItem(options: {
     const placedIndex = state.placed - 1;
     const source = spots()[index];
     if (!source) return;
-    playCue(options.audio, 'whoosh');
+    options.sfx.play('whoosh');
     bounceBowlFruit(index);
     fly(source, placedIndex, () => {
       land(placedIndex);
-      playCue(options.audio, 'pling', { step: placedIndex });
+      options.sfx.play('pling', { rate: plingRate(placedIndex) });
       options.voice.say(countSpeech(placedIndex + 1));
       if (!completed) return;
       motion.after(LID_DELAY_MS, closeLid);

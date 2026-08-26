@@ -1,4 +1,5 @@
 import type { AudioEngine } from '../audio/context';
+import type { SfxPlayer } from '../audio/sfx';
 import type { VoicePlayer } from '../audio/voice';
 import type { Session } from '../game/session';
 import type { StageSize } from './layout';
@@ -12,6 +13,8 @@ export interface SceneDeps {
   readonly audio: AudioEngine;
   /** The narrator; a scene may speak and stop it, but it lives longer than any scene. */
   readonly voice: VoicePlayer;
+  /** Sound effects by id. Outlives the scenes too, so the clips are decoded before the tap. */
+  readonly sfx: SfxPlayer;
   /** The saved game and the current order; scenes never touch localStorage themselves. */
   readonly session: Session;
 }

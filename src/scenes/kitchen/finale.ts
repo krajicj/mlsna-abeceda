@@ -8,14 +8,14 @@
  * front of a finished cake with no way on (rule 2). The movement is decoration; the clock is what
  * actually gets the loop round.
  */
-import type { AudioEngine } from '../../audio/context';
-import { playCue } from '../../audio/tones';
+import type { SfxPlayer } from '../../audio/sfx';
 import type { VoicePlayer } from '../../audio/voice';
 import { cakeGlaze } from '../../art/cake';
 import { confettiPiece, CONFETTI_COUNT, CONFETTI_SIZE } from '../../art/confetti';
 import { starSlot, STAR_SIZE, type KitchenLayout } from '../../art/layout';
 import { star } from '../../art/star';
 import type { Rect } from '../../art/svg';
+import { plingRate } from '../../data/sfx';
 import type { LinePicker } from '../../game/speech';
 import { createMotion, layer, place } from './dom';
 import type { StarsHandle } from './stars';
@@ -55,7 +55,7 @@ export function createFinale(options: {
   readonly root: HTMLElement;
   readonly cake: HTMLElement;
   readonly bear: HTMLElement;
-  readonly audio: AudioEngine;
+  readonly sfx: SfxPlayer;
   readonly voice: VoicePlayer;
   readonly finish: LinePicker;
   readonly star: LinePicker;
@@ -178,7 +178,7 @@ export function createFinale(options: {
       if (animation) flight.push(animation);
       else el.style.opacity = '0';
     }
-    playCue(options.audio, 'whoosh');
+    options.sfx.play('whoosh');
     motion.after(FLIGHT_MS, () => {
       for (const el of flown) el.style.opacity = '0';
       munch();
@@ -243,14 +243,14 @@ export function createFinale(options: {
       if (running) return; // one finale per order; a second run() would double the star
       running = true;
       showGlaze();
-      playCue(options.audio, 'done');
+      options.sfx.play('done');
       throwConfetti();
       options.voice.say(options.finish.next());
       motion.after(EAT_AT_MS, eat);
       motion.after(STAR_AT_MS, flyStar);
       motion.after(COUNT_AT_MS, () => {
         options.stars.set(options.onStar(), { pop: true });
-        playCue(options.audio, 'pling', { step: 4 });
+        options.sfx.play('pling', { rate: plingRate(4) });
       });
       motion.after(DONE_AT_MS, () => {
         running = false;

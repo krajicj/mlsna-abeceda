@@ -6,8 +6,7 @@
  * can never get stuck (rule 2). The shelf that is not in play stays full but inert: a tap there is
  * not a mistake.
  */
-import type { AudioEngine } from '../../audio/context';
-import { playCue } from '../../audio/tones';
+import type { SfxPlayer } from '../../audio/sfx';
 import type { VoicePlayer } from '../../audio/voice';
 import { candle } from '../../art/candle';
 import { cookie } from '../../art/cookie';
@@ -21,6 +20,7 @@ import {
   type KitchenLayout,
 } from '../../art/layout';
 import type { Rect } from '../../art/svg';
+import { plingRate } from '../../data/sfx';
 import {
   choiceTarget,
   choiceValues,
@@ -92,7 +92,7 @@ export function createChoiceItem(options: {
     readonly digits: readonly string[];
     readonly letters: readonly string[];
   };
-  readonly audio: AudioEngine;
+  readonly sfx: SfxPlayer;
   readonly voice: VoicePlayer;
   readonly praise: PraisePicker;
   /** The praise is out and the piece is on the cake – the kitchen may start the finale. */
@@ -321,7 +321,7 @@ export function createChoiceItem(options: {
     piece.classList.add('is-revealed');
     placeHint();
     hintEl.hidden = false;
-    playCue(options.audio, 'pling', { step: 0 });
+    options.sfx.play('pling', { rate: plingRate(0) });
     if (!hop) return;
     motion.animate(
       piece,
@@ -349,7 +349,7 @@ export function createChoiceItem(options: {
     state = step.state;
     if (step.result === 'wrong') {
       shake(index);
-      playCue(options.audio, 'nope');
+      options.sfx.play('nope');
       idle.poke();
       if (state.revealed) reveal(true);
       // Once the right piece is lit up, "Hledáme ká." would send the child looking for something
@@ -362,10 +362,10 @@ export function createChoiceItem(options: {
     for (const target of targets) target.hidden = true;
     const piece = pieces[active][index];
     if (piece) piece.hidden = true; // it leaves the shelf and flies to the cake
-    playCue(options.audio, 'whoosh');
+    options.sfx.play('whoosh');
     fly(index, () => {
       land();
-      playCue(options.audio, 'done');
+      options.sfx.play('done');
       options.voice.say(options.praise.next());
       options.onDone();
     });

@@ -18,7 +18,7 @@ interface FakeAudio {
   readonly gains: { value: number }[];
 }
 
-/** The slice of the Web Audio API the player touches (same shape as in tones.test.ts). */
+/** The slice of the Web Audio API the player touches (same shape as in sfx.test.ts). */
 function fakeAudio(options?: {
   readonly state?: AudioContextState | 'missing';
   readonly decode?: 'ok' | 'fail';

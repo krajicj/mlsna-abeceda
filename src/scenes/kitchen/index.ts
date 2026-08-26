@@ -101,7 +101,7 @@ export const kitchenScene: Scene = (ctx) => {
   const countItem = createCountItem({
     root: el,
     bowl: bowlEl,
-    audio: ctx.audio,
+    sfx: ctx.sfx,
     voice: ctx.voice,
     praise,
     onDone: () => startFinale(),
@@ -115,7 +115,7 @@ export const kitchenScene: Scene = (ctx) => {
       digits: shelfDecoration(ctx.session.save.tracks.numbers),
       letters: shelfDecoration(ctx.session.save.tracks.letters),
     }),
-    audio: ctx.audio,
+    sfx: ctx.sfx,
     voice: ctx.voice,
     praise,
     onDone: () => startFinale(),
@@ -134,7 +134,7 @@ export const kitchenScene: Scene = (ctx) => {
     root: el,
     cake: cakeEl,
     bear: bearEl,
-    audio: ctx.audio,
+    sfx: ctx.sfx,
     voice: ctx.voice,
     finish,
     star: starLine,
@@ -143,6 +143,10 @@ export const kitchenScene: Scene = (ctx) => {
     onStar: () => writeProgress(),
     onDone: () => finishOrder(),
   });
+
+  // The context is unlocked by now (the title screen saw to that), so this is where the bytes
+  // fetched in main.ts actually turn into buffers.
+  ctx.sfx.preload();
 
   let layout = kitchenLayout(0);
   let backdropWidth = 0;
