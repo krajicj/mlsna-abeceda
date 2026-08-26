@@ -3,6 +3,7 @@ import { cakeBase } from '../../art/cake';
 import { kitchenBackdrop } from '../../art/kitchen';
 import { kitchenLayout, type KitchenLayout } from '../../art/layout';
 import { isLetter, type FruitKind, type Letter } from '../../data/curriculum';
+import type { CustomerId } from '../../data/customers';
 import {
   choiceItemOf,
   choiceValues,
@@ -15,12 +16,14 @@ import { letterWord } from '../../game/curriculum';
 import type { Order, OrderItem } from '../../game/orders';
 import { itemResult, type ItemResult } from '../../game/progress';
 import {
+  createBellPicker,
   createFinishPicker,
   createPraisePicker,
   createStarPicker,
   orderPreload,
 } from '../../game/speech';
 import type { Scene } from '../../stage/scenes';
+import { createBellHandle } from './bell';
 import { createBubble } from './bubble';
 import { createChoiceItem } from './choice-item';
 import { createCustomer } from './customer';
@@ -42,6 +45,10 @@ interface KitchenDevHandle {
   count(amount: number, kind?: FruitKind): void;
   /** An order without a playable item: the kitchen goes static. */
   clear(): void;
+  /** Rings the bell from the console: the next customer walks in and brings an order. */
+  ring(): void;
+  /** Puts an animal at the counter without a walk, whatever the session says. */
+  customer(id: CustomerId): void;
   /** Runs the finale of the current order straight away, without playing it. */
   finish(): void;
   /** Puts a number in the star counter (the picture only – the save is not touched). */
@@ -58,10 +65,10 @@ function prop(className: string, art: string): HTMLDivElement {
 }
 
 /**
- * The kitchen: the bear waits behind the counter with the order in a bubble over his head, the cake
- * base and the bowl of fruit stand on the worktop, digits sit on the upper shelf and letters on the
- * lower one. The child fills the order – counting from the bowl (STEP-05) or a choice from the
- * shelf (STEP-06) – the finale hands the cake over and the next order arrives (STEP-09).
+ * The kitchen: the counter starts empty with the bell on it. The child rings, a customer walks in
+ * from the left with an order in a bubble over its head, and fills it – counting from the bowl
+ * (STEP-05) or a choice from the shelf (STEP-06). The finale hands the cake over, the customer eats
+ * it and leaves, and the bell comes back: nothing moves on until the child rings again (STEP-10).
  */
 export const kitchenScene: Scene = (ctx) => {
   const el = document.createElement('div');
@@ -88,6 +95,7 @@ export const kitchenScene: Scene = (ctx) => {
   const praise = createPraisePicker();
   const finish = createFinishPicker();
   const starLine = createStarPicker();
+  const bellLine = createBellPicker();
   /** Delays that never talk over the narrator: the finale and the next order both use it. */
   const pacer = createPacer({ voice: ctx.voice });
 
@@ -142,6 +150,13 @@ export const kitchenScene: Scene = (ctx) => {
     onStar: () => writeProgress(),
     onDone: () => finishOrder(),
   });
+  const bell = createBellHandle({
+    root: el,
+    sfx: ctx.sfx,
+    voice: ctx.voice,
+    line: bellLine,
+    onRing: () => ringBell(),
+  });
 
   // The context is unlocked by now (the title screen saw to that), so this is where the bytes
   // fetched in main.ts actually turn into buffers.
@@ -178,19 +193,25 @@ export const kitchenScene: Scene = (ctx) => {
     return ctx.session.save.progress.stars;
   }
 
-  /** The counter is empty again; the next order is already generated, it only has to be served. */
+  /**
+   * The counter is empty again. The next order is already generated, but nothing happens until the
+   * child rings – this is where the pace goes back to her (návrh kap. 4). Whoever is standing there
+   * is the one who leaves: `session.complete()` ran when the star landed, so `session.customer` is
+   * already the NEXT customer and must not be read here.
+   */
   function finishOrder(): void {
     finale.reset();
     countItem.clear();
     choiceItem.clear();
     bubble.show(null);
     ctx.voice.preload(orderPreload(order));
-    // Whoever is standing there is the one who leaves: `session.complete()` ran when the star
-    // landed, so `session.customer` is already the NEXT customer. The bell goes into this gap in
-    // the last part of STEP-10; until then the next one walks in by itself.
-    customer.leave(() => {
-      customer.arrive(ctx.session.customer, () => startOrder(order));
-    });
+    customer.leave(() => bell.show());
+  }
+
+  /** The child rang: the bell gets out of the way and the next customer walks in. */
+  function ringBell(): void {
+    bell.hide();
+    customer.arrive(ctx.session.customer, () => startOrder(ctx.session.order));
   }
 
   /** Puts one order on the counter: the bubble, the playable item and the narrator. */
@@ -223,8 +244,14 @@ export const kitchenScene: Scene = (ctx) => {
   stars.layout(layout);
   finale.layout(layout);
   customer.layout(layout);
-  customer.show(ctx.session.customer);
-  startOrder(order);
+  bell.layout(layout);
+  // The kitchen opens EMPTY: no customer, no bubble, no order, only the bell (návrh kap. 4 – "the
+  // bell rings, a customer comes"). The first thing the child does in the game is decide to start
+  // it. An empty card would promise an order that nobody has placed yet.
+  bubble.show(null);
+  stars.set(ctx.session.save.progress.stars);
+  ctx.voice.preload(orderPreload(order));
+  bell.show();
 
   /** DEV only: the offer of the order when it fits, otherwise what stands on the shelf. */
   function devChoices(type: ChoiceItem['type']): string[] {
@@ -270,11 +297,14 @@ export const kitchenScene: Scene = (ctx) => {
       ctx.voice.stop();
       pacer.cancel();
       finale.reset();
+      bell.hide();
       finishing = false;
       countItem.clear();
       choiceItem.clear();
       bubble.show(null);
     },
+    ring: () => ringBell(),
+    customer: (id) => customer.show(id),
     finish: () => startFinale(),
     stars: (count) => stars.set(count, { pop: true }),
     state: () => countItem.state(),
@@ -299,6 +329,7 @@ export const kitchenScene: Scene = (ctx) => {
       stars.layout(layout);
       finale.layout(layout);
       customer.layout(layout);
+      bell.layout(layout);
     },
     destroy() {
       // The scene does not own the narrator, but nothing it started may outlive it.
@@ -306,6 +337,7 @@ export const kitchenScene: Scene = (ctx) => {
       pacer.cancel();
       finale.destroy();
       customer.destroy();
+      bell.destroy();
       countItem.destroy();
       choiceItem.destroy();
       bubble.destroy();

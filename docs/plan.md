@@ -27,7 +27,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-07 | [Hlas: manifest hlášek, generátor z ElevenLabs, casting](steps/STEP-07-voice-manifest-and-generator.md) | M1 | 03 | done |
 | STEP-08 | [Hlas ve hře: fronta přehrávání, napojení kuchyně (objednávka, počítání nahlas, pochvala, oprava, nápověda)](steps/STEP-08-voice-playback-and-kitchen.md) | M1 | 05, 06, 07 | done |
 | STEP-09 | [Dokončení objednávky: bublina s objednávkou, zákazník jí, hvězdička, jedna celá smyčka](steps/STEP-09-order-completion-and-loop.md) | M1 | 06, 08 | done |
-| STEP-10 | [Zvoneček, tři zákazníci a zvukové efekty](steps/STEP-10-bell-customers-and-sfx.md) | M2 | 09 | approved |
+| STEP-10 | [Zvoneček, tři zákazníci a zvukové efekty](steps/STEP-10-bell-customers-and-sfx.md) | M2 | 09 | done |
 | STEP-11 | Generátor: délka objednávky, stupně Č2/P2, adaptivní výběr, distraktory | M2 | 09 | — |
 | STEP-12 | Konec sezení (limit 10), ukládání pokroku, obnova po reloadu | M2 | 10, 11 | — |
 | STEP-13 | Obchůdek | M3 | 12 | — |
@@ -60,9 +60,9 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   (v repu na něj vede gitignorovaný symlink `elevenlabs.env`).
 - **Placeholder tóny zůstávají.** Původně je měl STEP-08 smazat; autor rozhodl (srpen 2026),
   že syntetické tóny (`audio/tones.ts`) i úvodní cinknutí (`audio/chime.ts`) zůstanou jako
-  okamžitá odezva na dotyk a hlas se k nim jen přidá. **STEP-10** nahradí MP3 efekty jen
-  `tones.ts`; `chime.ts` zůstává natrvalo – zní v okamžiku odemčení audia, kdy ještě nemůže být
-  nic dekódovaného.
+  okamžitá odezva na dotyk a hlas se k nim jen přidá. **STEP-10** je nahradil: `tones.ts` je
+  smazaný, `chime.ts` zůstává natrvalo – zní v okamžiku odemčení audia, kdy ještě nemůže být nic
+  dekódovaného.
 - **Přečíslování se propsalo i do komentářů v kódu.** Při STEP-08 jsem srovnal odkazy, které po
   posunu o jedno ukazovaly na špatný krok (rodičovský koutek je 17, ne 16; „Kolik je" 21, ne 20;
   diakritika 25, ne 24). Hlášku „Otoč mě!" k overlay orientace vygeneroval **STEP-09** ve stejném
@@ -72,12 +72,12 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   poleva na výrobku, cinknutí trouby, konfety) – domluveno s autorem jako levná náhrada za
   mechaniku pečení, viz `navrh-hry.md` kap. 13 bod 2.
 - **Po STEP-09 naskočí další objednávka sama** (rozhodnutí autora, srpen 2026): bez zvonečku by
-  se smyčka nezavřela. STEP-10 mezi hvězdičku a další objednávku vloží zvoneček a princip
-  „dítě řídí tempo“ se vrátí. STEP-09 taky **jen zapisuje** skóre zvládnutí; zavádění nových
+  se smyčka nezavřela. STEP-10 mezi hvězdičku a další objednávku **vložil zvoneček** – kuchyně
+  teď startuje prázdná a bez zazvonění se nic nestane, takže tempo řídí dítě. STEP-09 taky **jen zapisuje** skóre zvládnutí; zavádění nových
   prvků (`maybeIntroduce`) a postup na další stupeň zůstávají na STEP-11.
 - **Manifest má po STEP-09 celkem 252 hlášek** (246 z M1 + 3× „hotovo“, 2× hvězdička, „Otoč mě!“).
-  Sada M1 je tím kompletní; další klipy přidá až STEP-10 (2 pobídky ke zvonečku → 254)
-  a STEP-12 (konec sezení).
+  Sada M1 je tím kompletní; STEP-10 přidal 2 pobídky ke zvonečku (**254**), další přijdou
+  až se STEP-12 (konec sezení).
 - **Borůvka a třešeň** se kreslí už ve STEP-05 (miska i ovoce na dortu podle druhu z objednávky),
   protože generátor ze STEP-03 vybírá ze všech tří startovních druhů; STEP-13 (obchůdek) pak řeší
   jen odemykání *dalšího* ovoce.
@@ -99,6 +99,11 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   jsou položky zvukového manifestu. Mluví jedině vypravěč, takže je pořád poznat, kdo je kdo.
   STEP-10 taky zůstává **vcelku** (tři fáze: zvukový kanál → zákazníci → zvoneček), i když je
   na tři kroky práce – rozhodnutí autora.
+- **Zvuk je hotový (STEP-10).** Placeholder tóny zmizely: `audio/tones.ts` je smazaný a hra hraje
+  14 MP3 efektů z `public/audio/sfx/` (−22 LUFS, 4 dB pod vypravěčem). Řada počítadla je **jeden
+  klip** přehrávaný přes `playbackRate` na půltónech `[0, 2, 4, 7, 9]` – text-to-sound-effects
+  neumí zadat výšku tónu. `audio/chime.ts` zůstává natrvalo. Nový efekt = řádek v `src/data/sfx.ts`
+  a `docker compose run --rm sfx`.
 - **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-20 do STEP-04: zatím se
   vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
   kuchyně nešlo posoudit. STEP-20 řeší jen PWA a offline.

@@ -1,6 +1,6 @@
 # STEP-10 · Zvoneček, tři zákazníci a zvukové efekty
 
-Status: approved
+Status: done
 Milník: M2 · Po: STEP-09 · Plán: [plan.md](../plan.md) · Návrh: [navrh-hry.md](../navrh-hry.md) kap. 4, 6, 7, 8
 
 ## Shrnutí
@@ -546,4 +546,88 @@ Chrome DevTools, iPad na šířku (1024×768).
 
 ## Výsledek implementace
 
-_(vyplní /implement-step)_
+Postaveno v sedmi zastávkách (autor validoval každou zvlášť, každá má vlastní commit).
+
+**Fáze A – zvukový kanál**
+
+- `scripts/lib/audio.mjs` (nový, 190 řádků) – společné části obou generátorů. `generate-voice.mjs`
+  se zkrátil z 768 na 635 řádků.
+- `scripts/generate-sfx.mjs` (nový, 437 řádků) – `POST /v1/sound-generation`, index s fingerprintem.
+- `src/data/sfx.ts` + test – manifest 14 efektů, `plingRate()`.
+- `src/audio/sfx.ts` + test – `SfxPlayer` bez fronty (efekty se překrývají).
+- `compose.yaml` – služby `sfx` a `normalize-sfx`; `CLAUDE.md` – příkazy a strom.
+- `public/audio/sfx/` – 14 MP3 + `index.json`, 172 kB, commitnuté.
+- `src/audio/tones.ts` a `tones.test.ts` **smazané**, všech 12 volání `playCue()` nahrazeno.
+
+**Fáze B – zákazníci**
+
+- `src/data/customers.ts`, `src/game/customers.ts` + test (`nextCustomer()`).
+- `src/art/rabbit.ts`, `src/art/cat.ts`, `src/art/customers.ts`; paleta o `furRabbit`, `furCat`,
+  `furCatDark`, `brass`, `brassDark`.
+- `src/scenes/kitchen/customer.ts` – `CustomerHandle` (příchod, odchod, žvýkání, kotva pusy).
+- `session.ts` + test – `readonly customer`, losuje se injektovaným `rng`, do save se neukládá.
+- `KitchenLayout.bear` → `customer`, CSS `.kitchen-bear` → `.kitchen-customer`.
+
+**Fáze C – zvoneček**
+
+- `src/art/bell.ts`, `KitchenLayout.bell` (odvozený z misky), `src/scenes/kitchen/bell.ts`.
+- `lines.cs.ts` – `BELL`, manifest **252 → 254**; `speech.ts` – `createBellPicker()`.
+- `index.ts` – smyčka `finishOrder → customer.leave → bell.show → onRing → customer.arrive →
+  startOrder`; kuchyně startuje **prázdná**. DEV: `__kitchen.ring()`, `__kitchen.customer(id)`,
+  `__sfx.play(id, rate)`.
+
+### Odchylky od plánu
+
+1. **Fallback na `-inf` z brány R128 je ve sdílené knihovně, ne jen v generátoru efektů.**
+   `measureLoudness()` na řetězec `-inf` vůbec nematchoval regexem, takže by běh spadl na
+   matoucí „ffmpeg printed no loudness summary“. Teď `-inf` vrací `-Infinity` a `normalizeClip`
+   má volitelný `peakCeiling`. Kontrakt ani rozsah se nemění. (Nakonec ho žádný klip nepotřeboval.)
+2. **`sparkle` a `munch` dostaly volající místo** (nález revize): `munch` při kousnutí, `yum` až po
+   dožvýkání, `sparkle` při výletu hvězdičky. Bez toho by se dva placené klipy generovaly nadarmo.
+3. **Scéna si nedrží vlastní `currentCustomer`**, čte `customer.current` (návrh revize) – jeden
+   zdroj pravdy. `session.customer` se čte jedině při zazvonění.
+4. **`bubble.show(null)` při mountu** – bez toho zůstala na prázdném pultu viset prázdná bublina.
+   Našlo se až v prohlížeči.
+5. **`art.test.ts` dostal invariant „barvy jen z palety“** pro *všechny* moduly, ne jen nové.
+   Starší art jím prošel beze změny.
+
+### Jak se to ověřovalo
+
+Vitest: **490 testů** (z 421 před krokem), `check` i `build` čisté, bundle 54,10 → 65,55 kB.
+`sfx --dry-run` i `voice --dry-run` hlásí 0 new · 0 changed (14 efektů, 254 hlášek).
+
+V běžícím prohlížeči (napíchnutý `createBufferSource`, efekty identifikované otiskem vzorků):
+
+- **Řada počítadla** stoupá 1,0000 → 1,1225 → 1,2599 → 1,4983 → 1,6818 z jednoho klipu.
+- **Sled jednoho kola:** `done` 402 ms · `whoosh` 1227 · `munch` 1789 · `sparkle` 2105 ·
+  `customer.cat.yum` 2431 · `pling`@1,682 2805 · `steps` 3208 · zvoneček zpět 3933.
+- **Kotva pusy:** dortík dolétl na `dx −423, dy −95` (zajíček) a `dy −101` (kočička) – přesně
+  vlastní kotva každého zvířete.
+- **Pořadí `session.complete()`:** v 2823 ms se `session.customer` přepnul na dalšího, ale u pultu
+  pořád stála ta, co jedla.
+- **Zazvonění:** `bell` 0 ms · `steps` 1 ms · `hello` 603 ms · vypravěč 969 ms. **Tři `pointerdown`
+  za sebou = jeden zvoneček, jeden zákazník, jedna objednávka.**
+- **Během objednávky** klepnutí do místa zvonečku nic nespustí (žádný zvuk, žádná hvězdička).
+- **Nečinnost:** pobídka → prsten nápovědy ve stejné milisekundě jako druhá hláška → cyklus se
+  restartuje přesně o `IDLE_REMIND_MS` později.
+- **Reduced motion:** všechny zvuky na stejných milisekundách, smyčka doběhne stejně dlouho.
+- **Zničení scény uprostřed chůze:** žádný zbylý element, žádný zvuk, dev handle uklizený.
+- **Síť:** jediný origin, 14 souborů z `audio/sfx/` (129 kB).
+
+### Co ověřené není
+
+- **Mobil na šířku 844×390 jen výpočtem**, ne okem: okno prohlížeče nešlo na tu velikost zmenšit.
+  Produkční `computeStage(844, 390)` a `kitchenLayout()` dávají scale 0,5078, zvoneček
+  **48,8 × 48,8 CSS px** (nad 44 px pravidla 3) a 168 px od pravého okraje – vejde se celý.
+- **Dotyk na skutečném tabletu.**
+- **Jak to zní při hraní** – efekty autor poslechl jednotlivě, ne v běhu hry.
+
+### Návrhy mimo rozsah
+
+- Police si drží ozdobu i s prázdným pultem. Není to lež (je to inertní obsah), ale prázdná
+  kuchyně by možná měla být prázdná úplně – na zvážení, až to uvidí dcera.
+- `customer.ts` a `bell.ts` nemají vlastní Vitest – jsou to DOM moduly a projekt je testuje
+  v prohlížeči. Až přibude `environment: 'jsdom'`, stálo by za to pokrýt aspoň `nextCustomer`
+  → `arrive` → `startOrder` jako celek.
+- Zajíčkova krémová srst (`#F0E4D2`) je blízko barvě stěny (`#FFE9D1`); obrys ji drží, ale
+  na slabším displeji by mohla splývat.
