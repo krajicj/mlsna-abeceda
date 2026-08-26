@@ -622,6 +622,23 @@ V běžícím prohlížeči (napíchnutý `createBufferSource`, efekty identifik
 - **Dotyk na skutečném tabletu.**
 - **Jak to zní při hraní** – efekty autor poslechl jednotlivě, ne v běhu hry.
 
+### Změna po kroku (srpen 2026)
+
+Autor chtěl zvoneček **vlevo vedle dortu**, ne vpravo od misky. Vlevo se ale vejde jen na širokých
+scénách: mezi zákazníkem a dortem je při 1024 px **12 px** (terč potřebuje 112) a posunout skupinu
+dort + miska doprava nejde, protože řada koleček počítadla už u 1024 stojí přesně 8 px od police
+s písmenky. `bellRect()` proto zvoneček staví vlevo od dortu, kde je aspoň `BELL_LEFT_CLEARANCE`
+(24 px) volného pultu — od ~1272 px scény — a jinak spadne zpět vpravo od misky:
+
+| šířka scény | zvoneček |
+|---|---|
+| 1024 (4:3) | `x = 916` (vpravo od misky) |
+| 1200 | `x = 1004` (vpravo od misky) |
+| 1280 | `x = 348` (vlevo od dortu) |
+| 1366 (telefon na šířku, autorovo zařízení) | `x = 391` (vlevo od dortu, 71 px od zákazníka) |
+
+Autor rozhodl s vědomím, že se tím zvoneček mezi zařízeními stěhuje.
+
 ### Návrhy mimo rozsah
 
 - Police si drží ozdobu i s prázdným pultem. Není to lež (je to inertní obsah), ale prázdná

@@ -75,9 +75,15 @@ export const LID_RIM_Y = 76;
 
 export const COUNTER_TOP = 500; // top of the wooden worktop
 export const COUNTER_EDGE_TOP = 546; // dark edge under the worktop
-/** The bell on the worktop (STEP-10): 96 ≥ 88 of rule 3, 16 px clear of the bowl next to it. */
+/** The bell on the worktop (STEP-10): 96 ≥ 88 of rule 3, 16 px clear of whatever stands next. */
 export const BELL_SIZE = 96;
 export const BELL_MARGIN = 16;
+/**
+ * How much bare counter the bell wants between itself and the customer before it will stand on the
+ * left. Eight would satisfy the layout invariant, but a bell that close reads as glued to the
+ * animal; below this it goes back to the right of the bowl instead.
+ */
+export const BELL_LEFT_CLEARANCE = 24;
 
 export const COUNTER_FRONT_TOP = 560; // mint front with the doors
 export const FLOOR_TOP = 692;
@@ -94,8 +100,28 @@ export interface KitchenLayout {
   readonly bubble: Rect;
   /** The star counter, held against the right edge, above the digit shelf. */
   readonly stars: Rect;
-  /** The bell, standing on the worktop to the right of the bowl (STEP-10). */
+  /**
+   * The bell on the worktop. Left of the cake wherever the stage is wide enough for it (from about
+   * 1272 px, so a phone or a wide tablet in landscape); on a 4:3 screen there is nothing but 12 px
+   * between the customer and the cake, so it falls back to the right of the bowl.
+   */
   readonly bell: Rect;
+}
+
+/**
+ * Where the bell stands. It belongs next to the cake on the left, within easy reach of the hand
+ * that is about to work in the middle of the counter – but on a 4:3 stage the customer and the cake
+ * are only 12 px apart, and the row of counting pills above the cake already sits exactly 8 px from
+ * the letter shelf, so nothing can be shifted to make room. There it goes to the right of the bowl
+ * instead. Either way it stands on the same line of the worktop as the bowl: bottom edges match, so
+ * the two read as standing on the counter rather than floating over it.
+ */
+function bellRect(customer: Rect, cake: Rect, bowl: Rect): Rect {
+  const y = bowl.y + bowl.height - BELL_SIZE;
+  const left = cake.x - BELL_MARGIN - BELL_SIZE;
+  const fitsLeft = left - (customer.x + customer.width) >= BELL_LEFT_CLEARANCE;
+  const x = fitsLeft ? left : bowl.x + bowl.width + BELL_MARGIN;
+  return { x, y, width: BELL_SIZE, height: BELL_SIZE };
 }
 
 /** The stage clamps its own width, but the dev console and tests can pass anything. */
@@ -116,21 +142,15 @@ export function kitchenLayout(stageWidth: number): KitchenLayout {
   const width = clampStageWidth(stageWidth);
   const cake: Rect = { x: Math.round(width / 2) - 180, y: 384, width: 220, height: 146 };
   const bowl: Rect = { x: cake.x + 248, y: 400, width: 320, height: 140 };
+  const customer: Rect = { x: 60, y: 200, width: 260, height: 320 };
   return {
-    customer: { x: 60, y: 200, width: 260, height: 320 },
+    customer,
     cake,
     bowl,
     shelfDigits: { x: width - 462, y: 84, width: 448, height: 128 },
     shelfLetters: { x: width - 462, y: 252, width: 448, height: 112 },
     bubble: { x: 60, y: 28, width: BUBBLE_WIDTH, height: BUBBLE_HEIGHT },
-    // On the same line of the worktop as the bowl, so the two stand next to each other rather
-    // than one of them floating: bottom edges match, 16 px of clear counter between them.
-    bell: {
-      x: bowl.x + bowl.width + BELL_MARGIN,
-      y: bowl.y + bowl.height - BELL_SIZE,
-      width: BELL_SIZE,
-      height: BELL_SIZE,
-    },
+    bell: bellRect(customer, cake, bowl),
     // 10 px above the digit shelf: the layout test guards 8 px between any two boxes, so moving
     // the counter (or making it taller) means checking that gap again.
     stars: {

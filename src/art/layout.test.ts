@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { STAGE_HEIGHT } from '../stage/layout';
 import {
+  BELL_LEFT_CLEARANCE,
   BELL_MARGIN,
+  BELL_SIZE,
   BOWL_BACK_FRUIT_HEIGHT,
   BOWL_FRONT_FRUIT_HEIGHT,
   BOWL_FRUIT_CENTER_Y,
@@ -99,18 +101,32 @@ describe('kitchenLayout', () => {
     expect(tight).toEqual([]);
   });
 
-  it.each(WIDTHS)('stands the bell next to the bowl on the worktop at %i px', (width) => {
+  it.each(WIDTHS)('stands the bell on the same counter line as the bowl at %i px', (width) => {
     const { bell, bowl } = kitchenLayout(width);
     // A target the child hits with a thumb, and the same counter line as the bowl - a bell
     // floating above the worktop would read as decoration, not as something to press.
     expect(Math.min(bell.width, bell.height)).toBeGreaterThanOrEqual(MIN_TARGET);
     expect(bell.y + bell.height).toBe(bowl.y + bowl.height);
-    expect(bell.x).toBe(bowl.x + bowl.width + BELL_MARGIN);
   });
 
-  it('keeps the bell where the step plan measured it', () => {
+  it.each(WIDTHS)('puts the bell left of the cake wherever it fits at %i px', (width) => {
+    const { bell, cake, bowl, customer } = kitchenLayout(width);
+    const left = cake.x - BELL_MARGIN - BELL_SIZE;
+    if (left - (customer.x + customer.width) >= BELL_LEFT_CLEARANCE) {
+      expect(bell.x).toBe(left);
+    } else {
+      // No room between the customer and the cake: back to the right of the bowl.
+      expect(bell.x).toBe(bowl.x + bowl.width + BELL_MARGIN);
+    }
+  });
+
+  it('knows where the bell can and cannot stand on the left', () => {
+    // 4:3 (an older iPad) has 12 px between the customer and the cake - nowhere near a target.
     expect(kitchenLayout(1024).bell).toEqual({ x: 916, y: 444, width: 96, height: 96 });
-    expect(kitchenLayout(1366).bell).toEqual({ x: 1087, y: 444, width: 96, height: 96 });
+    expect(kitchenLayout(1200).bell.x).toBe(1004);
+    // A phone or a wide tablet in landscape: left of the cake, 71 px clear of the customer.
+    expect(kitchenLayout(1366).bell).toEqual({ x: 391, y: 444, width: 96, height: 96 });
+    expect(kitchenLayout(1280).bell.x).toBe(348);
     // The old certainty, unchanged by the rename of `bear`.
     expect(kitchenLayout(1024).customer).toEqual({ x: 60, y: 200, width: 260, height: 320 });
   });
