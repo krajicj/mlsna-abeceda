@@ -5,6 +5,7 @@ import {
   CASTING_LINES,
   countAloudLine,
   countEnoughLine,
+  bellLines,
   finishLines,
   hasLine,
   hintLine,
@@ -41,10 +42,10 @@ function textOf(id: string): string {
 
 describe('manifest of voice lines', () => {
   it('holds exactly the groups the plan pays for', () => {
-    // 252 clips ≈ 4 700 characters (docs/steps/STEP-07, +6 in STEP-09). Adding lines means paying
-    // for them and regenerating – the number is here so that cost is a conscious edit, not a
-    // surprise.
-    expect(LINES).toHaveLength(252);
+    // 254 clips ≈ 4 750 characters (docs/steps/STEP-07, +6 in STEP-09, +2 in STEP-10). Adding
+    // lines means paying for them and regenerating – the number is here so that cost is a
+    // conscious edit, not a surprise.
+    expect(LINES).toHaveLength(254);
   });
 
   it('has unique ids usable as file names', () => {
@@ -148,6 +149,13 @@ describe('manifest of voice lines', () => {
     expect(textOf('star.1')).toBe('Máš hvězdičku!');
     expect(textOf('star.2')).toBe('Hvězdička je tvoje!');
     for (const id of [...finishLines(), ...starLines()]) expect(hasLine(id), id).toBe(true);
+  });
+
+  it('nudges towards the bell while the counter is empty (STEP-10)', () => {
+    expect(bellLines()).toEqual(['bell.1', 'bell.2']);
+    expect(textOf('bell.1')).toBe('Zazvoň na zvoneček!');
+    expect(textOf('bell.2')).toBe('Klepni na zvoneček!');
+    for (const id of bellLines()) expect(hasLine(id), id).toBe(true);
   });
 
   it('asks the child to turn the device over', () => {

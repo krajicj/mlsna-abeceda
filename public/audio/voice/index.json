@@ -12,6 +12,18 @@
     "cook": {
       "elevenLabsId": "bF7C2fCv7Zf30iT84wZ1",
       "lines": {
+        "bell.1": {
+          "hash": "7ed87985d59f1d79",
+          "text": "Zazvoň na zvoneček!",
+          "bytes": 12165,
+          "loudness": -18
+        },
+        "bell.2": {
+          "hash": "5358a2a6f91d6697",
+          "text": "Klepni na zvoneček!",
+          "bytes": 12792,
+          "loudness": -18
+        },
         "count.1": {
           "hash": "c77fbc6731a44730",
           "text": "Jedna.",

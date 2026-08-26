@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FRUITS } from '../data/curriculum';
 import { STARTER_CUSTOMERS } from '../data/customers';
 import { bear } from './bear';
+import { bell, BELL_SIZE } from './bell';
 import { cat } from './cat';
 import { customerArt, CUSTOMER_HEIGHT, CUSTOMER_WIDTH } from './customers';
 import { rabbit } from './rabbit';
@@ -24,6 +25,7 @@ const MODULES: Record<string, string> = {
   bear: bear(),
   rabbit: rabbit(),
   cat: cat(),
+  bell: bell(),
   cakeBase: cakeBase(),
   fruitBowl: fruitBowl(),
   strawberry: fruit('strawberry', 88),
@@ -83,6 +85,7 @@ describe('art modules', () => {
     ['bear', MODULES['bear'], '0 0 260 320', 260, 320],
     ['rabbit', MODULES['rabbit'], '0 0 260 320', 260, 320],
     ['cat', MODULES['cat'], '0 0 260 320', 260, 320],
+    ['bell', MODULES['bell'], '0 0 96 96', 96, 96],
     ['cakeBase', MODULES['cakeBase'], '-7 44 274 182', 220, 146],
     ['fruitBowl', MODULES['fruitBowl'], '0 0 320 140', 320, 140],
     ['strawberry', MODULES['strawberry'], '0 -6 40 52', 68, 88],
@@ -135,6 +138,14 @@ describe('art modules', () => {
     expect(customerArt('cat')).toContain(PALETTE.furCat);
     expect(customerArt('rabbit')).not.toContain(PALETTE.fur);
     expect(customerArt('cat')).not.toContain(PALETTE.furRabbit);
+  });
+
+  it('makes the bell a target a thumb can hit', () => {
+    // The drawing IS the hit box in the scene, so its own size has to clear rule 3 (88 px).
+    expect(BELL_SIZE).toBeGreaterThanOrEqual(88);
+    expect(bell()).toContain(PALETTE.brass);
+    expect(attribute(bell(64), 'viewBox')).toBe(attribute(bell(), 'viewBox'));
+    expect(attribute(bell(64), 'width')).toBe('64');
   });
 
   it('draws the letter on the cookie and the digit on the candle', () => {

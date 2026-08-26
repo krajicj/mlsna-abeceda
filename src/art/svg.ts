@@ -53,6 +53,9 @@ export const PALETTE = {
   flameCore: '#FFB703',
   /** The reward star (STEP-09); the same value as --star in src/style.css. */
   star: '#FFC53D',
+  /** The counter bell (STEP-10); brass, the one metal in a kitchen made of wood and icing. */
+  brass: '#E0A83C',
+  brassDark: '#B4801F',
   white: '#FFFFFF',
 } as const;
 

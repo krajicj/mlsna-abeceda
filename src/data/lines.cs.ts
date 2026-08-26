@@ -172,6 +172,12 @@ const FINISH: readonly string[] = ['Hotovo!', 'A je to!', 'Dortík je hotový!']
 /** The reward lands in the counter (návrh kap. 7). */
 const STAR: readonly string[] = ['Máš hvězdičku!', 'Hvězdička je tvoje!'];
 
+/**
+ * The counter is empty and the bell is waiting (návrh kap. 4). Said only after 15 s of silence –
+ * the child is meant to find the bell, not be told about it the moment it appears.
+ */
+const BELL: readonly string[] = ['Zazvoň na zvoneček!', 'Klepni na zvoneček!'];
+
 /** The portrait overlay of `stage/orientation.ts` – a picture plus this one sentence (rule 1). */
 export const TURN_LINE = 'guard.turn';
 const TURN_TEXT = 'Otoč mě!';
@@ -267,6 +273,10 @@ export function starLines(): readonly string[] {
   return STAR.map((_, index) => `star.${index + 1}`);
 }
 
+export function bellLines(): readonly string[] {
+  return BELL.map((_, index) => `bell.${index + 1}`);
+}
+
 const lines: Line[] = [];
 const ids = new Set<string>();
 
@@ -325,6 +335,7 @@ for (const gender of ['neutral', 'female', 'male'] as const) {
 
 for (const [index, text] of FINISH.entries()) add(`finish.${index + 1}`, text);
 for (const [index, text] of STAR.entries()) add(`star.${index + 1}`, text);
+for (const [index, text] of BELL.entries()) add(`bell.${index + 1}`, text);
 add(TURN_LINE, TURN_TEXT);
 
 export const LINES: readonly Line[] = lines;

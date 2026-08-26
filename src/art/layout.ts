@@ -75,6 +75,10 @@ export const LID_RIM_Y = 76;
 
 export const COUNTER_TOP = 500; // top of the wooden worktop
 export const COUNTER_EDGE_TOP = 546; // dark edge under the worktop
+/** The bell on the worktop (STEP-10): 96 ≥ 88 of rule 3, 16 px clear of the bowl next to it. */
+export const BELL_SIZE = 96;
+export const BELL_MARGIN = 16;
+
 export const COUNTER_FRONT_TOP = 560; // mint front with the doors
 export const FLOOR_TOP = 692;
 
@@ -90,6 +94,8 @@ export interface KitchenLayout {
   readonly bubble: Rect;
   /** The star counter, held against the right edge, above the digit shelf. */
   readonly stars: Rect;
+  /** The bell, standing on the worktop to the right of the bowl (STEP-10). */
+  readonly bell: Rect;
 }
 
 /** The stage clamps its own width, but the dev console and tests can pass anything. */
@@ -109,13 +115,22 @@ function centeredRow(left: number, available: number, count: number, size: numbe
 export function kitchenLayout(stageWidth: number): KitchenLayout {
   const width = clampStageWidth(stageWidth);
   const cake: Rect = { x: Math.round(width / 2) - 180, y: 384, width: 220, height: 146 };
+  const bowl: Rect = { x: cake.x + 248, y: 400, width: 320, height: 140 };
   return {
     customer: { x: 60, y: 200, width: 260, height: 320 },
     cake,
-    bowl: { x: cake.x + 248, y: 400, width: 320, height: 140 },
+    bowl,
     shelfDigits: { x: width - 462, y: 84, width: 448, height: 128 },
     shelfLetters: { x: width - 462, y: 252, width: 448, height: 112 },
     bubble: { x: 60, y: 28, width: BUBBLE_WIDTH, height: BUBBLE_HEIGHT },
+    // On the same line of the worktop as the bowl, so the two stand next to each other rather
+    // than one of them floating: bottom edges match, 16 px of clear counter between them.
+    bell: {
+      x: bowl.x + bowl.width + BELL_MARGIN,
+      y: bowl.y + bowl.height - BELL_SIZE,
+      width: BELL_SIZE,
+      height: BELL_SIZE,
+    },
     // 10 px above the digit shelf: the layout test guards 8 px between any two boxes, so moving
     // the counter (or making it taller) means checking that gap again.
     stars: {

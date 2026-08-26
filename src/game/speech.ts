@@ -6,6 +6,7 @@
  */
 import type { FruitKind } from '../data/curriculum';
 import {
+  bellLines,
   countAloudLine,
   countEnoughLine,
   finishLines,
@@ -144,4 +145,9 @@ export function createFinishPicker(options?: { readonly rng?: Rng }): LinePicker
 /** "Máš hvězdičku!" – said while the star flies into the counter. */
 export function createStarPicker(options?: { readonly rng?: Rng }): LinePicker {
   return createLinePicker(starLines(), options?.rng ?? systemRng);
+}
+
+/** Nudges towards the bell while the counter stands empty (STEP-10). */
+export function createBellPicker(options?: { readonly rng?: Rng }): LinePicker {
+  return createLinePicker(bellLines(), options?.rng ?? systemRng);
 }

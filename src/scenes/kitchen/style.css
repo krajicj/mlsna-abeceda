@@ -41,6 +41,22 @@
   }
 }
 
+/* The bell (STEP-10): the whole 96×96 box is the target, well over the 88 px of rule 3. */
+.kitchen-bell {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.kitchen-bell-hint {
+  position: absolute;
+  pointer-events: none;
+}
+
+.kitchen-bell[hidden],
+.kitchen-bell-hint[hidden] {
+  display: none;
+}
+
 /* Dev only: the 1024 px band every layout must stay readable inside. */
 .kitchen-dev-guide {
   position: absolute;
