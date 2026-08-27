@@ -24,7 +24,7 @@ const MUNCH_MS = 640;
 export interface CustomerHandle {
   /**
    * Stands the animal in place with no walk. DEV only (and the reserve for restoring a reloaded
-   * session in STEP-13); the real kitchen opens empty and the child rings the bell.
+   * session in STEP-14); the real kitchen opens empty and the child rings the bell.
    */
   show(id: CustomerId): void;
   /** Walks in from the left; `onDone` once it is standing at the counter. */

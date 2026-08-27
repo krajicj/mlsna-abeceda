@@ -22,6 +22,7 @@ import {
 } from './mastery';
 import type { OrderItem } from './orders';
 import type { SaveData } from './save';
+import { withStar } from './stars';
 
 export type TrackName = 'numbers' | 'letters';
 
@@ -114,7 +115,8 @@ export function introducedElement(before: TrackState, after: TrackState): string
 /**
  * The order is done. Elements outside the active set are ignored (`mastery.ts` keeps scores only
  * for what is in play), the star and the counters always land – even for an empty `results`, so a
- * dev-console order the child never really played still closes the loop.
+ * dev-console order the child never really played still closes the loop. `pending` is passed
+ * through untouched: the only place that rewrites it is `session.ts`, once the next order is out.
  */
 export function completeOrder(
   save: SaveData,
@@ -135,8 +137,9 @@ export function completeOrder(
     },
     progress: {
       ordersCompleted: save.progress.ordersCompleted + 1,
-      stars: save.progress.stars + STARS_PER_ORDER,
       lastPlayed: today,
     },
+    // The star is added to the total earned, never to a balance – see stars.ts.
+    stars: withStar(save.stars, STARS_PER_ORDER),
   };
 }

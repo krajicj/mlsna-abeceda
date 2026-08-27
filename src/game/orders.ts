@@ -32,7 +32,7 @@ export interface Order {
   readonly items: readonly OrderItem[];
 }
 
-/** Návrh 5.3: the first ten orders hold one item, then two. Three arrive with Č3/P3 (STEP-22/25). */
+/** Návrh 5.3: the first ten orders hold one item, then two. Three arrive with Č3/P3 (STEP-23/26). */
 export const SINGLE_ITEM_ORDERS = 10;
 export const MAX_ORDER_ITEMS = 2;
 
@@ -128,7 +128,7 @@ function buildChoices(
 
 function countItem(rng: Rng, input: OrderInput, avoid: readonly string[]): OrderItem {
   // Only five pieces of fruit fit on the cake (MAX_CAKE_FRUIT), so a bigger number waits for a
-  // candle order – the second row on the cake is STEP-22.
+  // candle order – the second row on the cake is STEP-23.
   const element = pickTarget(
     rng,
     input.tracks.numbers,

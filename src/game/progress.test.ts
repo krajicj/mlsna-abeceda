@@ -142,21 +142,19 @@ describe('completeOrder', () => {
   it('counts the order, the star and the day even with no results at all', () => {
     const save = createSave();
     const next = completeOrder(save, [], today);
-    expect(next.progress).toEqual({
-      ordersCompleted: 1,
-      stars: STARS_PER_ORDER,
-      lastPlayed: today,
-    });
+    expect(next.progress).toEqual({ ordersCompleted: 1, lastPlayed: today });
+    expect(next.stars.earned).toBe(STARS_PER_ORDER);
   });
 
   it('keeps counting from where the save left off', () => {
     const save: SaveData = {
       ...createSave(),
-      progress: { ordersCompleted: 4, stars: 4, lastPlayed: '2026-08-01' },
+      progress: { ordersCompleted: 4, lastPlayed: '2026-08-01' },
+      stars: { earned: 4, purchases: {} },
     };
     const next = completeOrder(save, [], today);
     expect(next.progress.ordersCompleted).toBe(5);
-    expect(next.progress.stars).toBe(5);
+    expect(next.stars.earned).toBe(5);
     expect(next.progress.lastPlayed).toBe(today);
   });
 

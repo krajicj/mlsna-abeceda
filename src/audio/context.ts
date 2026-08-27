@@ -21,7 +21,7 @@ export interface AudioEngine {
   unlock(): Promise<boolean>;
   /**
    * 0..1; remembered and applied when the context appears. Scaffolding for the volume sliders
-   * in STEP-18 – nothing calls it yet except the manual check.
+   * in STEP-19 – nothing calls it yet except the manual check.
    */
   setMasterVolume(volume: number): void;
   destroy(): void;

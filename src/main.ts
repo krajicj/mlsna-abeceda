@@ -9,7 +9,9 @@ import { generateOrder, type Order } from './game/orders';
 import { createRng, systemRng } from './game/rng';
 import { createSession } from './game/session';
 import { orderPreload } from './game/speech';
+import { mergeSave } from './game/merge';
 import {
+  parseSave,
   readSave,
   resetSave,
   writeSave,
@@ -18,7 +20,7 @@ import {
   type StorageLike,
 } from './game/save';
 import { EMPTY_SETTINGS, normalizeSettings, type Settings } from './game/settings';
-import { SAVE_KEY } from './game/version';
+import { SAVE_BACKUP_KEY, SAVE_KEY } from './game/version';
 import { kitchenScene } from './scenes/kitchen';
 import { titleScene } from './scenes/title';
 import { createOrientationGuard } from './stage/orientation';
@@ -68,7 +70,7 @@ if (app) {
 
   if (import.meta.env.DEV) {
     // Handles for the manual checks in docs/steps/STEP-02-*.md and STEP-03-*.md; stripped from
-    // the build, so real names never reach the deployed game (settings UI comes in STEP-18).
+    // the build, so real names never reach the deployed game (settings UI comes in STEP-19).
     Object.assign(window, {
       __stage: stage,
       __audio: audio,
@@ -97,6 +99,21 @@ if (app) {
         write: (data: SaveData): void => writeSave(storage, data),
         reset: (): SaveData => resetSave(storage),
         raw: (): string | null => storage.getItem(SAVE_KEY),
+        backup: (): string | null => storage.getItem(SAVE_BACKUP_KEY),
+        /**
+         * Merges a record from another device into the saved one and writes the result (STEP-13).
+         * Text or object: an object is serialised first, so both go through `parseSave()` and
+         * therefore through the migration. Unreadable input → null and nothing is written. The
+         * running session keeps its own copy, so reload to see the merged record in the kitchen.
+         */
+        merge: (incoming: unknown): SaveData | null => {
+          const raw = typeof incoming === 'string' ? incoming : JSON.stringify(incoming ?? null);
+          const parsed = parseSave(raw);
+          if (!parsed) return null;
+          const merged = mergeSave(readSave(storage), parsed);
+          writeSave(storage, merged);
+          return merged;
+        },
       },
       __settings: {
         get: (): Settings => readSave(storage).settings,

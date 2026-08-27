@@ -27,6 +27,7 @@ import {
   orderSpeech,
   repeatSpeech,
 } from '../../game/speech';
+import { starBalance } from '../../game/stars';
 import type { Scene } from '../../stage/scenes';
 import { createBellHandle } from './bell';
 import { createBubble } from './bubble';
@@ -124,7 +125,7 @@ export const kitchenScene: Scene = (ctx) => {
   }
 
   // One picker per kind for the whole scene, so two sentences in a row are never the same one –
-  // whichever item earned them. The gender comes from the settings in STEP-18; until then neutral.
+  // whichever item earned them. The gender comes from the settings in STEP-19; until then neutral.
   const praise = createPraisePicker();
   const finish = createFinishPicker();
   const starLine = createStarPicker();
@@ -304,7 +305,7 @@ export const kitchenScene: Scene = (ctx) => {
       if (outcome) results.push(itemResult(item, outcome));
     }
     order = ctx.session.complete(results);
-    return ctx.session.save.progress.stars;
+    return starBalance(ctx.session.save.stars);
   }
 
   /**
@@ -337,7 +338,7 @@ export const kitchenScene: Scene = (ctx) => {
     idle.stop();
     idle = watcher();
     pacer.cancel();
-    stars.set(ctx.session.save.progress.stars);
+    stars.set(starBalance(ctx.session.save.stars));
     bubble.show(next);
     const counted = countItemOf(next);
     const digit = choiceItemOf(next, 'digit');
@@ -373,7 +374,7 @@ export const kitchenScene: Scene = (ctx) => {
   // bell rings, a customer comes"). The first thing the child does in the game is decide to start
   // it. An empty card would promise an order that nobody has placed yet.
   bubble.show(null);
-  stars.set(ctx.session.save.progress.stars);
+  stars.set(starBalance(ctx.session.save.stars));
   ctx.voice.preload(orderPreload(order));
   bell.show();
 

@@ -30,21 +30,22 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-10 | [Zvoneček, tři zákazníci a zvukové efekty](steps/STEP-10-bell-customers-and-sfx.md) | M2 | 09 | done |
 | STEP-11 | [Adaptivní výběr, zavádění prvků a postup stupňů](steps/STEP-11-adaptive-selection-and-levels.md) | M2 | 09 | done |
 | STEP-12 | [Delší objednávka: dvě položky, souběžné plnění, jeden hlas a jeden hlídač nečinnosti](steps/STEP-12-two-item-order.md) | M2 | 11 | done |
-| STEP-13 | Konec sezení (limit 10), obnova po reloadu, **slučitelný formát save** (migrace, `earned`/`purchases`) | M2 | 10, 11 | — |
-| STEP-14 | Obchůdek | M3 | 13 | — |
-| STEP-15 | Album | M3 | 13 | — |
-| STEP-16 | Překvapení | M3 | 13 | — |
-| STEP-17 | Druhý výrobek: zmrzlinka | M3 | 14 | — |
-| STEP-18 | Rodičovský koutek: zámek, nastavení dítěte a rodiny (jméno, rod, členové), limity, zvuk | M4 | 13 | — |
-| STEP-19 | Hlasový balíček jmen (`personal.json`, index, oslovení) | M4 | 07, 18 | — |
-| STEP-20 | Pokrok, export/import, mazání dat | M4 | 18 | — |
-| STEP-21 | PWA ručně (service worker, manifest), offline, ikona na ploše | M4 | 02 | — |
-| STEP-22 | „Kolik je“ a dva druhy ovoce (Č2–Č3) | M5 | 11 | — |
-| STEP-23 | Sčítání (Č4) | M5 | 22 | — |
-| STEP-24 | Výrobky: palačinky, koktejl | M5 | 17 | — |
-| STEP-25 | Slovo se vzorem (P3) | M6 | 11 | — |
-| STEP-26 | Slovo bez vzoru, diakritika ze jména, jméno jako milník (P4) | M6 | 25, 19 | — |
-| STEP-27 | Lísteček (P5) | M6 | 26 | — |
+| STEP-13 | [Slučitelný formát save (v2): migrace, `earned`/`purchases`, slučování](steps/STEP-13-mergeable-save-format.md) | M2 | 11 | done |
+| STEP-14 | Konec sezení (limit 10), zavírací scéna, obnova sezení po reloadu | M2 | 13 | — |
+| STEP-15 | Obchůdek | M3 | 13 | — |
+| STEP-16 | Album | M3 | 13 | — |
+| STEP-17 | Překvapení | M3 | 13 | — |
+| STEP-18 | Druhý výrobek: zmrzlinka | M3 | 15 | — |
+| STEP-19 | Rodičovský koutek: zámek, nastavení dítěte a rodiny (jméno, rod, členové), limity, zvuk | M4 | 13, 14 | — |
+| STEP-20 | Hlasový balíček jmen (`personal.json`, index, oslovení) | M4 | 07, 19 | — |
+| STEP-21 | Pokrok, export/import, mazání dat | M4 | 13, 19 | — |
+| STEP-22 | PWA ručně (service worker, manifest), offline, ikona na ploše | M4 | 02 | — |
+| STEP-23 | „Kolik je“ a dva druhy ovoce (Č2–Č3) | M5 | 11 | — |
+| STEP-24 | Sčítání (Č4) | M5 | 23 | — |
+| STEP-25 | Výrobky: palačinky, koktejl | M5 | 18 | — |
+| STEP-26 | Slovo se vzorem (P3) | M6 | 11 | — |
+| STEP-27 | Slovo bez vzoru, diakritika ze jména, jméno jako milník (P4) | M6 | 26, 20 | — |
+| STEP-28 | Lísteček (P5) | M6 | 27 | — |
 
 ## Poznámky
 
@@ -58,6 +59,15 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   se posunul o jedno číslo** (starý STEP-12 je dnes STEP-13 atd.). Při plánování se ještě
   předpokládalo, že ani jeden z nich nebude potřebovat nové hlášky; u STEP-12 to autor
   změnil – viz poznámka níž.
+- **STEP-13 se rozdělil na dva kroky (srpen 2026).** Řádek roadmapy sliboval konec sezení, obnovu
+  po reloadu i slučitelný formát save v jednom kroku. Jsou to ale dvě různé práce: **formát je
+  čistá logika** v `src/game/` (migrace, `earned`/`purchases`, slučování, spousta testů, ve hře
+  není vidět nic), kdežto **konec sezení je scéna** – zhasnutá kuchyně, mávající zvířátka, nové
+  hlášky, tedy i běh generátoru hlasu. STEP-13 dělá formát, **STEP-14 konec sezení**; formát jde
+  první, aby si sezení mohlo uložit svůj stav bez dalšího bumpu verze. **Zbytek roadmapy se posunul
+  o jedno číslo** (starý STEP-14 „Obchůdek“ je dnes STEP-15 atd.); odkazy `STEP-NN` v komentářích
+  kódu srovnala implementace STEP-13 (20 míst v 11 souborech, seznam v jeho plánu). **Hotové plány
+  v `docs/steps/` se nepřečíslovávají** – jsou zápisem o tom, co platilo tehdy.
 - **Číslování se od STEP-08 dál posunulo o jedno** (srpen 2026): hlas se rozdělil na STEP-07
   (manifest, generátor, casting – hra po něm zůstane tichá) a STEP-08 (fronta přehrávání
   a napojení kuchyně). Důvod: casting je lidská brána uprostřed – dokud dcera nevybere hlas,
@@ -78,7 +88,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   posunu o jedno ukazovaly na špatný krok (rodičovský koutek je 17, ne 16; „Kolik je" 21, ne 20;
   diakritika 25, ne 24). Hlášku „Otoč mě!" k overlay orientace vygeneroval **STEP-09** ve stejném
   běhu jako hlášky k dokončení objednávky; overlay ji říká při přechodu do portrétu.
-- Kroky se stejným „Po“ (např. 13/14/15, 03/04) jdou dělat nezávisle na sobě.
+- Kroky se stejným „Po“ (např. 15/16/17, 03/04) jdou dělat nezávisle na sobě.
 - **STEP-09** dostane navíc krátkou „dopékací“ pointu při dokončení objednávky (patro nebo
   poleva na výrobku, cinknutí trouby, konfety) – domluveno s autorem jako levná náhrada za
   mechaniku pečení, viz `navrh-hry.md` kap. 13 bod 2.
@@ -88,23 +98,23 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   prvků (`maybeIntroduce`) a postup na další stupeň dodělal **STEP-11**.
 - **Manifest má po STEP-09 celkem 252 hlášek** (246 z M1 + 3× „hotovo“, 2× hvězdička, „Otoč mě!“).
   Sada M1 je tím kompletní; STEP-10 přidal 2 pobídky ke zvonečku (**254**) a STEP-12 přidal
-  62 vět pro druhou položku objednávky (**316**), další přijdou se STEP-13 (konec sezení).
+  62 vět pro druhou položku objednávky (**316**), další přijdou se STEP-14 (konec sezení).
 - **Borůvka a třešeň** se kreslí už ve STEP-05 (miska i ovoce na dortu podle druhu z objednávky),
-  protože generátor ze STEP-03 vybírá ze všech tří startovních druhů; STEP-14 (obchůdek) pak řeší
+  protože generátor ze STEP-03 vybírá ze všech tří startovních druhů; STEP-15 (obchůdek) pak řeší
   jen odemykání *dalšího* ovoce.
 - **Svíčka a perníček na dortu.** STEP-06 staví svíčku doprostřed horní plochy dortu
   a perníček opře zepředu. Při plánování STEP-11 se ukázalo, že u **dvoupoložkové** objednávky
   (STEP-12) kolize nehrozí: pravidlo z návrhu 5.3 („při 2+ položkách vždy aspoň jedna z každé
   dráhy“) nikdy nespojí počítání se svíčkou, a perníček stojí o kus níž než ovoce. Posunout
-  jedno z toho bude potřeba až u **tří** položek, tedy se stupni Č3/P3 (STEP-22, STEP-25).
+  jedno z toho bude potřeba až u **tří** položek, tedy se stupni Č3/P3 (STEP-23, STEP-26).
 - **Rod dítěte** (holčička / kluk / neutrální) přibyl do nastavení kvůli tvarům pochval
-  (`navrh-hry.md` kap. 3 a 9). STEP-07 vygeneruje všechny tři sady, přepínač je v STEP-18;
+  (`navrh-hry.md` kap. 3 a 9). STEP-07 vygeneruje všechny tři sady, přepínač je v STEP-19;
   do té doby hra chválí neutrálně.
 - **Ukládání postupu (srpen 2026):** `localStorage` sám nestačí – dcera hraje na víc zařízeních
   a WebKit maže script-writable úložiště po sedmi dnech používání Safari bez interakce se
   stránkou (web apka na ploše má vlastní počítadlo a té se to netýká). Návrh dostal kap. 9.1:
   save musí jít **slučovat**, ne jen přepisovat, a hvězdičky se neukládají jako zůstatek, ale jako
-  `earned` + `purchases`. Formát je potřeba mít hotový **před obchůdkem** (STEP-14); čím se postup
+  `earned` + `purchases`. Formát je potřeba mít hotový **před obchůdkem** (STEP-15); čím se postup
   přenáší (ruční soubor × vlastní endpoint s rodinným kódem) je otevřená otázka, viz kap. 13.
 - **Co se ukázalo při STEP-11 (srpen 2026).** Dvě věci mimo rozsah kroku, ať se na ně nezapomene:
   1. **Prvky se můžou zavést rychleji, než je hra stihne ukázat.** Při `READY_RATIO = 0,8` má
@@ -116,9 +126,9 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
      písmena na perníčcích a číslice na svíčkách zůstanou v původním měřítku vedle vyrostlé
      grafiky; po reloadu je to v pořádku. Je to starší chování `resize()` ve scéně (týká se
      i svíček, kterých se STEP-11 nedotkl), na tabletu na to dítě nenarazí — ale u PWA
-     (STEP-21) nebo rodičovského koutku by to chtělo srovnat.
+     (STEP-22) nebo rodičovského koutku by to chtělo srovnat.
 
-- **Formát save patří do STEP-13 (srpen 2026).** Při plánování STEP-11 se prošlo, co v uloženém
+- **Formát save patří do STEP-13 (srpen 2026, hotovo).** Při plánování STEP-11 se prošlo, co v uloženém
   záznamu doopravdy je. Dobrá zpráva: **skóre zvládnutí tam je od začátku** (`tracks`: `level`,
   `active`, `scores`) a pravidla pro jeho sloučení jsou v kap. 9.1 rozhodnutá – vyšší skóre
   vyhrává, vyšší stupeň, sjednocení aktivní sady. Chybí ale dvě věci a obě jsou práce pro
@@ -134,6 +144,16 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   Čím se postup mezi zařízeními přenáší, se rozhodovat nemusí – **formát na tom rozhodnutí
   nezávisí**, slučitelný musí být tak jako tak. `StorageLike` je injektované rozhraní, takže
   server jde na místo `localStorage` vyměnit bez zásahu do herní logiky.
+
+  Obojí řeší plán [STEP-13](steps/STEP-13-mergeable-save-format.md). Autor u něj rozhodl (srpen
+  2026), že **`earned` bude jedno číslo**, ne mapa per zařízení, jak nadhazovala poznámka v kap.
+  9.1: přenos půjde nejspíš přes server, kde se stav slučuje průběžně, a podhodnocení součtu
+  (10 + 8 → 10 mezi dvěma sloučeními) je přijatelná cena za jednodušší formát. `purchases` navíc
+  nese i **zaplacenou cenu**, takže zůstatek jde dopočítat bez ceníku, který vznikne až
+  s obchůdkem. Slučovací funkce se píše rovnou v STEP-13, i když ji zavolá až import v rodičovském
+  koutku – jinak by „slučitelný formát“ zůstal slib bez důkazu. **Implementováno:** záznam je na
+  verzi 2, `parseSave()` migruje místo aby zahazoval, a text, kterému hra nerozumí, se odkládá do
+  `kk.save.backup` – i cizí nebo novější formát tak jde zachránit ručně.
 - **Zákazníci mluvit nebudou (srpen 2026).** Roadmapa u STEP-10 slibovala „repliky zákazníků“;
   autor rozhodl, že zvířátka **jen vydávají zvuky** (mručení, pípnutí, mňouknutí). Odpadá tím
   druhý hlas, role v generátoru i další casting – `VoiceRole` zůstává `'narrator'` a „repliky“
@@ -147,7 +167,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   jedna prosba. Manifest tím roste na **316 hlášek** a STEP-12 si vyžádá běh
   `docker compose run --rm voice` (generátor je přírůstkový, vyrobí jen nové). Když položka zazní
   sama, použije se vždycky tvar s „Prosím“, takže osamocené „A ještě…“ nikdy nezazní. Věty pro
-  **třetí** pozici se zatím nedělají – přijdou se stupni Č3/P3 (STEP-22, STEP-25).
+  **třetí** pozici se zatím nedělají – přijdou se stupni Č3/P3 (STEP-23, STEP-26).
 - **Police mají po STEP-12 vlastní modul každá.** Při implementaci se ukázalo, že dvoupoložková
   objednávka bývá **číslice + písmeno** (obě jsou „výběr z police“, jen každá z jiné dráhy), takže
   jeden `choice-item` na scénu nestačil – uměl vždycky jen jednu polici. `createChoiceItem` proto
@@ -160,6 +180,6 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   klip** přehrávaný přes `playbackRate` na půltónech `[0, 2, 4, 7, 9]` – text-to-sound-effects
   neumí zadat výšku tónu. `audio/chime.ts` zůstává natrvalo. Nový efekt = řádek v `src/data/sfx.ts`
   a `docker compose run --rm sfx`.
-- **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-21 do STEP-04: zatím se
+- **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-22 do STEP-04: zatím se
   vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
-  kuchyně nešlo posoudit. STEP-21 řeší jen PWA a offline.
+  kuchyně nešlo posoudit. STEP-22 řeší jen PWA a offline.

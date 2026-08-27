@@ -1,13 +1,17 @@
 /**
- * The save record in localStorage (docs/navrh-hry.md ch. 9). Progress is sacred: a record with the
- * right version is repaired, never thrown away, and a storage that refuses to work (private mode,
- * full quota) must not stop the game. Storage is injected so the logic stays testable in Node.
+ * The save record in localStorage (docs/navrh-hry.md ch. 9). Progress is sacred: a record of an
+ * older format is migrated, a damaged one is repaired, and one the game cannot read at all is put
+ * aside into a backup instead of being overwritten – never thrown away silently. A storage that
+ * refuses to work (private mode, full quota) must not stop the game. Storage is injected so the
+ * logic stays testable in Node.
  */
 import { type Letter } from '../data/curriculum';
 import { LEVEL1_INITIAL_LETTERS, letterPool, numberPool, type Level } from './curriculum';
 import { createTrack, MASTERY_MAX, type TrackState } from './mastery';
+import { asRecord, migrateRecord } from './migrate';
 import { EMPTY_SETTINGS, normalizeSettings, type Settings } from './settings';
-import { SAVE_KEY, SAVE_VERSION } from './version';
+import { NO_STARS, type StarsState } from './stars';
+import { SAVE_BACKUP_KEY, SAVE_KEY, SAVE_VERSION } from './version';
 
 /** The slice of the Storage API the game uses. */
 export interface StorageLike {
@@ -18,9 +22,14 @@ export interface StorageLike {
 
 export interface SaveProgress {
   readonly ordersCompleted: number;
-  readonly stars: number;
   /** 'YYYY-MM-DD' in local time, or null when never played. */
   readonly lastPlayed: string | null;
+}
+
+/** The element a track has just introduced and is waiting to ask about (návrh 5.4). */
+export interface PendingElements {
+  readonly numbers: string | null;
+  readonly letters: string | null;
 }
 
 export interface SaveData {
@@ -28,15 +37,13 @@ export interface SaveData {
   readonly settings: Settings;
   readonly tracks: { readonly numbers: TrackState; readonly letters: TrackState };
   readonly progress: SaveProgress;
+  readonly stars: StarsState;
+  readonly pending: PendingElements;
 }
+
+const NO_PENDING: PendingElements = { numbers: null, letters: null };
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
-}
 
 /**
  * A brand new game: numbers 1–5 (the child knows those) and the first two letters – the rest of the
@@ -50,7 +57,9 @@ export function createSave(settings: Settings = EMPTY_SETTINGS): SaveData {
       numbers: createTrack(1, numberPool(1)),
       letters: createTrack(1, letterPool(settings, 1), LEVEL1_INITIAL_LETTERS),
     },
-    progress: { ordersCompleted: 0, stars: 0, lastPlayed: null },
+    progress: { ordersCompleted: 0, lastPlayed: null },
+    stars: NO_STARS,
+    pending: NO_PENDING,
   };
 }
 
@@ -93,12 +102,43 @@ function repairProgress(input: unknown): SaveProgress {
   const lastPlayed = record?.['lastPlayed'];
   return {
     ordersCompleted: repairCount(record?.['ordersCompleted']),
-    stars: repairCount(record?.['stars']),
     lastPlayed: typeof lastPlayed === 'string' && DATE_PATTERN.test(lastPlayed) ? lastPlayed : null,
   };
 }
 
-/** Unreadable JSON or another format version → null (a fresh game); anything else gets repaired. */
+/**
+ * A bought item stays bought even when its price is unreadable (it is repaired to 0, not dropped) –
+ * taking a toy away from the child is the one repair that would really hurt. `earned` on the other
+ * hand is just a count, so a nonsense value starts from zero.
+ */
+function repairStars(input: unknown): StarsState {
+  const record = asRecord(input);
+  const saved = asRecord(record?.['purchases']);
+  const purchases: Record<string, number> = {};
+  if (saved) for (const [id, cost] of Object.entries(saved)) purchases[id] = repairCount(cost);
+  return { earned: repairCount(record?.['earned']), purchases };
+}
+
+/**
+ * A pending element only makes sense while its track can actually ask about it, so anything outside
+ * the active set becomes null – the game never forces an element it cannot offer.
+ */
+function repairPending(
+  input: unknown,
+  tracks: { readonly numbers: TrackState; readonly letters: TrackState },
+): PendingElements {
+  const record = asRecord(input);
+  const pick = (key: 'numbers' | 'letters'): string | null => {
+    const value = record?.[key];
+    return typeof value === 'string' && tracks[key].active.includes(value) ? value : null;
+  };
+  return { numbers: pick('numbers'), letters: pick('letters') };
+}
+
+/**
+ * Unreadable JSON or a record there is no migration path from → null (a fresh game, and `readSave`
+ * keeps the original text). Anything else is lifted to the current version and then repaired.
+ */
 export function parseSave(raw: string | null): SaveData | null {
   if (raw === null || raw === '') return null;
   let parsed: unknown;
@@ -108,18 +148,32 @@ export function parseSave(raw: string | null): SaveData | null {
     return null;
   }
   const record = asRecord(parsed);
-  if (!record || record['version'] !== SAVE_VERSION) return null;
-  const settings = normalizeSettings(record['settings']);
-  const tracks = asRecord(record['tracks']);
+  if (!record) return null;
+  const migrated = migrateRecord(record);
+  if (!migrated) return null;
+  const settings = normalizeSettings(migrated['settings']);
+  const saved = asRecord(migrated['tracks']);
+  const tracks = {
+    numbers: repairTrack(saved?.['numbers'], numberPool),
+    letters: repairTrack(saved?.['letters'], (level) => letterPool(settings, level)),
+  };
   return {
     version: SAVE_VERSION,
     settings,
-    tracks: {
-      numbers: repairTrack(tracks?.['numbers'], numberPool),
-      letters: repairTrack(tracks?.['letters'], (level) => letterPool(settings, level)),
-    },
-    progress: repairProgress(record['progress']),
+    tracks,
+    progress: repairProgress(migrated['progress']),
+    stars: repairStars(migrated['stars']),
+    pending: repairPending(migrated['pending'], tracks),
   };
+}
+
+/** The rescue copy of a record the game could not read; a later one overwrites it. */
+function backupSave(storage: StorageLike, raw: string): void {
+  try {
+    storage.setItem(SAVE_BACKUP_KEY, raw);
+  } catch {
+    // see writeSave
+  }
 }
 
 /** Never throws, never returns null – a broken or missing record simply becomes a new game. */
@@ -130,7 +184,11 @@ export function readSave(storage: StorageLike): SaveData {
   } catch {
     raw = null;
   }
-  return parseSave(raw) ?? createSave();
+  const save = parseSave(raw);
+  if (save) return save;
+  // Not readable: the text goes into the backup before the new game starts writing over it.
+  if (raw !== null && raw !== '') backupSave(storage, raw);
+  return createSave();
 }
 
 /** A storage that refuses to write (quota, private mode) must not stop the game. */
@@ -142,6 +200,7 @@ export function writeSave(storage: StorageLike, data: SaveData): void {
   }
 }
 
+/** The backup is left alone: it belongs to a record this reset never saw (rule 4). */
 export function resetSave(storage: StorageLike): SaveData {
   try {
     storage.removeItem(SAVE_KEY);
@@ -162,9 +221,12 @@ export function withSettings(data: SaveData, settings: Settings): SaveData {
   const active = pool.slice(0, size);
   const scores: Record<string, number> = {};
   for (const element of active) scores[element] = letters.scores[element] ?? 0;
+  const tracks = { ...data.tracks, letters: { level: letters.level, active, scores } };
   return {
     ...data,
     settings,
-    tracks: { ...data.tracks, letters: { level: letters.level, active, scores } },
+    tracks,
+    // A letter that left the set must not stay pending – the generator could never ask for it.
+    pending: { ...data.pending, letters: repairPending(data.pending, tracks).letters },
   };
 }

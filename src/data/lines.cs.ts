@@ -32,7 +32,7 @@ export interface Line {
   readonly voice?: VoiceRole;
 }
 
-/** Which set of praises the child hears; the setting arrives in STEP-18, until then 'neutral'. */
+/** Which set of praises the child hears; the setting arrives in STEP-19, until then 'neutral'. */
 export type PraiseGender = 'neutral' | 'female' | 'male';
 
 /** The numbers of M1 – the first ten, never a zero (návrh 5.2). */

@@ -138,7 +138,7 @@ Generátor objednávek si bere položky z obou drah podle toho, kde zrovna kter�
 | Č5 | + „o jednu víc / míň“, nula | výhled |
 
 **Č2 přijde nadvakrát.** Číslice 6–10 otevře STEP-11, ale **počítání zůstane do pěti**
-a „kolik je“ počká na STEP-22: na horní plochu dortu se vejde pět kousků ovoce
+a „kolik je“ počká na STEP-23: na horní plochu dortu se vejde pět kousků ovoce
 (`MAX_CAKE_FRUIT`) a šestý by neměl kam. Druhá řada na dortu je práce s artem, ne
 s generátorem, tak jde do vlastního kroku.
 
@@ -197,7 +197,7 @@ Každé písmeno a číslo má **skóre zvládnutí** 0–5:
   uvolní – radši kratší nabídka než žádná objednávka.
 - Postup na další stupeň: vše v aktuálním stupni má skóre ≥ 3. Zpět jen rodič.
   Dráha nikdy nevyleze výš, než co kuchyně opravdu umí zahrát: dnes Č2 a P2. Strop zvedne
-  STEP-22 (čísla) a STEP-25 (písmena). Bez něj by save tvrdil stupeň, jehož obsah generátor
+  STEP-23 (čísla) a STEP-26 (písmena). Bez něj by save tvrdil stupeň, jehož obsah generátor
   neumí složit.
 - **Pořadí písmen** (počítá se z nastavení): 1) písmena jména dítěte v pořadí, v jakém jsou
   ve jméně, ta s háčkem/čárkou se **přeskočí** (Anička → A, N, I, K; Č přijde až v P4),
@@ -367,14 +367,16 @@ navrhuje tak, aby sloučení dvou záznamů dalo stejný výsledek nezávisle na
 
 **Hvězdičky se neukládají jako zůstatek.** Zůstatek se sloučit nedá: sečíst dvě zařízení znamená
 vyrobit hvězdičky z ničeho, vzít vyšší znamená sebrat dceři, co si mezitím koupila. Ukládá se
-proto zvlášť **`earned`** (jen roste, slučuje se jako vyšší… viz pozn.) a **`purchases`**
-(množina koupených věcí, slučuje se sjednocením); zůstatek se dopočítá jako
-`earned − cena(purchases)`. Sloučení je pak idempotentní a nezávislé na pořadí.
+proto zvlášť **`earned`** (jen roste, slučuje se jako vyšší) a **`purchases`** (koupené věci,
+slučuje se sjednocením); zůstatek se dopočítá jako `earned − cena(purchases)`. Sloučení je pak
+idempotentní a nezávislé na pořadí. **`purchases` nese u každé věci i cenu, kterou za ni dcera
+zaplatila** (id → hvězdičky): zůstatek jde spočítat bez ceníku, pozdější změna ceny nepřepíše
+historii a sloučení bere u téže věci vyšší z obou cen – nižší by hvězdičky vyrobila z ničeho.
 
-> Pozn.: „vyšší vyhrává“ u `earned` podhodnotí součet, když dcera hraje na obou zařízeních mezi
-> dvěma sloučeními (10 + 8 → 10, ne 18). Poctivější je počítat `earned` **per zařízení**
-> (`{ tablet: 10, notebook: 8 }`, sloučení = vyšší hodnota pro každý klíč, součet přes klíče).
-> Rozhodne se, až bude jasné, jestli se bude synchronizovat automaticky, nebo ručně.
+> Rozhodnuto (srpen 2026): **`earned` je jedno číslo**, ne hodnota per zařízení. „Vyšší vyhrává“
+> podhodnotí součet, když se mezi dvěma sloučeními hraje na obou zařízeních (10 + 8 → 10, ne 18);
+> bere se to jako přijatelná cena za jednodušší formát, protože přenos půjde nejspíš přes server,
+> kde se stav slučuje průběžně.
 
 **Čím se postup přenáší, rozhodnuté není.** Ve hře jsou dvě cesty a liší se v tom, jestli
 projekt smí mít server:
@@ -387,7 +389,10 @@ projekt smí mít server:
   requesty za běhu), a proto je to samostatné rozhodnutí, ne implementační detail.
 
 Než přibude obchůdek, musí být hotový aspoň **formát** (tabulka výše a `earned`/`purchases`);
-zpětně se mergeovatelnost do formátu navrženého na přepis dodělává draze. Levná vyztužení, která
+zpětně se mergeovatelnost do formátu navrženého na přepis dodělává draze. Formát to má hotové od
+STEP-13: verzi nese samotný záznam, starší se **migruje** (nikdy nezahazuje), a záznamu, kterému
+hra nerozumí – cizí formát, novější build, poškozený text – **si hra odloží syrovou kopii**
+(`kk.save.backup`), takže ani nečitelný záznam pokrok nesmaže potichu. Levná vyztužení, která
 na rozhodnutí o přenosu nečekají: `navigator.storage.persist()`, zrcadlo v IndexedDB a export
 dřív, než ho bude potřeba.
 

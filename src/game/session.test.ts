@@ -6,7 +6,7 @@ import { elementOf, itemResult } from './progress';
 import { createRng } from './rng';
 import { createSave, parseSave, type SaveData, type StorageLike } from './save';
 import { createSession } from './session';
-import { SAVE_KEY } from './version';
+import { SAVE_BACKUP_KEY, SAVE_KEY, SAVE_VERSION } from './version';
 
 function memoryStorage(initial?: unknown): StorageLike & { readonly writes: string[] } {
   const map = new Map<string, string>();
@@ -66,13 +66,15 @@ describe('createSession', () => {
     expect(storage.writes).toEqual([]);
   });
 
-  it('survives a broken record instead of throwing', () => {
+  it('survives a broken record instead of throwing, and keeps it in the backup', () => {
     const storage = memoryStorage();
     storage.setItem(SAVE_KEY, '{ not json');
     storage.writes.length = 0;
     const session = createSession(storage);
     expect(session.order.index).toBe(1);
-    expect(storage.writes).toEqual([]);
+    // The save itself is still untouched; the unreadable text is only copied aside (rule 4).
+    expect(storage.writes).toEqual([SAVE_BACKUP_KEY]);
+    expect(storage.getItem(SAVE_BACKUP_KEY)).toBe('{ not json');
   });
 });
 
@@ -86,10 +88,9 @@ describe('session.complete', () => {
     expect(session.save).not.toBe(before);
     expect(session.save.progress).toEqual({
       ordersCompleted: 1,
-      stars: 1,
       lastPlayed: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/) as unknown as string,
     });
-    expect(parseSave(storage.getItem(SAVE_KEY))?.progress.stars).toBe(1);
+    expect(parseSave(storage.getItem(SAVE_KEY))?.stars.earned).toBe(1);
   });
 
   it('scores the item of the order it is told about', () => {
@@ -211,7 +212,7 @@ describe('session – two-item orders (STEP-12)', () => {
     const base = createSave();
     return {
       ...base,
-      progress: { ordersCompleted: index - 1, stars: index - 1, lastPlayed: null },
+      progress: { ordersCompleted: index - 1, lastPlayed: null },
     };
   }
 
@@ -247,15 +248,17 @@ describe('session – two-item orders (STEP-12)', () => {
     expect(run()).toBe(run());
   });
 
-  it('stores nothing new for it – the save stays on version 1 (rule 4)', () => {
+  it('stores nothing new for it – a two-item order has the same shape as any other', () => {
     const storage = memoryStorage(atOrder(11));
     const session = createSession(storage, { rng: createRng(3) });
     session.complete([]);
     const raw = storage.getItem(SAVE_KEY) ?? '';
-    expect(parseSave(raw)?.version).toBe(1);
+    expect(parseSave(raw)?.version).toBe(SAVE_VERSION);
     expect(Object.keys(JSON.parse(raw) as object).sort()).toEqual([
+      'pending',
       'progress',
       'settings',
+      'stars',
       'tracks',
       'version',
     ]);
@@ -275,7 +278,7 @@ describe('session – a freshly introduced element', () => {
         numbers: base.tracks.numbers,
         letters: { level: 1, active: ['O', 'S'], scores: known(['O', 'S']) },
       },
-      progress: { ordersCompleted, stars: ordersCompleted, lastPlayed: null },
+      progress: { ordersCompleted, lastPlayed: null },
     };
   }
 
@@ -289,7 +292,7 @@ describe('session – a freshly introduced element', () => {
         numbers: { level: 1, active: all, scores: known(all) },
         letters: base.tracks.letters,
       },
-      progress: { ordersCompleted, stars: ordersCompleted, lastPlayed: null },
+      progress: { ordersCompleted, lastPlayed: null },
     };
   }
 
@@ -338,14 +341,32 @@ describe('session – a freshly introduced element', () => {
     }
   });
 
-  it('keeps the save on version 1 – nothing about this is stored', () => {
+  it('stores what the order it has just generated is really waiting for', () => {
     const storage = memoryStorage(lettersReady(1));
     const session = createSession(storage, { rng: createRng(3) });
-    session.complete([]);
-    const raw = storage.getItem(SAVE_KEY) ?? '';
-    expect(parseSave(raw)?.version).toBe(1);
-    expect(raw).not.toContain('introduced');
-    expect(raw).not.toContain('pending');
+    session.complete([]); // 'T' joins the set, but order 2 belongs to the numbers track
+    expect(parseSave(storage.getItem(SAVE_KEY))?.version).toBe(SAVE_VERSION);
+    expect(parseSave(storage.getItem(SAVE_KEY))?.pending.letters).toBe('T');
+
+    session.complete([]); // order 3 is the letter order and asks for 'T'
+    expect(session.order.items.map(elementOf)).toContain('T');
+    // The record matches the order the child is holding: nothing is waiting any more.
+    expect(parseSave(storage.getItem(SAVE_KEY))?.pending.letters).toBeNull();
+  });
+
+  it('keeps a waiting element across a reload (STEP-13)', () => {
+    const storage = memoryStorage(lettersReady(1));
+    createSession(storage, { rng: createRng(3) }).complete([]); // 'T' joins and has to wait
+    expect(parseSave(storage.getItem(SAVE_KEY))?.pending.letters).toBe('T');
+
+    // The reload: a brand new session over the same storage, a different seed – and the nudge
+    // still lands, because it came back out of the record and not out of the old session.
+    const reloaded = createSession(storage, { rng: createRng(11) });
+    expect(reloaded.save.pending.letters).toBe('T');
+    expect(reloaded.order.items[0]?.type).toBe('digit'); // order 2 belongs to the numbers track
+    reloaded.complete([]);
+    expect(reloaded.order.items.map(elementOf)).toContain('T');
+    expect(parseSave(storage.getItem(SAVE_KEY))?.pending.letters).toBeNull();
   });
 
   it('is still reproducible from the same seed', () => {

@@ -26,7 +26,7 @@ export interface Session {
   readonly order: Order;
   /**
    * Who is carrying the current order (návrh kap. 6). Deliberately NOT in the save: after a reload
-   * any animal may walk in, and restoring the session is STEP-13's job.
+   * any animal may walk in, and restoring the session is STEP-14's job.
    */
   readonly customer: CustomerId;
   /** Writes the finished order into the save and generates the next one; returns it. */
@@ -50,11 +50,13 @@ export function createSession(
   let lastFruit: FruitKind | null = null;
   /**
    * The element `completeOrder` has just introduced, waiting for the first order of its track that
-   * can actually use it (návrh 5.4). Deliberately NOT in the save: a new field would mean a new
-   * `SAVE_VERSION`, and `parseSave()` throws a record of another version away – a wiped record is a
-   * far worse price than losing one nudge on reload.
+   * can actually use it (návrh 5.4). Kept in the save since v2, so a reload does not lose the nudge;
+   * the copy here is the working one and goes back into the record at every `complete()`.
    */
-  const pending: Record<TrackName, string | null> = { numbers: null, letters: null };
+  const pending: Record<TrackName, string | null> = {
+    numbers: save.pending.numbers,
+    letters: save.pending.letters,
+  };
 
   function remember(order: Order): void {
     for (const item of order.items) {
@@ -103,15 +105,18 @@ export function createSession(
     complete(results) {
       remember(order);
       const before = save;
-      // A storage that refuses to write does not stop the loop: the session keeps the new record
-      // in memory and the child plays on (writeSave swallows the failure).
       save = completeOrder(save, results, todayStamp(now()));
-      writeSave(storage, save);
       for (const track of ['numbers', 'letters'] as const) {
         const introduced = introducedElement(before.tracks[track], save.tracks[track]);
         if (introduced !== null) pending[track] = introduced;
       }
+      // The next order is generated first, because generating it is what ticks a pending element
+      // off: the record then matches the order the child is about to be given.
       order = nextOrder();
+      save = { ...save, pending: { numbers: pending.numbers, letters: pending.letters } };
+      // A storage that refuses to write does not stop the loop: the session keeps the new record
+      // in memory and the child plays on (writeSave swallows the failure).
+      writeSave(storage, save);
       customer = customers.next();
       return order;
     },

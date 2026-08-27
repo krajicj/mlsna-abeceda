@@ -11,7 +11,7 @@ import {
   type StorageLike,
 } from './save';
 import { EMPTY_SETTINGS, type Settings } from './settings';
-import { SAVE_KEY, SAVE_VERSION } from './version';
+import { SAVE_BACKUP_KEY, SAVE_KEY, SAVE_VERSION } from './version';
 
 const SETTINGS: Settings = {
   child: { name: 'Anička', vocative: 'Aničko' },
@@ -50,7 +50,9 @@ describe('createSave', () => {
     expect(save.tracks.letters.active).toEqual(['A', 'N']);
     expect(save.tracks.letters.active).toHaveLength(LEVEL1_INITIAL_LETTERS);
     expect(save.tracks.letters.scores).toEqual({ A: 0, N: 0 });
-    expect(save.progress).toEqual({ ordersCompleted: 0, stars: 0, lastPlayed: null });
+    expect(save.progress).toEqual({ ordersCompleted: 0, lastPlayed: null });
+    expect(save.stars).toEqual({ earned: 0, purchases: {} });
+    expect(save.pending).toEqual({ numbers: null, letters: null });
   });
 
   it('works with no settings', () => {
@@ -101,7 +103,7 @@ describe('parseSave', () => {
     expect(save.tracks.letters.level).toBe(5); // clamped from 9
     expect(save.tracks.letters.active).toEqual(['A', 'N']);
     expect(save.tracks.letters.scores).toEqual({ A: 2, N: 0 });
-    expect(save.progress).toEqual({ ordersCompleted: 7, stars: 0, lastPlayed: null });
+    expect(save.progress).toEqual({ ordersCompleted: 7, lastPlayed: null });
   });
 
   it('rebuilds a track whose active set is unusable, keeping the stage', () => {
@@ -138,7 +140,8 @@ describe('readSave / writeSave / resetSave', () => {
     const storage = memoryStorage();
     const save: SaveData = {
       ...createSave(SETTINGS),
-      progress: { ordersCompleted: 3, stars: 3, lastPlayed: '2026-08-24' },
+      progress: { ordersCompleted: 3, lastPlayed: '2026-08-24' },
+      stars: { earned: 3, purchases: { 'toy.ball': 2 } },
     };
     writeSave(storage, save);
     expect(storage.map.has(SAVE_KEY)).toBe(true);
@@ -153,6 +156,101 @@ describe('readSave / writeSave / resetSave', () => {
     expect(fresh.settings).toEqual(EMPTY_SETTINGS);
     expect(fresh.progress.ordersCompleted).toBe(0);
     expect(fresh.tracks.letters.active).toEqual(['O', 'S']);
+  });
+});
+
+describe('parseSave – a record of the older format (v1)', () => {
+  /** The v1 record from docs/steps/STEP-13-mergeable-save-format.md. */
+  const V1 = JSON.stringify({
+    version: 1,
+    settings: { child: null, family: [] },
+    tracks: {
+      numbers: { level: 1, active: ['1', '2', '3'], scores: { '1': 5, '2': 2, '3': 0 } },
+      letters: { level: 1, active: ['O', 'S'], scores: { O: 3, S: 1 } },
+    },
+    progress: { ordersCompleted: 7, stars: 7, lastPlayed: '2026-08-20' },
+  });
+
+  it('lifts it instead of starting a new game – nothing is lost', () => {
+    const save = parseSave(V1);
+    expect(save?.version).toBe(SAVE_VERSION);
+    expect(save?.tracks.numbers.scores).toEqual({ '1': 5, '2': 2, '3': 0 });
+    expect(save?.tracks.letters.scores).toEqual({ O: 3, S: 1 });
+    expect(save?.progress).toEqual({ ordersCompleted: 7, lastPlayed: '2026-08-20' });
+    expect(save?.stars).toEqual({ earned: 7, purchases: {} });
+    expect(save?.pending).toEqual({ numbers: null, letters: null });
+  });
+
+  it('is stored back as v2 under the same key', () => {
+    const storage = memoryStorage(V1);
+    writeSave(storage, readSave(storage));
+    expect([...storage.map.keys()]).toEqual([SAVE_KEY]);
+    expect((JSON.parse(storage.map.get(SAVE_KEY) ?? '') as { version: number }).version).toBe(2);
+  });
+});
+
+describe('parseSave – repairing the parts new in v2', () => {
+  const withStars = (stars: unknown): SaveData | null =>
+    parseSave(JSON.stringify({ ...createSave(), stars }));
+
+  it('starts the stars over when they make no sense, and keeps the rest of the record', () => {
+    for (const stars of [undefined, 'x', [], { earned: -5 }, { earned: 'x', purchases: [] }]) {
+      const save = withStars(stars);
+      expect(save?.stars).toEqual({ earned: 0, purchases: {} });
+      expect(save?.tracks.letters.active).toEqual(['O', 'S']); // the record itself survived
+    }
+  });
+
+  it('keeps a bought item whose price is unreadable rather than taking it away', () => {
+    const save = withStars({ earned: 4, purchases: { 'toy.ball': 'free', 'toy.kite': 2 } });
+    expect(save?.stars.purchases).toEqual({ 'toy.ball': 0, 'toy.kite': 2 });
+  });
+
+  it('drops a pending element the track cannot ask about', () => {
+    const raw = JSON.stringify({ ...createSave(), pending: { numbers: '9', letters: 'S' } });
+    // 'S' is in play, '9' is not (stage 1 counts to five).
+    expect(parseSave(raw)?.pending).toEqual({ numbers: null, letters: 'S' });
+  });
+
+  it('takes anything but a string as nothing at all', () => {
+    const raw = JSON.stringify({ ...createSave(), pending: { numbers: 3, letters: [] } });
+    expect(parseSave(raw)?.pending).toEqual({ numbers: null, letters: null });
+  });
+});
+
+describe('readSave – the backup of a record that cannot be read', () => {
+  it('keeps the raw text and starts a new game', () => {
+    for (const raw of ['{{{', '"kk"', JSON.stringify({ version: 99, tracks: {} })]) {
+      const storage = memoryStorage(raw);
+      expect(readSave(storage).progress.ordersCompleted).toBe(0);
+      expect(storage.map.get(SAVE_BACKUP_KEY)).toBe(raw);
+      // The save itself is left where it was until the game writes its first order.
+      expect(storage.map.get(SAVE_KEY)).toBe(raw);
+    }
+  });
+
+  it('keeps only the latest one – it is a rescue copy, not an archive', () => {
+    const storage = memoryStorage('{{{');
+    readSave(storage);
+    storage.map.set(SAVE_KEY, '}}}');
+    readSave(storage);
+    expect(storage.map.get(SAVE_BACKUP_KEY)).toBe('}}}');
+  });
+
+  it('does not back up a record it could read, nor an empty storage', () => {
+    const readable = memoryStorage(JSON.stringify(createSave(SETTINGS)));
+    readSave(readable);
+    expect(readable.map.has(SAVE_BACKUP_KEY)).toBe(false);
+    const empty = memoryStorage();
+    readSave(empty);
+    expect(empty.map.has(SAVE_BACKUP_KEY)).toBe(false);
+  });
+
+  it('leaves the backup alone on reset – it belongs to a record the reset never saw', () => {
+    const storage = memoryStorage('{{{');
+    readSave(storage);
+    resetSave(storage);
+    expect(storage.map.get(SAVE_BACKUP_KEY)).toBe('{{{');
   });
 });
 
@@ -189,5 +287,11 @@ describe('withSettings', () => {
   it('goes back to a neutral set when the settings are cleared', () => {
     const withName = createSave(SETTINGS);
     expect(withSettings(withName, EMPTY_SETTINGS).tracks.letters.active).toEqual(['O', 'S']);
+  });
+
+  it('forgets a pending letter that the new order dropped from the set', () => {
+    const before: SaveData = { ...createSave(), pending: { numbers: '3', letters: 'S' } };
+    const after = withSettings(before, SETTINGS); // 'S' is not in the new letter order
+    expect(after.pending).toEqual({ numbers: '3', letters: null });
   });
 });
