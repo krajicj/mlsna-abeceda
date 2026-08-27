@@ -2,7 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { FRUITS } from '../data/curriculum';
 import { MAX_COUNT } from './counting';
 import { createTrack, type TrackState } from './mastery';
-import { generateOrder, orderElements, type Order, type OrderInput } from './orders';
+import {
+  generateOrder,
+  numbersTurn,
+  orderElements,
+  orderLength,
+  MAX_ORDER_ITEMS,
+  SINGLE_ITEM_ORDERS,
+  type Order,
+  type OrderInput,
+} from './orders';
 import { createRng } from './rng';
 import { EMPTY_SETTINGS, type Settings } from './settings';
 
@@ -58,8 +67,110 @@ describe('track alternation', () => {
     ]);
   });
 
-  it('always makes exactly one item at this stage', () => {
+  it('always makes exactly one item up to the tenth order', () => {
     everySeed({ index: 2 }, (order) => expect(order.items).toHaveLength(1));
+    everySeed({ index: 10 }, (order) => expect(order.items).toHaveLength(1));
+  });
+});
+
+describe('two items from the eleventh order on (návrh 5.3)', () => {
+  /** Which track an item belongs to – letters or numbers (counting and digits are one track). */
+  function trackOf(item: Order['items'][number]): 'letters' | 'numbers' {
+    return item.type === 'letter' ? 'letters' : 'numbers';
+  }
+
+  it('counts one item up to the tenth order and two after it', () => {
+    expect(SINGLE_ITEM_ORDERS).toBe(10);
+    expect(MAX_ORDER_ITEMS).toBe(2);
+    expect([1, 2, 9, 10].map(orderLength)).toEqual([1, 1, 1, 1]);
+    expect([11, 12, 20, 99].map(orderLength)).toEqual([2, 2, 2, 2]);
+  });
+
+  it('puts exactly one item of each track in every order from the eleventh on', () => {
+    for (let index = 11; index <= 20; index += 1) {
+      everySeed({ index }, (order) => {
+        expect(order.items).toHaveLength(2);
+        const tracks = order.items.map(trackOf).sort();
+        expect(tracks).toEqual(['letters', 'numbers']);
+      });
+    }
+  });
+
+  it('keeps counting and digits alternating across the boundary of the tenth order', () => {
+    expect([1, 3, 9, 11, 12, 13].map(numbersTurn)).toEqual([1, 2, 5, 6, 7, 8]);
+    const numbers = [9, 11, 12, 13].map((index) => {
+      const order = generateOrder({ ...input({ index }), rng: createRng(index) });
+      const item = order.items.find((candidate) => candidate.type !== 'letter');
+      return item?.type;
+    });
+    expect(numbers).toEqual(['count', 'digit', 'count', 'digit']);
+  });
+
+  it('draws the order of the two items instead of always asking the same way round', () => {
+    const first = new Set(
+      Array.from(
+        { length: 40 },
+        (_, seed) =>
+          generateOrder({ ...input({ index: 11 }), rng: createRng(seed) }).items[0]?.type,
+      ),
+    );
+    expect(first.size).toBeGreaterThan(1); // both "digit first" and "letter first" turn up
+  });
+
+  it('replays the same two items in the same order from the same seed', () => {
+    const a = generateOrder({ ...input({ index: 11 }), rng: createRng(42) });
+    const b = generateOrder({ ...input({ index: 11 }), rng: createRng(42) });
+    expect(a).toEqual(b);
+  });
+
+  it('makes a two-item order even when a track holds a single element', () => {
+    for (let seed = 0; seed < 30; seed += 1) {
+      const order = generateOrder({
+        ...input({ index: 11 }),
+        tracks: {
+          numbers: allKnown(createTrack(1, NUMBERS)),
+          letters: allKnown(createTrack(1, ['A'])),
+        },
+        rng: createRng(seed),
+      });
+      expect(order.items).toHaveLength(2);
+      const letter = order.items.find((item) => item.type === 'letter');
+      if (letter?.type !== 'letter') throw new Error('expected a letter item');
+      expect(letter.choices).toEqual(['A']); // a shorter shelf, not an exception (rule 2)
+    }
+  });
+
+  it('still keeps an introduced eight out of a counting item', () => {
+    const bigNumbers = allKnown(createTrack(2, ['1', '2', '3', '4', '5', '6', '7', '8']));
+    for (let seed = 0; seed < 30; seed += 1) {
+      // Order 12 is a counting turn (numbersTurn 7) – the eight has to wait for the candle.
+      const counted = generateOrder({
+        ...input({ index: 12, introduced: { numbers: '8' } }),
+        tracks: { numbers: bigNumbers, letters: allKnown(createTrack(1, LETTERS)) },
+        rng: createRng(seed),
+      });
+      const item = counted.items.find((candidate) => candidate.type === 'count');
+      if (item?.type !== 'count') throw new Error('expected a count item');
+      expect(item.amount).toBeLessThanOrEqual(MAX_COUNT);
+
+      // Order 13 is a digit turn (numbersTurn 8) – it takes the eight right away.
+      const digits = generateOrder({
+        ...input({ index: 13, introduced: { numbers: '8' } }),
+        tracks: { numbers: bigNumbers, letters: allKnown(createTrack(1, LETTERS)) },
+        rng: createRng(seed),
+      });
+      const digit = digits.items.find((candidate) => candidate.type === 'digit');
+      if (digit?.type !== 'digit') throw new Error('expected a digit item');
+      expect(digit.value).toBe(8);
+    }
+  });
+
+  it('gives back the keys of both items', () => {
+    const order = generateOrder({ ...input({ index: 11 }), rng: createRng(3) });
+    expect(orderElements(order)).toHaveLength(2);
+    for (const key of orderElements(order)) {
+      expect([...LETTERS, ...NUMBERS]).toContain(key);
+    }
   });
 });
 

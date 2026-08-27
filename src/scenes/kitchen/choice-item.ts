@@ -1,10 +1,15 @@
 /**
- * The letter and digit items in the kitchen (docs/navrh-hry.md ch. 5.4, 5.5): the offer from the
- * order stands on one shelf – cookies below, candles above – the child taps a piece and the right
- * one flies onto the cake. The state lives in `game/choice.ts`, the geometry in `art/layout.ts`.
- * A wrong tap only shakes the piece; after the second one the right answer lights up, so the child
- * can never get stuck (rule 2). The shelf that is not in play stays full but inert: a tap there is
- * not a mistake.
+ * One item where the child picks from a shelf (docs/navrh-hry.md ch. 5.4, 5.5): the offer from the
+ * order stands on it – cookies below, candles above – the child taps a piece and the right one flies
+ * onto the cake. The state lives in `game/choice.ts`, the geometry in `art/layout.ts`. A wrong tap
+ * only shakes the piece; after the second one the right answer lights up, so the child can never get
+ * stuck (rule 2). A shelf that is not in play stays full but inert: a tap there is not a mistake.
+ *
+ * ONE INSTANCE OWNS ONE SHELF. From STEP-12 an order can ask for a candle AND a cookie at the same
+ * time, and both are then in play; the kitchen therefore builds one of these per shelf and each of
+ * them only ever draws its own. It says just what answers one tap ("To je bé. Hledáme ká."); the
+ * order itself, the nudge, the hint sentence and the praise belong to the whole order and are said
+ * by the scene, which is also the one that watches for idleness.
  */
 import type { SfxPlayer } from '../../audio/sfx';
 import type { VoicePlayer } from '../../audio/voice';
@@ -30,16 +35,8 @@ import {
   type ChoiceItem,
   type ChoiceState,
 } from '../../game/choice';
-import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
 import type { ItemOutcome } from '../../game/progress';
-import {
-  askAgainSpeech,
-  correctionSpeech,
-  hintSpeech,
-  orderSpeech,
-  repeatSpeech,
-  type PraisePicker,
-} from '../../game/speech';
+import { correctionSpeech } from '../../game/speech';
 import { createMotion, layer, place, prefersReducedMotion } from './dom';
 
 /** The ring is wider than the piece it points at: on a cookie of its own size it would land on
@@ -50,16 +47,11 @@ const SHAKE_MS = 360;
 const HOP_MS = 420;
 /** One wave of the bobbing offer, including the delay of the last piece (see style.css). */
 const BOB_MS = 1150;
-/** A beat before the order is spoken, so the sentence does not start over the scene fading in. */
-const SPEAK_DELAY_MS = 350;
-
-/** Which shelf a piece belongs on: digits are candles (top), letters are cookies (bottom). */
-type Shelf = 'digits' | 'letters';
 
 export interface ChoiceItemHandle {
-  /** Starts the item: the offer goes on its own shelf, the other one stays decoration. */
+  /** Starts the item: the offer goes on this shelf in place of the decoration. */
   start(item: ChoiceItem): void;
-  /** An order without a choice (counting): both shelves are decoration, no targets. */
+  /** The order does not ask for this shelf: it goes back to being decoration, with no targets. */
   clear(): void;
   /** Called after every stage resize; re-places everything from the new layout. */
   layout(layout: KitchenLayout): void;
@@ -68,36 +60,35 @@ export interface ChoiceItemHandle {
   outcome(): ItemOutcome | null;
   /** What flies to the customer with the cake – the cookie or the candle that landed on it. */
   plate(): readonly HTMLElement[];
-  /** Says the order again (a tap on the bubble) and restarts the idle watcher. */
-  repeat(): void;
+  /** 15 s of silence: the offer bobs. Wordless – the scene says the sentence. */
+  nudge(): void;
+  /** 40 s of silence: the right piece lights up (no hop). Wordless. */
+  hint(): void;
   destroy(): void;
 }
 
-function other(shelf: Shelf): Shelf {
-  return shelf === 'digits' ? 'letters' : 'digits';
-}
-
 /**
- * `shelves` are the two elements the kitchen scene positions; the item owns what is drawn in them,
- * because what stands there is either the offer of the order or the decoration from the save.
+ * `shelf` is the element the kitchen scene positions; the item owns what is drawn in it, because
+ * what stands there is either the offer of the order or the decoration from the save.
  */
 export function createChoiceItem(options: {
   readonly root: HTMLElement;
-  readonly shelves: { readonly digits: HTMLElement; readonly letters: HTMLElement };
+  /** Which shelf this instance owns: 'digit' is the candles on top, 'letter' the cookies below. */
+  readonly kind: ChoiceItem['type'];
+  readonly shelf: HTMLElement;
   /**
-   * What stands on the shelf that is not in play. A function, not a list: the set the child is
+   * What stands on this shelf while it is not in play. A function, not a list: the set the child is
    * learning grows between orders, and the shelf has to show what the save says right now.
    */
-  readonly decoration: () => {
-    readonly digits: readonly string[];
-    readonly letters: readonly string[];
-  };
+  readonly decoration: () => readonly string[];
   readonly sfx: SfxPlayer;
   readonly voice: VoicePlayer;
-  readonly praise: PraisePicker;
-  /** The praise is out and the piece is on the cake – the kitchen may start the finale. */
+  /** Every tap on the offer, right or wrong. The scene resets the idle watcher of the order. */
+  readonly onActivity: () => void;
+  /** The piece is on the cake; the praise and the finale are the scene's call. */
   readonly onDone: () => void;
 }): ChoiceItemHandle {
+  const digits = options.kind === 'digit';
   const landedLayer = layer('choice-landed');
   const targetLayer = layer('choice-targets');
   const hintEl = layer('choice-hint');
@@ -107,69 +98,34 @@ export function createChoiceItem(options: {
   options.root.append(landedLayer, targetLayer, hintEl, flightLayer);
 
   const motion = createMotion();
-  const pieces: Record<Shelf, HTMLDivElement[]> = { digits: [], letters: [] };
+  let pieces: HTMLDivElement[] = [];
   let current: KitchenLayout | null = null;
   let state: ChoiceState | null = null;
-  let active: Shelf = 'letters';
   let targets: HTMLDivElement[] = [];
-  /** The item as the narrator got it – the word ("Ká jako kočka.") is only in here. */
-  let spoken: ChoiceItem | null = null;
 
-  function speakOrder(): void {
-    const item = spoken;
-    if (!item) return;
-    motion.after(SPEAK_DELAY_MS, () => options.voice.say(orderSpeech(item)));
-  }
-
-  /**
-   * One watcher per item: `stop()` is final by design (the item is over and nothing may nudge the
-   * child any more), so starting the next item builds a fresh one.
-   */
-  let idle: IdleWatcher = watcher();
-
-  function watcher(): IdleWatcher {
-    return createIdleWatcher({
-      onRemind: () => {
-        bobOffer();
-        // The word stays out of the nudge: after 15 s the child needs the order, not the lesson.
-        if (spoken) options.voice.say(repeatSpeech(spoken));
-      },
-      onHint: () => {
-        if (!state || state.done) return;
-        const target = state.target;
-        reveal(false);
-        options.voice.say(hintSpeech(target));
-      },
-    });
-  }
-
-  function shelfEl(shelf: Shelf): HTMLElement {
-    return shelf === 'digits' ? options.shelves.digits : options.shelves.letters;
-  }
-
-  function shelfRect(shelf: Shelf): Rect | null {
+  function shelfRect(): Rect | null {
     if (!current) return null;
-    return shelf === 'digits' ? current.shelfDigits : current.shelfLetters;
+    return digits ? current.shelfDigits : current.shelfLetters;
   }
 
-  function art(shelf: Shelf, value: string): string {
-    return shelf === 'digits' ? candle(value) : cookie(value);
+  function art(value: string): string {
+    return digits ? candle(value) : cookie(value);
   }
 
   /** Where the picked piece lands: the candle stands on top, the cookie leans on the front. */
   function cakeSlot(): Rect | null {
     if (!current) return null;
-    return active === 'digits' ? cakeCandleSlot(current.cake) : cakeCookieSlot(current.cake);
+    return digits ? cakeCandleSlot(current.cake) : cakeCookieSlot(current.cake);
   }
 
-  function drawShelf(shelf: Shelf, values: readonly string[]): void {
-    pieces[shelf] = values.map((value) => {
+  function drawShelf(values: readonly string[]): void {
+    pieces = values.map((value) => {
       const el = layer('kitchen-prop kitchen-item choice-piece');
       el.dataset['choice'] = value;
-      el.innerHTML = art(shelf, value);
+      el.innerHTML = art(value);
       return el;
     });
-    shelfEl(shelf).replaceChildren(...pieces[shelf]);
+    options.shelf.replaceChildren(...pieces);
   }
 
   function buildTargets(count: number): void {
@@ -181,24 +137,24 @@ export function createChoiceItem(options: {
     targetLayer.replaceChildren(...targets);
   }
 
-  function placeShelf(shelf: Shelf): void {
-    const rect = shelfRect(shelf);
+  function placeShelf(): void {
+    const rect = shelfRect();
     if (!rect) return;
-    shelfSlots(rect, pieces[shelf].length).forEach((slot, index) => {
-      const piece = pieces[shelf][index];
+    shelfSlots(rect, pieces.length).forEach((slot, index) => {
+      const piece = pieces[index];
       if (piece) place(piece, slot);
     });
   }
 
   /** The slot of one piece of the offer, in stage coordinates. */
   function slotOf(index: number): Rect | null {
-    const rect = shelfRect(active);
+    const rect = shelfRect();
     if (!rect || !state) return null;
     return shelfSlots(rect, state.choices.length)[index] ?? null;
   }
 
   function placeTargets(): void {
-    const rect = shelfRect(active);
+    const rect = shelfRect();
     if (!rect) return;
     shelfHitSlots(rect, targets.length).forEach((slot, index) => {
       const target = targets[index];
@@ -226,8 +182,7 @@ export function createChoiceItem(options: {
 
   function placeAll(): void {
     if (!current) return;
-    placeShelf('digits');
-    placeShelf('letters');
+    placeShelf();
     placeTargets();
     placeHint();
     placeLanded();
@@ -237,7 +192,7 @@ export function createChoiceItem(options: {
     const slot = cakeSlot();
     if (!slot || !state) return;
     const piece = layer('choice-landed-piece');
-    piece.innerHTML = art(active, state.target);
+    piece.innerHTML = art(state.target);
     place(piece, slot);
     landedLayer.append(piece);
   }
@@ -250,7 +205,7 @@ export function createChoiceItem(options: {
       return;
     }
     const flyer = layer('choice-flyer');
-    flyer.innerHTML = art(active, state.target);
+    flyer.innerHTML = art(state.target);
     place(flyer, slot);
     flightLayer.append(flyer);
     // The shelf slot and the cake slot are the same size (both come from the art module), so the
@@ -289,7 +244,7 @@ export function createChoiceItem(options: {
 
   /** A wrong piece stays where it is and only shakes its head. */
   function shake(index: number): void {
-    const piece = pieces[active][index];
+    const piece = pieces[index];
     if (!piece) return;
     motion.animate(
       piece,
@@ -306,9 +261,8 @@ export function createChoiceItem(options: {
 
   function bobOffer(): void {
     if (!state || state.done || prefersReducedMotion()) return;
-    const shelf = shelfEl(active);
-    shelf.classList.add('is-bobbing');
-    motion.after(BOB_MS, () => shelf.classList.remove('is-bobbing'));
+    options.shelf.classList.add('is-bobbing');
+    motion.after(BOB_MS, () => options.shelf.classList.remove('is-bobbing'));
   }
 
   /** The right answer lights up: after 40 s of silence, and after the second mistake (with a hop). */
@@ -316,7 +270,7 @@ export function createChoiceItem(options: {
     if (!state || state.done) return;
     state = revealChoice(state);
     const index = state.choices.indexOf(state.target);
-    const piece = pieces[active][index];
+    const piece = pieces[index];
     if (!piece) return;
     piece.classList.add('is-revealed');
     placeHint();
@@ -336,12 +290,13 @@ export function createChoiceItem(options: {
 
   function hideHint(): void {
     hintEl.hidden = true;
-    shelfEl(active).classList.remove('is-bobbing');
+    options.shelf.classList.remove('is-bobbing');
   }
 
   function onTap(event: PointerEvent, index: number): void {
     if (event.isPrimary === false) return; // tap only – no second finger, no drag (rule 3)
     if (!state || state.done) return;
+    options.onActivity();
     hideHint();
     const value = state.choices[index];
     if (value === undefined) return;
@@ -350,7 +305,6 @@ export function createChoiceItem(options: {
     if (step.result === 'wrong') {
       shake(index);
       options.sfx.play('nope');
-      idle.poke();
       if (state.revealed) reveal(true);
       // Once the right piece is lit up, "Hledáme ká." would send the child looking for something
       // they can already see – the hint sentence takes its place (speech.ts).
@@ -358,26 +312,21 @@ export function createChoiceItem(options: {
       return;
     }
     if (step.result !== 'correct') return;
-    idle.stop();
     for (const target of targets) target.hidden = true;
-    const piece = pieces[active][index];
+    const piece = pieces[index];
     if (piece) piece.hidden = true; // it leaves the shelf and flies to the cake
     options.sfx.play('whoosh');
     fly(index, () => {
       land();
       options.sfx.play('done');
-      options.voice.say(options.praise.next());
       options.onDone();
     });
   }
 
   function reset(): void {
     motion.cancelAll();
-    idle.stop();
     hintEl.hidden = true;
-    for (const shelf of [options.shelves.digits, options.shelves.letters]) {
-      shelf.classList.remove('is-bobbing');
-    }
+    options.shelf.classList.remove('is-bobbing');
     targets = [];
     targetLayer.replaceChildren();
     landedLayer.replaceChildren();
@@ -387,24 +336,15 @@ export function createChoiceItem(options: {
   return {
     start(item) {
       reset();
-      active = item.type === 'digit' ? 'digits' : 'letters';
-      spoken = item;
       state = createChoice(choiceTarget(item), choiceValues(item));
-      drawShelf(active, state.choices);
-      drawShelf(other(active), options.decoration()[other(active)]);
+      drawShelf(state.choices);
       buildTargets(state.choices.length);
       placeAll();
-      idle = watcher();
-      idle.poke();
-      speakOrder();
     },
     clear() {
       reset();
       state = null;
-      spoken = null;
-      const shelves = options.decoration();
-      drawShelf('digits', shelves.digits);
-      drawShelf('letters', shelves.letters);
+      drawShelf(options.decoration());
       placeAll();
     },
     layout(next) {
@@ -419,12 +359,11 @@ export function createChoiceItem(options: {
     },
     plate: () =>
       [...landedLayer.children].filter((el): el is HTMLElement => el instanceof HTMLElement),
-    repeat() {
-      if (!state || state.done) return;
-      // The whole order, "Ká jako kočka." included – the child tapped because they do not know
-      // which letter it was. Only the unasked-for 15 s nudge keeps the short version.
-      if (spoken) options.voice.say(askAgainSpeech(spoken));
-      idle.poke();
+    nudge() {
+      bobOffer();
+    },
+    hint() {
+      reveal(false);
     },
     destroy() {
       reset();

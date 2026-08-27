@@ -157,6 +157,15 @@ describe('choiceItemOf', () => {
     expect(choiceItemOf(DIGIT_ORDER)).toEqual(DIGIT_ORDER.items[0]);
   });
 
+  it('finds the one of the asked-for kind when the order holds both (STEP-12)', () => {
+    const both = { index: 11, items: [...DIGIT_ORDER.items, ...LETTER_ORDER.items] };
+    expect(choiceItemOf(both, 'digit')).toEqual(DIGIT_ORDER.items[0]);
+    expect(choiceItemOf(both, 'letter')).toEqual(LETTER_ORDER.items[0]);
+    expect(choiceItemOf(both)).toEqual(DIGIT_ORDER.items[0]); // no kind asked → the first one
+    expect(choiceItemOf(LETTER_ORDER, 'digit')).toBeNull();
+    expect(choiceItemOf(COUNT_ORDER, 'letter')).toBeNull();
+  });
+
   it('is null for an order with counting only and for an empty one', () => {
     expect(choiceItemOf(COUNT_ORDER)).toBeNull();
     expect(choiceItemOf({ index: 1, items: [] })).toBeNull();

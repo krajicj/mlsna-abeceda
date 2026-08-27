@@ -236,6 +236,25 @@ export function orderLetterLine(letter: Letter): string {
   return `order.letter.${letter.toLowerCase()}`;
 }
 
+/**
+ * The same order, said as the SECOND thing the customer asks for: "Prosím tři jahody. A ještě
+ * perníček s písmenkem ká." (STEP-12). A whole sentence again, never "Prosím …" with an "a ještě"
+ * glued in front of it – rule 7. Which form is used is decided by the position in what is being
+ * SAID, not by the position in the order: an item left on its own goes back to "Prosím …", so a
+ * bare "A ještě…" is never heard (see game/speech.ts).
+ */
+export function orderNextCountLine(amount: number, fruit: FruitKind): string {
+  return `order.next.count.${amount}.${fruit}`;
+}
+
+export function orderNextDigitLine(value: number): string {
+  return `order.next.digit.${value}`;
+}
+
+export function orderNextLetterLine(letter: Letter): string {
+  return `order.next.letter.${letter.toLowerCase()}`;
+}
+
 /** The word comes from `letterWord()` – "B jako brácha" when there is a brother, else "balón". */
 export function letterWordLine(letter: Letter, word: string): string {
   return `letter.word.${letter.toLowerCase()}.${slug(word)}`;
@@ -294,6 +313,7 @@ function add(id: string, text: string): void {
 for (const fruit of FRUITS) {
   for (const amount of DIGITS) {
     add(orderCountLine(amount, fruit), `Prosím ${countedFruit(amount, fruit)}.`);
+    add(orderNextCountLine(amount, fruit), `A ještě ${countedFruit(amount, fruit)}.`);
     add(countEnoughLine(amount, fruit), `Už máme ${countedFruit(amount, fruit)}, to stačí!`);
   }
 }
@@ -301,6 +321,7 @@ for (const fruit of FRUITS) {
 for (const digit of DIGITS) {
   const target = String(digit);
   add(orderDigitLine(digit), `Prosím svíčku s číslem ${CARDINALS[digit]}.`);
+  add(orderNextDigitLine(digit), `A ještě svíčku s číslem ${CARDINALS[digit]}.`);
   add(countAloudLine(digit), `${capitalize(CARDINALS[digit])}.`);
   add(wrongLine(target), `To je ${DIGIT_NAMES[digit]}.`);
   add(seekLine(target), `Hledáme ${DIGIT_NAMES_ACC[digit]}.`);
@@ -310,6 +331,7 @@ for (const digit of DIGITS) {
 for (const letter of BASE_LETTERS) {
   const spelled = SPELLED[letter];
   add(orderLetterLine(letter), `Prosím perníček s písmenkem ${spelled}.`);
+  add(orderNextLetterLine(letter), `A ještě perníček s písmenkem ${spelled}.`);
   add(wrongLine(letter), `To je ${spelled}.`);
   add(seekLine(letter), `Hledáme ${spelled}.`);
   add(hintLine(letter), `${capitalize(spelled)} je tady!`);

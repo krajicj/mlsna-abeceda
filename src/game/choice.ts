@@ -98,9 +98,16 @@ export function isFirstTry(state: ChoiceState): boolean {
   return state.mistakes === 0 && !state.revealed;
 }
 
-/** The first item of the order that is a choice, or `null` (an order may hold only counting). */
-export function choiceItemOf(order: Order): ChoiceItem | null {
-  for (const item of order.items) if (item.type !== 'count') return item;
+/**
+ * The first item of the order that is a choice, or `null` (an order may hold only counting). With
+ * `type` it looks for that kind alone: from STEP-12 an order can hold a candle AND a cookie at the
+ * same time, and each of them belongs to its own shelf.
+ */
+export function choiceItemOf(order: Order, type?: ChoiceItem['type']): ChoiceItem | null {
+  for (const item of order.items) {
+    if (item.type === 'count') continue;
+    if (type === undefined || item.type === type) return item;
+  }
   return null;
 }
 

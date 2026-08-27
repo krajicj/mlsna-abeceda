@@ -1,7 +1,8 @@
 /**
  * The order generator: what the animal asks for (docs/navrh-hry.md ch. 5.1, 5.3, 5.4).
- * One item per order at stages Č1/P1; the tracks strictly alternate, odd orders are numbers and
- * even ones letters. It returns data only – no text and no voice-line ids (those are STEP-07).
+ * The first ten orders hold one item and the tracks strictly alternate (odd = numbers, even =
+ * letters); from the eleventh on an order holds two – one from each track, in a drawn order
+ * (STEP-12). It returns data only – no text and no voice-line ids (those live in game/speech.ts).
  */
 import {
   CONFUSABLE_DIGITS,
@@ -29,6 +30,26 @@ export type OrderItem =
 export interface Order {
   readonly index: number;
   readonly items: readonly OrderItem[];
+}
+
+/** Návrh 5.3: the first ten orders hold one item, then two. Three arrive with Č3/P3 (STEP-22/25). */
+export const SINGLE_ITEM_ORDERS = 10;
+export const MAX_ORDER_ITEMS = 2;
+
+/** How many items the order at position `index` (1-based) holds. */
+export function orderLength(index: number): number {
+  return index <= SINGLE_ITEM_ORDERS ? 1 : MAX_ORDER_ITEMS;
+}
+
+/**
+ * Which turn of the NUMBERS track this order is: an odd turn counts fruit, an even one asks for a
+ * candle. Up to the tenth order only every other one is a numbers order, from the eleventh every
+ * single one is – so the turn is `ceil(index / 2)` first and `index − 5` after that.
+ * 1→1, 3→2, 9→5, 11→6, 12→7, 13→8: counting and digits keep alternating across the boundary and
+ * nothing has to be stored for it (the save stays on version 1).
+ */
+export function numbersTurn(index: number): number {
+  return index <= SINGLE_ITEM_ORDERS ? Math.ceil(index / 2) : index - SINGLE_ITEM_ORDERS / 2;
 }
 
 export interface OrderInput {
@@ -147,21 +168,26 @@ function letterItem(rng: Rng, input: OrderInput, avoid: readonly string[]): Orde
   };
 }
 
+/** The numbers item of this order: counting and digits alternate inside the track, counting first. */
+function numbersItem(rng: Rng, input: OrderInput, avoid: readonly string[]): OrderItem {
+  return numbersTurn(input.index) % 2 !== 0
+    ? countItem(rng, input, avoid)
+    : digitItem(rng, input, avoid);
+}
+
 /**
- * One order for the given position. Odd position → numbers (counting and digits alternate inside
- * the track, counting first), even position → letters (návrh 5.3).
+ * One order for the given position. Up to the tenth: odd position → numbers, even → letters. From
+ * the eleventh: one item of each track, in a drawn order (návrh 5.3). The array is built left to
+ * right, so the numbers item always draws from `rng` first and a seeded session replays exactly.
  */
 export function generateOrder(input: OrderInput): Order {
   const rng = input.rng ?? systemRng;
   const avoid = input.avoid ?? [];
-  const numbersTurn = Math.ceil(input.index / 2);
-  const item =
-    input.index % 2 !== 0
-      ? numbersTurn % 2 !== 0
-        ? countItem(rng, input, avoid)
-        : digitItem(rng, input, avoid)
-      : letterItem(rng, input, avoid);
-  return { index: input.index, items: [item] };
+  const items =
+    orderLength(input.index) === 1
+      ? [input.index % 2 !== 0 ? numbersItem(rng, input, avoid) : letterItem(rng, input, avoid)]
+      : shuffle(rng, [numbersItem(rng, input, avoid), letterItem(rng, input, avoid)]);
+  return { index: input.index, items };
 }
 
 /** The keys an order used – what the caller passes as `avoid` next time round the same track. */

@@ -41,10 +41,10 @@ export function createSession(
   const now = options?.now ?? ((): Date => new Date());
   let save = readSave(storage);
   /**
-   * The last element each track asked for. Orders alternate the tracks, so "the previous order" is
-   * usually the other track's – what must not repeat is the last element of the *same* one
-   * (`OrderInput.avoid`). Kept per track instead of reading the alternation rule of `orders.ts`,
-   * which longer orders (STEP-12) are going to change.
+   * The last element each track asked for. Up to the tenth order the tracks alternate, so "the
+   * previous order" is usually the other track's; from the eleventh every order asks about both.
+   * Either way what must not repeat is the last element of the *same* track (`OrderInput.avoid`),
+   * which is why this is kept per track and not read off the alternation rule of `orders.ts`.
    */
   const last: Record<TrackName, string | null> = { numbers: null, letters: null };
   let lastFruit: FruitKind | null = null;

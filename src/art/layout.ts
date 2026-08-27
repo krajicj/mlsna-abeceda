@@ -40,7 +40,7 @@ export const BUBBLE_CONTENT_X = 80;
 export const BUBBLE_ITEM_WIDTH = 116;
 export const BUBBLE_ITEM_HEIGHT = 88;
 export const BUBBLE_ITEM_GAP = 12;
-/** Three pictures is what the card holds; orders that long arrive in STEP-12. */
+/** Three pictures is what the card holds; STEP-12 uses two, the third arrives with Č3/P3. */
 export const BUBBLE_MAX_ITEMS = 3;
 /** The tail of the bubble, measured from the left edge of the card – it points at the customer. */
 export const BUBBLE_TAIL_X = 110;

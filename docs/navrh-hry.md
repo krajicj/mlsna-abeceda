@@ -166,6 +166,12 @@ teprve potkává, je snazší.
 - **Mix:** při 2+ položkách vždy aspoň jedna z každé dráhy, pokud to sada dovolí.
   Položka z dráhy, která je pozadu (písmena), má vyšší váhu – ale nikdy dvě stejné za sebou,
   aby z toho nebyl dril.
+- **Pořadí položek v objednávce se losuje** – jednou zazní nejdřív ovoce, jindy perníček; plnit
+  je jde stejně v libovolném pořadí. Druhá položka má **vlastní sadu vět** („Prosím tři jahody.
+  A ještě perníček s písmenkem ká.“), aby objednávka zněla jako jedna prosba a ne jako dvě
+  nezávislé. Nic se ani tak nelepí (pravidlo 7): druhá pozice je 62 celých vět v manifestu.
+  Když položka zazní **sama** – zbývá jediná, nebo se opakuje po splnění té první – použije se
+  vždycky tvar s „Prosím“, takže osamocené „A ještě…“ nikdy nezazní.
 - **Ovoce** na položku vždy jen jeden druh (kromě Č3 „dva druhy“).
 
 ### 5.4 Adaptivní výběr
@@ -216,6 +222,10 @@ Chyba nikdy nezastaví hru a nikdy nezní jako výtka.
 - **Nečinnost 15 s:** vypravěč zopakuje položku, položka v bublině zabliká.
 - **Nečinnost 40 s:** nápověda (cíl se rozsvítí). Nikdy nic neudělá za dítě. Skóre nemění –
   položka splněná po nápovědě zůstane na svém (5.4).
+- **Když zbývají dvě položky:** připomenutí po 15 s zopakuje zadání obou, nápověda po 40 s
+  rozsvítí **první nesplněnou** v pořadí bubliny. Hlídač se pak rozjede znovu, takže na druhou
+  dojde, jakmile je první hotová. Po splnění první z dvou položek přijde normální pochvala
+  a hned za ní zopakování té zbývající – dítě tak ví, že objednávka ještě neskončila.
 
 ### 5.6 Obsah
 

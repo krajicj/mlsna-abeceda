@@ -15,6 +15,9 @@ import {
   orderCountLine,
   orderDigitLine,
   orderLetterLine,
+  orderNextCountLine,
+  orderNextDigitLine,
+  orderNextLetterLine,
   praiseLines,
   seekLine,
   starLines,
@@ -24,24 +27,47 @@ import {
 import type { Order, OrderItem } from './orders';
 import { pick, systemRng, type Rng } from './rng';
 
-/** Placing the order: a letter takes two sentences (the order and the word), the rest just one. */
-export function orderSpeech(item: OrderItem): readonly string[] {
+/**
+ * Where an item stands in what is being SAID – not where it stands in the order (STEP-12). The
+ * first thing an utterance mentions is "Prosím…", everything after it "A ještě…". Counted this way
+ * an item left on its own goes back to "Prosím…" even when it was the second one ordered, so a
+ * bare "A ještě…" can never be heard.
+ */
+export type ItemPosition = 'first' | 'next';
+
+/** The sentences of ONE item: a letter takes two (the order and the word), the rest just one. */
+export function itemSpeech(item: OrderItem, position: ItemPosition = 'first'): readonly string[] {
+  const next = position === 'next';
   switch (item.type) {
     case 'count':
-      return [orderCountLine(item.amount, item.fruit)];
+      return [
+        next
+          ? orderNextCountLine(item.amount, item.fruit)
+          : orderCountLine(item.amount, item.fruit),
+      ];
     case 'digit':
-      return [orderDigitLine(item.value)];
-    case 'letter':
+      return [next ? orderNextDigitLine(item.value) : orderDigitLine(item.value)];
+    case 'letter': {
+      const asked = next ? orderNextLetterLine(item.letter) : orderLetterLine(item.letter);
       // The word is empty only when the dev console asks for something that is not a letter.
-      return item.word === ''
-        ? [orderLetterLine(item.letter)]
-        : [orderLetterLine(item.letter), letterWordLine(item.letter, item.word)];
+      return item.word === '' ? [asked] : [asked, letterWordLine(item.letter, item.word)];
+    }
   }
 }
 
-/** The nudge after 15 s: the order sentence alone, without "Ká jako kočka." */
-export function repeatSpeech(item: OrderItem): readonly string[] {
-  return orderSpeech(item).slice(0, 1);
+/** Which form each item of one utterance takes: the first "Prosím…", the rest "A ještě…". */
+function positionOf(index: number): ItemPosition {
+  return index === 0 ? 'first' : 'next';
+}
+
+/** The whole order as ONE utterance: "Prosím tři jahody. A ještě perníček s písmenkem ká." */
+export function orderSpeech(items: readonly OrderItem[]): readonly string[] {
+  return items.flatMap((item, index) => itemSpeech(item, positionOf(index)));
+}
+
+/** The nudge after 15 s: the order sentence of each item, without "Ká jako kočka." */
+export function repeatSpeech(items: readonly OrderItem[]): readonly string[] {
+  return items.flatMap((item, index) => itemSpeech(item, positionOf(index)).slice(0, 1));
 }
 
 /**
@@ -51,8 +77,8 @@ export function repeatSpeech(item: OrderItem): readonly string[] {
  * the part they could not hold on to, and "Ká jako kočka." is what gives the letter a meaning
  * (návrh 5.6).
  */
-export function askAgainSpeech(item: OrderItem): readonly string[] {
-  return orderSpeech(item);
+export function askAgainSpeech(items: readonly OrderItem[]): readonly string[] {
+  return orderSpeech(items);
 }
 
 /** Counting out loud after the `placed`-th piece has landed. */
@@ -84,14 +110,27 @@ export function hintSpeech(target: string): readonly string[] {
 }
 
 /**
+ * The hint after 40 s, for one item. A cookie and a candle have a sentence of their own ("Ká je
+ * tady!") because the right piece lights up on the shelf; counting has none – the ring appears over
+ * the bowl and the only thing left to say is what was ordered.
+ */
+export function itemHintSpeech(item: OrderItem): readonly string[] {
+  if (item.type === 'count') return repeatSpeech([item]);
+  return hintSpeech(item.type === 'letter' ? item.letter : String(item.value));
+}
+
+/**
  * Everything this order can possibly need, so the clips are on the device before the child taps:
  * the order itself, counting up to the target, "to stačí", the corrections for every piece on the
  * shelf, the whole set of praises and the two sets the finale draws from (STEP-09).
  */
 export function orderPreload(order: Order, gender: PraiseGender = 'neutral'): readonly string[] {
   const ids = new Set<string>();
-  for (const item of order.items) {
-    for (const id of orderSpeech(item)) ids.add(id);
+  for (const [index, item] of order.items.entries()) {
+    // Every item can be heard on its own ("Prosím…") once it is the only one left; from the second
+    // one on it is also heard in the "A ještě…" form, as part of the whole order.
+    for (const id of itemSpeech(item, 'first')) ids.add(id);
+    if (index > 0) for (const id of itemSpeech(item, 'next')) ids.add(id);
     if (item.type === 'count') {
       for (let step = 1; step <= item.amount; step += 1) ids.add(countAloudLine(step));
       ids.add(countEnoughLine(item.amount, item.fruit));

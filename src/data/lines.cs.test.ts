@@ -14,6 +14,9 @@ import {
   orderCountLine,
   orderDigitLine,
   orderLetterLine,
+  orderNextCountLine,
+  orderNextDigitLine,
+  orderNextLetterLine,
   praiseLines,
   seekLine,
   starLines,
@@ -42,10 +45,10 @@ function textOf(id: string): string {
 
 describe('manifest of voice lines', () => {
   it('holds exactly the groups the plan pays for', () => {
-    // 254 clips ≈ 4 750 characters (docs/steps/STEP-07, +6 in STEP-09, +2 in STEP-10). Adding
-    // lines means paying for them and regenerating – the number is here so that cost is a
-    // conscious edit, not a surprise.
-    expect(LINES).toHaveLength(254);
+    // 254 clips ≈ 4 750 characters (docs/steps/STEP-07, +6 in STEP-09, +2 in STEP-10), +62 for
+    // the second item of an order in STEP-12. Adding lines means paying for them and regenerating
+    // – the number is here so that cost is a conscious edit, not a surprise.
+    expect(LINES).toHaveLength(316);
   });
 
   it('has unique ids usable as file names', () => {
@@ -124,6 +127,25 @@ describe('manifest of voice lines', () => {
     }
   });
 
+  it('says the second item of an order as its own whole sentence (STEP-12)', () => {
+    expect(textOf(orderNextCountLine(1, 'strawberry'))).toBe('A ještě jednu jahodu.');
+    expect(textOf(orderNextCountLine(3, 'strawberry'))).toBe('A ještě tři jahody.');
+    expect(textOf(orderNextCountLine(7, 'blueberry'))).toBe('A ještě sedm borůvek.');
+    expect(textOf(orderNextDigitLine(4))).toBe('A ještě svíčku s číslem čtyři.');
+    expect(textOf(orderNextLetterLine('K'))).toBe('A ještě perníček s písmenkem ká.');
+    // The same declension tables as the first position, so the two forms cannot drift apart.
+    for (const fruit of FRUITS) {
+      for (const digit of DIGITS) {
+        expect(hasLine(orderNextCountLine(digit, fruit))).toBe(true);
+        expect(textOf(orderNextCountLine(digit, fruit))).toBe(
+          textOf(orderCountLine(digit, fruit)).replace('Prosím ', 'A ještě '),
+        );
+      }
+    }
+    for (const digit of DIGITS) expect(hasLine(orderNextDigitLine(digit))).toBe(true);
+    for (const letter of BASE_LETTERS) expect(hasLine(orderNextLetterLine(letter))).toBe(true);
+  });
+
   it('has a sentence for every family word too', () => {
     for (const entry of ROLE_WORDS) {
       const text = textOf(letterWordLine(entry.letter, entry.word));
@@ -184,6 +206,9 @@ describe('id helpers', () => {
     expect(orderCountLine(3, 'strawberry')).toBe('order.count.3.strawberry');
     expect(orderDigitLine(3)).toBe('order.digit.3');
     expect(orderLetterLine('K')).toBe('order.letter.k');
+    expect(orderNextCountLine(3, 'strawberry')).toBe('order.next.count.3.strawberry');
+    expect(orderNextDigitLine(3)).toBe('order.next.digit.3');
+    expect(orderNextLetterLine('K')).toBe('order.next.letter.k');
     expect(letterWordLine('K', 'kočka')).toBe('letter.word.k.kocka');
     expect(letterWordLine('B', 'brácha')).toBe('letter.word.b.bracha');
     expect(countAloudLine(3)).toBe('count.3');
@@ -203,6 +228,7 @@ describe('id helpers', () => {
   it('answers even for input out of range – an unknown element means silence, not a crash', () => {
     expect(hasLine(wrongLine('Ž'))).toBe(false);
     expect(hasLine(orderDigitLine(42))).toBe(false);
+    expect(hasLine(orderNextDigitLine(42))).toBe(false);
     expect(hasLine(orderCountLine(0, 'cherry'))).toBe(false);
     expect(hasLine(letterWordLine('K', 'kolo'))).toBe(false);
   });

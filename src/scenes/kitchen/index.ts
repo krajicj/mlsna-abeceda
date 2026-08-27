@@ -13,19 +13,24 @@ import {
 } from '../../game/choice';
 import { countItemOf, type CountingState } from '../../game/counting';
 import { letterWord } from '../../game/curriculum';
+import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
 import type { Order, OrderItem } from '../../game/orders';
 import { itemResult, type ItemResult } from '../../game/progress';
 import {
+  askAgainSpeech,
   createBellPicker,
   createFinishPicker,
   createPraisePicker,
   createStarPicker,
+  itemHintSpeech,
   orderPreload,
+  orderSpeech,
+  repeatSpeech,
 } from '../../game/speech';
 import type { Scene } from '../../stage/scenes';
 import { createBellHandle } from './bell';
 import { createBubble } from './bubble';
-import { createChoiceItem } from './choice-item';
+import { createChoiceItem, type ChoiceItemHandle } from './choice-item';
 import { createCustomer } from './customer';
 import { createCountItem } from './count-item';
 import { createFinale } from './finale';
@@ -34,11 +39,22 @@ import { createPacer } from './pacing';
 import { createStars } from './stars';
 import './style.css';
 
+/** A beat before the order is spoken, so the sentence does not start over the scene fading in. */
+const SPEAK_DELAY_MS = 350;
+/**
+ * From the praise for one finished item to the repeat of the one still open. The pacer waits the
+ * praise out anyway, so the exact number changes nothing functionally – only how it sounds: a
+ * slightly longer breath than before the finale, so the praise and the new request do not run into
+ * one sentence. The finale makes do with 400 ms because what follows it is a picture, not an order.
+ */
+const REMAINING_DELAY_MS = 500;
 /** From the praise of the last item to the start of the finale – it waits out the praise first. */
 const FINALE_DELAY_MS = 400;
 
 interface KitchenDevHandle {
-  /** Replays the letter item; without an offer it takes the one of the order or the shelf. */
+  /** Plays any order at all, a two-item one included, whatever the save says. */
+  play(order: Order): void;
+  /** Replays the letter item alone; without an offer it takes the one of the order or the shelf. */
   letter(target: string, choices?: readonly string[]): void;
   digit(value: number, choices?: readonly number[]): void;
   /** Replays the counting item with any amount and kind, whatever the order says. */
@@ -54,6 +70,7 @@ interface KitchenDevHandle {
   /** Puts a number in the star counter (the picture only – the save is not touched). */
   stars(count: number): void;
   state(): CountingState | null;
+  /** The choice still in play; with two of them the cookie comes first. */
   choice(): ChoiceState | null;
   layout(): KitchenLayout;
 }
@@ -67,8 +84,14 @@ function prop(className: string, art: string): HTMLDivElement {
 /**
  * The kitchen: the counter starts empty with the bell on it. The child rings, a customer walks in
  * from the left with an order in a bubble over its head, and fills it – counting from the bowl
- * (STEP-05) or a choice from the shelf (STEP-06). The finale hands the cake over, the customer eats
- * it and leaves, and the bell comes back: nothing moves on until the child rings again (STEP-10).
+ * (STEP-05) and/or a choice from the shelf (STEP-06). The finale hands the cake over, the customer
+ * eats it and leaves, and the bell comes back: nothing moves on until the child rings again
+ * (STEP-10).
+ *
+ * From the eleventh order on there are TWO items on the counter at once (STEP-12), so the scene is
+ * the one that speaks and the one that measures idleness: an item only ever says what answers one
+ * tap of the child. Everything about the order as a whole – placing it, the 15 s nudge, the 40 s
+ * hint, a tap on the bubble, the praise, what is still missing, the finale – is decided here.
  */
 export const kitchenScene: Scene = (ctx) => {
   const el = document.createElement('div');
@@ -105,44 +128,60 @@ export const kitchenScene: Scene = (ctx) => {
   const praise = createPraisePicker();
   const finish = createFinishPicker();
   const starLine = createStarPicker();
-  /** Delays that never talk over the narrator: the finale and the next order both use it. */
+  /** Delays that never talk over the narrator: the order, the finale and what is left all use it. */
   const pacer = createPacer({ voice: ctx.voice });
 
   let order: Order = ctx.session.order;
-  let countOrder = countItemOf(order);
-  let choiceOrder = choiceItemOf(order);
   /** True from the praise of the last item until the counter is cleared. */
   let finishing = false;
+  /** Positions in `order.items` that are on the cake already – what the bubble has ticked off. */
+  const done = new Set<number>();
 
   const countItem = createCountItem({
     root: el,
     bowl: bowlEl,
     sfx: ctx.sfx,
     voice: ctx.voice,
-    praise,
-    onDone: () => startFinale(),
+    onActivity: () => idle.poke(),
+    onDone: () => finishItem('count'),
   });
-  const choiceItem = createChoiceItem({
+  // One instance per shelf: an order can ask for a candle AND a cookie at once, and then both are
+  // in play. Each of them draws only its own shelf, so neither can overwrite the other's offer.
+  const digitItem = createChoiceItem({
     root: el,
-    shelves: { digits: digitShelf, letters: letterShelf },
+    kind: 'digit',
+    shelf: digitShelf,
     // What the child is really learning, so the inert shelf never shows made-up content. Read per
     // order: the active set grows as the save does.
-    decoration: () => ({
-      digits: shelfDecoration(ctx.session.save.tracks.numbers),
-      letters: shelfDecoration(ctx.session.save.tracks.letters),
-    }),
+    decoration: () => shelfDecoration(ctx.session.save.tracks.numbers),
     sfx: ctx.sfx,
     voice: ctx.voice,
-    praise,
-    onDone: () => startFinale(),
+    onActivity: () => idle.poke(),
+    onDone: () => finishItem('digit'),
+  });
+  const letterItem = createChoiceItem({
+    root: el,
+    kind: 'letter',
+    shelf: letterShelf,
+    decoration: () => shelfDecoration(ctx.session.save.tracks.letters),
+    sfx: ctx.sfx,
+    voice: ctx.voice,
+    onActivity: () => idle.poke(),
+    onDone: () => finishItem('letter'),
   });
   const bubble = createBubble({
     root: el,
     // Only while an item is actually being played: during the finale the tap does nothing.
     onTap: () => {
       if (finishing) return;
-      countItem.repeat();
-      choiceItem.repeat();
+      const open = openItems();
+      if (open.length === 0) return;
+      // What is pending is the shorter repeat of what is left – it would cut this sentence off
+      // half a second in, and the child is the one who asked for it (`pacer.after` only ever
+      // replaces the pacer's own work, never a `voice.say()` that is already running).
+      pacer.cancel();
+      ctx.voice.say(askAgainSpeech(open));
+      idle.poke();
     },
   });
   const stars = createStars({ root: el });
@@ -155,7 +194,7 @@ export const kitchenScene: Scene = (ctx) => {
     finish,
     star: starLine,
     stars,
-    plate: () => [...countItem.plate(), ...choiceItem.plate()],
+    plate: () => [...countItem.plate(), ...digitItem.plate(), ...letterItem.plate()],
     onStar: () => writeProgress(),
     onDone: () => finishOrder(),
   });
@@ -172,12 +211,85 @@ export const kitchenScene: Scene = (ctx) => {
     place(bowlEl, layout.bowl);
   }
 
-  /** The order is on the plate: tick it off in the bubble and let the finale take over. */
+  /** Which handle plays this item – the one place the three of them are told apart. */
+  function handleOf(item: OrderItem): {
+    nudge(): void;
+    hint(): void;
+    outcome(): 'first-try' | 'hinted' | 'mistaken' | null;
+  } {
+    switch (item.type) {
+      case 'count':
+        return countItem;
+      case 'digit':
+        return digitItem;
+      case 'letter':
+        return letterItem;
+    }
+  }
+
+  /** What the child still has to do, in the order of the bubble. */
+  function openItems(): OrderItem[] {
+    return order.items.filter((_, index) => !done.has(index));
+  }
+
+  /**
+   * One watcher for the whole order (návrh 5.5): after 15 s everything still open gives a sign and
+   * the narrator repeats it, after 40 s the FIRST open item lights up its target. `stop()` is final
+   * by design, so every order builds a fresh one.
+   */
+  let idle: IdleWatcher = watcher();
+
+  function watcher(): IdleWatcher {
+    return createIdleWatcher({
+      onRemind: () => {
+        const open = openItems();
+        if (open.length === 0) return;
+        for (const item of open) handleOf(item).nudge();
+        ctx.voice.say(repeatSpeech(open));
+      },
+      onHint: () => {
+        // Only the first one: two rings lit at once would be two answers handed over. The watcher
+        // starts again after a hint, so once this item is done the next hint shows the other.
+        const first = openItems()[0];
+        if (!first) return;
+        handleOf(first).hint();
+        ctx.voice.say(itemHintSpeech(first));
+      },
+    });
+  }
+
+  /**
+   * One item is on the cake. Ticking it off is the bubble's whole job here; what happens next is
+   * either the rest of the order or the finale – never both.
+   */
+  function itemDone(item: OrderItem): void {
+    const index = order.items.indexOf(item);
+    if (index < 0 || done.has(index)) return;
+    done.add(index);
+    bubble.tick(index);
+    const open = openItems();
+    if (open.length === 0) {
+      startFinale();
+      return;
+    }
+    // "Výborně!" and right behind it what is still missing, so the child knows the order goes on.
+    pacer.after(REMAINING_DELAY_MS, () => ctx.voice.say(repeatSpeech(open)));
+    idle.poke();
+  }
+
+  /** The praise belongs to the scene: it is what opens either the rest of the order or the finale. */
+  function finishItem(type: OrderItem['type']): void {
+    const item = order.items.find((candidate) => candidate.type === type);
+    if (!item) return;
+    ctx.voice.say(praise.next());
+    itemDone(item);
+  }
+
+  /** The order is on the plate: nothing left to nudge about, the finale takes over. */
   function startFinale(): void {
     if (finishing) return;
     finishing = true;
-    // M1 orders hold one item; ticking them all keeps this honest when they grow (STEP-12).
-    order.items.forEach((_, index) => bubble.tick(index));
+    idle.stop();
     pacer.after(FINALE_DELAY_MS, () => finale.run());
   }
 
@@ -187,10 +299,10 @@ export const kitchenScene: Scene = (ctx) => {
    */
   function writeProgress(): number {
     const results: ItemResult[] = [];
-    const counted = countItem.outcome();
-    if (countOrder && counted) results.push(itemResult(countOrder, counted));
-    const chosen = choiceItem.outcome();
-    if (choiceOrder && chosen) results.push(itemResult(choiceOrder, chosen));
+    for (const item of order.items) {
+      const outcome = handleOf(item).outcome();
+      if (outcome) results.push(itemResult(item, outcome));
+    }
     order = ctx.session.complete(results);
     return ctx.session.save.progress.stars;
   }
@@ -204,7 +316,8 @@ export const kitchenScene: Scene = (ctx) => {
   function finishOrder(): void {
     finale.reset();
     countItem.clear();
-    choiceItem.clear();
+    digitItem.clear();
+    letterItem.clear();
     bubble.show(null);
     ctx.voice.preload(orderPreload(order));
     customer.leave(() => bell.show());
@@ -216,32 +329,41 @@ export const kitchenScene: Scene = (ctx) => {
     customer.arrive(ctx.session.customer, () => startOrder(ctx.session.order));
   }
 
-  /** Puts one order on the counter: the bubble, the playable item and the narrator. */
+  /** Puts one order on the counter: the bubble, every playable item and the narrator. */
   function startOrder(next: Order): void {
     order = next;
-    countOrder = countItemOf(next);
-    choiceOrder = choiceItemOf(next);
     finishing = false;
+    done.clear();
+    idle.stop();
+    idle = watcher();
+    pacer.cancel();
     stars.set(ctx.session.save.progress.stars);
     bubble.show(next);
-    if (countOrder) {
-      choiceItem.clear();
-      countItem.start(countOrder.amount, countOrder.fruit);
-    } else if (choiceOrder) {
-      countItem.clear();
-      choiceItem.start(choiceOrder);
-    } else {
-      countItem.clear();
-      choiceItem.clear();
+    const counted = countItemOf(next);
+    const digit = choiceItemOf(next, 'digit');
+    const letter = choiceItemOf(next, 'letter');
+    if (counted) countItem.start(counted.amount, counted.fruit);
+    else countItem.clear();
+    if (digit) digitItem.start(digit);
+    else digitItem.clear();
+    if (letter) letterItem.start(letter);
+    else letterItem.clear();
+    if (!counted && !digit && !letter) {
       bubble.show(null);
       if (import.meta.env.DEV) {
         console.warn('[kitchen] the order has no playable item; the scene stays static');
       }
+      return;
     }
+    // ONE utterance for the whole order: "Prosím tři jahody. A ještě perníček s písmenkem ká."
+    // Two `say()` calls would cut each other off (audio/voice.ts).
+    pacer.after(SPEAK_DELAY_MS, () => ctx.voice.say(orderSpeech(next.items)));
+    idle.poke();
   }
 
   countItem.layout(layout);
-  choiceItem.layout(layout);
+  digitItem.layout(layout);
+  letterItem.layout(layout);
   bubble.layout(layout);
   stars.layout(layout);
   finale.layout(layout);
@@ -257,64 +379,64 @@ export const kitchenScene: Scene = (ctx) => {
 
   /** DEV only: the offer of the order when it fits, otherwise what stands on the shelf. */
   function devChoices(type: ChoiceItem['type']): string[] {
-    if (choiceOrder && choiceOrder.type === type) return choiceValues(choiceOrder);
+    const asked = choiceItemOf(order, type);
+    if (asked) return choiceValues(asked);
     const tracks = ctx.session.save.tracks;
     return shelfDecoration(type === 'digit' ? tracks.numbers : tracks.letters);
   }
 
   /** DEV only: a replayed item is the whole order, bubble included – otherwise the card lies. */
-  function devShow(item: OrderItem): void {
-    order = { index: order.index, items: [item] };
-    countOrder = countItemOf(order);
-    choiceOrder = choiceItemOf(order);
-    finishing = false;
-    bubble.show(order);
+  function devPlay(item: OrderItem): void {
+    startOrder({ index: order.index, items: [item] });
   }
 
   const devHandle: KitchenDevHandle = {
+    play: (next) => startOrder(next),
     letter(target, choices) {
       // Whatever the console types is taken as it comes; the game itself only passes real letters.
       const value = target as Letter;
-      devShow({
+      devPlay({
         type: 'letter',
         letter: value,
         word: isLetter(target) ? letterWord(target, ctx.session.save.settings) : '',
         choices: (choices ?? devChoices('letter')) as readonly Letter[],
       });
-      if (choiceOrder) choiceItem.start(choiceOrder);
-      countItem.clear();
     },
     digit(value, choices) {
-      const digits = choices ?? devChoices('digit').map(Number);
-      devShow({ type: 'digit', value, choices: digits });
-      if (choiceOrder) choiceItem.start(choiceOrder);
-      countItem.clear();
+      devPlay({ type: 'digit', value, choices: choices ?? devChoices('digit').map(Number) });
     },
     count(amount, kind) {
-      devShow({ type: 'count', amount, fruit: kind ?? countOrder?.fruit ?? 'strawberry' });
-      choiceItem.clear();
-      if (countOrder) countItem.start(countOrder.amount, countOrder.fruit);
+      const fruit = kind ?? countItemOf(order)?.fruit ?? 'strawberry';
+      devPlay({ type: 'count', amount, fruit });
     },
     clear() {
       ctx.voice.stop();
       pacer.cancel();
+      idle.stop();
       finale.reset();
       bell.hide();
       finishing = false;
+      done.clear();
       countItem.clear();
-      choiceItem.clear();
+      digitItem.clear();
+      letterItem.clear();
       bubble.show(null);
     },
     ring: () => ringBell(),
     customer: (id) => customer.show(id),
-    finish: () => startFinale(),
+    finish() {
+      order.items.forEach((_, index) => bubble.tick(index));
+      startFinale();
+    },
     stars: (count) => stars.set(count, { pop: true }),
     state: () => countItem.state(),
-    choice: () => choiceItem.state(),
+    choice: () => letterItem.state() ?? digitItem.state(),
     layout: () => layout,
   };
   const devWindow = window as unknown as { __kitchen?: KitchenDevHandle };
   if (import.meta.env.DEV) devWindow.__kitchen = devHandle;
+
+  const choiceItems: readonly ChoiceItemHandle[] = [digitItem, letterItem];
 
   return {
     el,
@@ -326,7 +448,7 @@ export const kitchenScene: Scene = (ctx) => {
       }
       draw();
       countItem.layout(layout);
-      choiceItem.layout(layout);
+      for (const item of choiceItems) item.layout(layout);
       bubble.layout(layout);
       stars.layout(layout);
       finale.layout(layout);
@@ -337,11 +459,12 @@ export const kitchenScene: Scene = (ctx) => {
       // The scene does not own the narrator, but nothing it started may outlive it.
       ctx.voice.stop();
       pacer.cancel();
+      idle.stop();
       finale.destroy();
       customer.destroy();
       bell.destroy();
       countItem.destroy();
-      choiceItem.destroy();
+      for (const item of choiceItems) item.destroy();
       bubble.destroy();
       stars.destroy();
       // Leave the handle alone when a newer kitchen has already claimed it (crossfade order).

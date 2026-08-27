@@ -29,7 +29,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-09 | [Dokončení objednávky: bublina s objednávkou, zákazník jí, hvězdička, jedna celá smyčka](steps/STEP-09-order-completion-and-loop.md) | M1 | 06, 08 | done |
 | STEP-10 | [Zvoneček, tři zákazníci a zvukové efekty](steps/STEP-10-bell-customers-and-sfx.md) | M2 | 09 | done |
 | STEP-11 | [Adaptivní výběr, zavádění prvků a postup stupňů](steps/STEP-11-adaptive-selection-and-levels.md) | M2 | 09 | done |
-| STEP-12 | Delší objednávka: dvě položky, souběžné plnění, jeden hlas a jeden hlídač nečinnosti | M2 | 11 | — |
+| STEP-12 | [Delší objednávka: dvě položky, souběžné plnění, jeden hlas a jeden hlídač nečinnosti](steps/STEP-12-two-item-order.md) | M2 | 11 | done |
 | STEP-13 | Konec sezení (limit 10), obnova po reloadu, **slučitelný formát save** (migrace, `earned`/`purchases`) | M2 | 10, 11 | — |
 | STEP-14 | Obchůdek | M3 | 13 | — |
 | STEP-15 | Album | M3 | 13 | — |
@@ -55,8 +55,9 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   větu utne a obě položky si dnes objednávku říkají samy (`count-item.ts`, `choice-item.ts`),
   takže by se při dvou položkách přeřvaly; totéž platí pro hlídač nečinnosti. Hlas i nečinnost
   se proto musí vytáhnout do scény. STEP-11 dělá jen logiku, STEP-12 scénu; **zbytek roadmapy
-  se posunul o jedno číslo** (starý STEP-12 je dnes STEP-13 atd.). Nové hlášky nebude potřeba
-  generovat ani u jednoho z nich – manifest má číslice 1–10 i všech 22 písmen.
+  se posunul o jedno číslo** (starý STEP-12 je dnes STEP-13 atd.). Při plánování se ještě
+  předpokládalo, že ani jeden z nich nebude potřebovat nové hlášky; u STEP-12 to autor
+  změnil – viz poznámka níž.
 - **Číslování se od STEP-08 dál posunulo o jedno** (srpen 2026): hlas se rozdělil na STEP-07
   (manifest, generátor, casting – hra po něm zůstane tichá) a STEP-08 (fronta přehrávání
   a napojení kuchyně). Důvod: casting je lidská brána uprostřed – dokud dcera nevybere hlas,
@@ -86,8 +87,8 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   teď startuje prázdná a bez zazvonění se nic nestane, takže tempo řídí dítě. STEP-09 taky **jen zapisuje** skóre zvládnutí; zavádění nových
   prvků (`maybeIntroduce`) a postup na další stupeň dodělal **STEP-11**.
 - **Manifest má po STEP-09 celkem 252 hlášek** (246 z M1 + 3× „hotovo“, 2× hvězdička, „Otoč mě!“).
-  Sada M1 je tím kompletní; STEP-10 přidal 2 pobídky ke zvonečku (**254**), další přijdou
-  až se STEP-13 (konec sezení).
+  Sada M1 je tím kompletní; STEP-10 přidal 2 pobídky ke zvonečku (**254**) a STEP-12 přidal
+  62 vět pro druhou položku objednávky (**316**), další přijdou se STEP-13 (konec sezení).
 - **Borůvka a třešeň** se kreslí už ve STEP-05 (miska i ovoce na dortu podle druhu z objednávky),
   protože generátor ze STEP-03 vybírá ze všech tří startovních druhů; STEP-14 (obchůdek) pak řeší
   jen odemykání *dalšího* ovoce.
@@ -139,6 +140,21 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   jsou položky zvukového manifestu. Mluví jedině vypravěč, takže je pořád poznat, kdo je kdo.
   STEP-10 taky zůstává **vcelku** (tři fáze: zvukový kanál → zákazníci → zvoneček), i když je
   na tři kroky práce – rozhodnutí autora.
+- **Druhá položka objednávky dostane vlastní věty (srpen 2026).** Při plánování STEP-12 se
+  nabízelo nechat obě položky znít jako dvě samostatné prosby („Prosím tři jahody. Prosím perníček
+  s písmenkem ká.“) a nic negenerovat. Autor rozhodl jinak: druhá pozice má vlastní sadu **62 celých
+  vět** („A ještě…“) – 30 počítacích, 10 číslicových, 22 písmenkových – aby objednávka zněla jako
+  jedna prosba. Manifest tím roste na **316 hlášek** a STEP-12 si vyžádá běh
+  `docker compose run --rm voice` (generátor je přírůstkový, vyrobí jen nové). Když položka zazní
+  sama, použije se vždycky tvar s „Prosím“, takže osamocené „A ještě…“ nikdy nezazní. Věty pro
+  **třetí** pozici se zatím nedělají – přijdou se stupni Č3/P3 (STEP-22, STEP-25).
+- **Police mají po STEP-12 vlastní modul každá.** Při implementaci se ukázalo, že dvoupoložková
+  objednávka bývá **číslice + písmeno** (obě jsou „výběr z police“, jen každá z jiné dráhy), takže
+  jeden `choice-item` na scénu nestačil – uměl vždycky jen jednu polici. `createChoiceItem` proto
+  dostává jednu polici a jeden druh (`kind: 'digit' | 'letter'`) a kuchyně staví **dvě instance**;
+  každá kreslí jen tu svou, takže si nabídky nepřepisují. Podrobnosti a důvod: výsledek
+  implementace v [STEP-12](steps/STEP-12-two-item-order.md).
+
 - **Zvuk je hotový (STEP-10).** Placeholder tóny zmizely: `audio/tones.ts` je smazaný a hra hraje
   14 MP3 efektů z `public/audio/sfx/` (−22 LUFS, 4 dB pod vypravěčem). Řada počítadla je **jeden
   klip** přehrávaný přes `playbackRate` na půltónech `[0, 2, 4, 7, 9]` – text-to-sound-effects

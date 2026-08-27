@@ -3,6 +3,11 @@
  * bowl, a piece flies onto the cake and one more circle above it fills in. The state lives in
  * `game/counting.ts`, the geometry in `art/layout.ts`; this module only turns them into elements,
  * animations and cues. Nothing here can block the child – an extra tap only wobbles the lid.
+ *
+ * It says only what answers one tap of the child ("Tři.", "Už máme tři jahody, to stačí!"). What
+ * belongs to the ORDER – placing it, the nudge after 15 s, the hint after 40 s, the praise – is
+ * said by the scene, because from STEP-12 an order can hold two items and only one of them may
+ * speak at a time; the same goes for the idle watcher.
  */
 import type { SfxPlayer } from '../../audio/sfx';
 import type { VoicePlayer } from '../../audio/voice';
@@ -25,17 +30,8 @@ import { countPill } from '../../art/pill';
 import type { FruitKind } from '../../data/curriculum';
 import { plingRate } from '../../data/sfx';
 import { addFruit, createCounting, type CountingState } from '../../game/counting';
-import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
-import type { OrderItem } from '../../game/orders';
 import type { ItemOutcome } from '../../game/progress';
-import {
-  askAgainSpeech,
-  countSpeech,
-  enoughSpeech,
-  orderSpeech,
-  repeatSpeech,
-  type PraisePicker,
-} from '../../game/speech';
+import { countSpeech, enoughSpeech } from '../../game/speech';
 import { createMotion, layer, place, prefersReducedMotion } from './dom';
 import { createPacer, type Pacer } from './pacing';
 
@@ -45,13 +41,8 @@ const LID_DELAY_MS = 250;
 const BLINK_MS = 960;
 const BOUNCE_MS = 260;
 const POP_MS = 260;
-/** A beat before the order is spoken, so the sentence does not start over the scene fading in. */
-const SPEAK_DELAY_MS = 350;
-/** From the last piece landing to the praise – long enough for "Tři." to be out of the way. */
-const PRAISE_DELAY_MS = 900;
-
-/** What the narrator was asked to order – the amount is the clamped one, not the raw input. */
-type CountOrder = Extract<OrderItem, { readonly type: 'count' }>;
+/** From the last piece landing to reporting done – long enough for "Tři." to be out of the way. */
+const DONE_DELAY_MS = 900;
 
 export interface CountItemHandle {
   /** Starts the item over: `amount` pieces of `kind`, empty cake, open bowl. */
@@ -69,8 +60,10 @@ export interface CountItemHandle {
   outcome(): ItemOutcome | null;
   /** What flies to the customer with the cake – the fruit that landed on it. */
   plate(): readonly HTMLElement[];
-  /** Says the order again (a tap on the bubble) and restarts the idle watcher. */
-  repeat(): void;
+  /** 15 s of silence: the circles over the cake blink. Wordless – the scene says the sentence. */
+  nudge(): void;
+  /** 40 s of silence: a ring over the bowl and a `pling`; the item remembers it as 'hinted'. */
+  hint(): void;
   destroy(): void;
 }
 
@@ -83,8 +76,12 @@ export function createCountItem(options: {
   readonly bowl: HTMLElement;
   readonly sfx: SfxPlayer;
   readonly voice: VoicePlayer;
-  readonly praise: PraisePicker;
-  /** The praise is out and the cake is finished – the kitchen may start the finale. */
+  /**
+   * Every tap on the bowl – the one that finishes the item and the one on the covered bowl too.
+   * The scene resets the idle watcher of the whole order with it; the item keeps none of its own.
+   */
+  readonly onActivity: () => void;
+  /** The cake is finished and "to stačí" is out; the praise and the finale are the scene's call. */
   readonly onDone: () => void;
 }): CountItemHandle {
   const cakeFruitLayer = layer('count-fruit');
@@ -115,63 +112,30 @@ export function createCountItem(options: {
   let kind: FruitKind = 'strawberry';
   let landed: HTMLDivElement[] = [];
   let pills: HTMLDivElement[] = [];
-  let spoken: CountOrder | null = null;
   /**
    * The hint is an event of the scene, not of `CountingState` – counting knows nothing about a
    * ring being shown. Kept here so `outcome()` can tell "found it alone" from "was shown where".
    */
   let hinted = false;
-  /** Own pacer: the praise has to wait out "to stačí" on its own, and `motion` cancels everything. */
+  /** Own pacer: "done" has to wait out "to stačí" on its own, and `motion` cancels everything. */
   const pacer: Pacer = createPacer({ voice: options.voice });
-  let praisePending = false;
+  let donePending = false;
 
-  function speakOrder(): void {
-    const item = spoken;
-    if (!item) return;
-    motion.after(SPEAK_DELAY_MS, () => options.voice.say(orderSpeech(item)));
-  }
-
-  /** The nudge and the hint both repeat the order – there is no "tap the bowl" clip to play. */
-  function repeatOrder(): void {
-    if (spoken) options.voice.say(repeatSpeech(spoken));
-  }
-
-  function clearPraise(): void {
+  function clearDone(): void {
     pacer.cancel();
-    praisePending = false;
+    donePending = false;
   }
 
   /**
-   * "Už máme tři jahody, to stačí!" must finish first; the praise only moves back, it is never
-   * dropped (the pacer caps the waiting). The item reports itself done right after it, so the
-   * finale queues up behind the praise instead of talking over it.
+   * "Už máme tři jahody, to stačí!" must finish first; the report only moves back, it is never
+   * dropped (the pacer caps the waiting). The scene praises the child the moment it arrives, so the
+   * praise queues up behind "to stačí" instead of talking over it.
    */
-  function armPraise(delayMs: number): void {
-    praisePending = true;
+  function armDone(delayMs: number): void {
+    donePending = true;
     pacer.after(delayMs, () => {
-      praisePending = false;
-      options.voice.say(options.praise.next());
+      donePending = false;
       options.onDone();
-    });
-  }
-
-  /**
-   * One watcher per item: `stop()` is final by design (the item is over and nothing may nudge the
-   * child any more), so starting the next item builds a fresh one.
-   */
-  let idle: IdleWatcher = watcher();
-
-  function watcher(): IdleWatcher {
-    return createIdleWatcher({
-      onRemind: () => {
-        blinkPills();
-        repeatOrder();
-      },
-      onHint: () => {
-        if (state === null || state.done) return;
-        showHint();
-        repeatOrder();
-      },
     });
   }
 
@@ -404,6 +368,9 @@ export function createCountItem(options: {
 
   function onTap(event: PointerEvent): void {
     if (!state || !current) return;
+    // Even the tap on the covered bowl is the child being busy: the other item of the order may
+    // still be running, and it must not be nudged as if nothing had happened.
+    options.onActivity();
     const index = spotAt(event);
     hideHint();
     const step = addFruit(state);
@@ -412,12 +379,10 @@ export function createCountItem(options: {
       wobbleLid();
       options.sfx.play('nope');
       options.voice.say(enoughSpeech(state.target, kind));
-      if (praisePending) armPraise(PRAISE_DELAY_MS); // it waits for "to stačí" and comes after it
-      return; // the watcher stopped when the item was finished – nothing left to remind about
+      if (donePending) armDone(DONE_DELAY_MS); // it waits for "to stačí" and comes after it
+      return;
     }
     const completed = step.result === 'completed';
-    if (completed) idle.stop();
-    else idle.poke();
     const placedIndex = state.placed - 1;
     const source = spots()[index];
     if (!source) return;
@@ -429,14 +394,13 @@ export function createCountItem(options: {
       options.voice.say(countSpeech(placedIndex + 1));
       if (!completed) return;
       motion.after(LID_DELAY_MS, closeLid);
-      armPraise(PRAISE_DELAY_MS);
+      armDone(DONE_DELAY_MS);
     });
   }
 
   function reset(): void {
     motion.cancelAll();
-    idle.stop();
-    clearPraise();
+    clearDone();
     hinted = false;
     landed = [];
     options.bowl.classList.remove('is-covered');
@@ -451,18 +415,13 @@ export function createCountItem(options: {
       reset();
       state = createCounting(amount);
       kind = nextKind;
-      spoken = { type: 'count', fruit: kind, amount: state.target };
       options.bowl.innerHTML = fruitBowl({ kind });
       drawPills();
       placeAll();
-      idle = watcher();
-      idle.poke();
-      speakOrder();
     },
     clear() {
       reset();
       state = null;
-      spoken = null;
       kind = 'strawberry';
       options.bowl.innerHTML = fruitBowl();
       drawPills();
@@ -479,12 +438,12 @@ export function createCountItem(options: {
       return hinted ? 'hinted' : 'first-try';
     },
     plate: () => landed.filter((piece): piece is HTMLDivElement => Boolean(piece)),
-    repeat() {
+    nudge() {
       if (!state || state.done) return;
-      // A counting order is one sentence, so this is the same as the nudge – but it goes through
-      // the same helper, so the two never drift apart.
-      if (spoken) options.voice.say(askAgainSpeech(spoken));
-      idle.poke();
+      blinkPills();
+    },
+    hint() {
+      showHint();
     },
     destroy() {
       reset();

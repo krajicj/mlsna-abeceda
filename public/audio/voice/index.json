@@ -1008,6 +1008,378 @@
           "bytes": 23659,
           "loudness": -18
         },
+        "order.next.count.1.blueberry": {
+          "hash": "2df9e20529bfeca6",
+          "text": "A ještě jednu borůvku.",
+          "bytes": 13837,
+          "loudness": -18
+        },
+        "order.next.count.1.cherry": {
+          "hash": "a367738916947f3f",
+          "text": "A ještě jednu třešeň.",
+          "bytes": 14673,
+          "loudness": -18
+        },
+        "order.next.count.1.strawberry": {
+          "hash": "eb996df631ac1dfd",
+          "text": "A ještě jednu jahodu.",
+          "bytes": 14673,
+          "loudness": -18
+        },
+        "order.next.count.10.blueberry": {
+          "hash": "4753c79a52a0890c",
+          "text": "A ještě deset borůvek.",
+          "bytes": 15509,
+          "loudness": -18
+        },
+        "order.next.count.10.cherry": {
+          "hash": "436b990ca4bd7210",
+          "text": "A ještě deset třešní.",
+          "bytes": 15091,
+          "loudness": -18
+        },
+        "order.next.count.10.strawberry": {
+          "hash": "deb4034ea778b352",
+          "text": "A ještě deset jahod.",
+          "bytes": 15091,
+          "loudness": -18
+        },
+        "order.next.count.2.blueberry": {
+          "hash": "9591c481a6c5b47a",
+          "text": "A ještě dvě borůvky.",
+          "bytes": 13210,
+          "loudness": -18
+        },
+        "order.next.count.2.cherry": {
+          "hash": "8c96ae27525e7e99",
+          "text": "A ještě dvě třešně.",
+          "bytes": 13837,
+          "loudness": -18
+        },
+        "order.next.count.2.strawberry": {
+          "hash": "aaf4ac49f62431e7",
+          "text": "A ještě dvě jahody.",
+          "bytes": 13628,
+          "loudness": -18
+        },
+        "order.next.count.3.blueberry": {
+          "hash": "042b9a1502dd33b6",
+          "text": "A ještě tři borůvky.",
+          "bytes": 13628,
+          "loudness": -18
+        },
+        "order.next.count.3.cherry": {
+          "hash": "f7ebeb7c69fe1719",
+          "text": "A ještě tři třešně.",
+          "bytes": 15091,
+          "loudness": -18
+        },
+        "order.next.count.3.strawberry": {
+          "hash": "cc5912ba044b59cc",
+          "text": "A ještě tři jahody.",
+          "bytes": 14255,
+          "loudness": -18
+        },
+        "order.next.count.4.blueberry": {
+          "hash": "07b7eaca00b53817",
+          "text": "A ještě čtyři borůvky.",
+          "bytes": 15509,
+          "loudness": -18
+        },
+        "order.next.count.4.cherry": {
+          "hash": "7d91b38c4dabd104",
+          "text": "A ještě čtyři třešně.",
+          "bytes": 14255,
+          "loudness": -18
+        },
+        "order.next.count.4.strawberry": {
+          "hash": "ba814aa54585bbfc",
+          "text": "A ještě čtyři jahody.",
+          "bytes": 15718,
+          "loudness": -18
+        },
+        "order.next.count.5.blueberry": {
+          "hash": "d7050cc1a47dabc0",
+          "text": "A ještě pět borůvek.",
+          "bytes": 14255,
+          "loudness": -18
+        },
+        "order.next.count.5.cherry": {
+          "hash": "48ea8fe7ac12ba58",
+          "text": "A ještě pět třešní.",
+          "bytes": 14255,
+          "loudness": -18
+        },
+        "order.next.count.5.strawberry": {
+          "hash": "f8b4e4b180cd5dfe",
+          "text": "A ještě pět jahod.",
+          "bytes": 15718,
+          "loudness": -18
+        },
+        "order.next.count.6.blueberry": {
+          "hash": "dd180853d18abba5",
+          "text": "A ještě šest borůvek.",
+          "bytes": 14255,
+          "loudness": -18
+        },
+        "order.next.count.6.cherry": {
+          "hash": "7976686743d991c0",
+          "text": "A ještě šest třešní.",
+          "bytes": 14255,
+          "loudness": -18
+        },
+        "order.next.count.6.strawberry": {
+          "hash": "b6e8e77ffa8154a6",
+          "text": "A ještě šest jahod.",
+          "bytes": 13210,
+          "loudness": -18
+        },
+        "order.next.count.7.blueberry": {
+          "hash": "e20a3e6c8a2fc2b1",
+          "text": "A ještě sedm borůvek.",
+          "bytes": 14255,
+          "loudness": -18
+        },
+        "order.next.count.7.cherry": {
+          "hash": "b4caeed6bb484dc8",
+          "text": "A ještě sedm třešní.",
+          "bytes": 15091,
+          "loudness": -18
+        },
+        "order.next.count.7.strawberry": {
+          "hash": "813bb56e79b98e42",
+          "text": "A ještě sedm jahod.",
+          "bytes": 14673,
+          "loudness": -18
+        },
+        "order.next.count.8.blueberry": {
+          "hash": "62714b502090d650",
+          "text": "A ještě osm borůvek.",
+          "bytes": 13628,
+          "loudness": -18
+        },
+        "order.next.count.8.cherry": {
+          "hash": "34fb3c1a55c77d48",
+          "text": "A ještě osm třešní.",
+          "bytes": 13837,
+          "loudness": -18
+        },
+        "order.next.count.8.strawberry": {
+          "hash": "92f6005498ac80ab",
+          "text": "A ještě osm jahod.",
+          "bytes": 14255,
+          "loudness": -18
+        },
+        "order.next.count.9.blueberry": {
+          "hash": "5d23fada209619a8",
+          "text": "A ještě devět borůvek.",
+          "bytes": 12374,
+          "loudness": -18
+        },
+        "order.next.count.9.cherry": {
+          "hash": "42002cec2df34231",
+          "text": "A ještě devět třešní.",
+          "bytes": 13210,
+          "loudness": -18
+        },
+        "order.next.count.9.strawberry": {
+          "hash": "5dc855b6c4a16e6f",
+          "text": "A ještě devět jahod.",
+          "bytes": 15509,
+          "loudness": -18
+        },
+        "order.next.digit.1": {
+          "hash": "354391529b3126ad",
+          "text": "A ještě svíčku s číslem jedna.",
+          "bytes": 21360,
+          "loudness": -18
+        },
+        "order.next.digit.10": {
+          "hash": "382e62e6f6262c9c",
+          "text": "A ještě svíčku s číslem deset.",
+          "bytes": 21778,
+          "loudness": -18
+        },
+        "order.next.digit.2": {
+          "hash": "3f6007175b5a4e01",
+          "text": "A ještě svíčku s číslem dva.",
+          "bytes": 18017,
+          "loudness": -18
+        },
+        "order.next.digit.3": {
+          "hash": "c5a4e93c49d84be7",
+          "text": "A ještě svíčku s číslem tři.",
+          "bytes": 19062,
+          "loudness": -18
+        },
+        "order.next.digit.4": {
+          "hash": "7c2bc8622cba889a",
+          "text": "A ještě svíčku s číslem čtyři.",
+          "bytes": 20525,
+          "loudness": -18
+        },
+        "order.next.digit.5": {
+          "hash": "415aa26102234430",
+          "text": "A ještě svíčku s číslem pět.",
+          "bytes": 18017,
+          "loudness": -18
+        },
+        "order.next.digit.6": {
+          "hash": "259e9bd2203de619",
+          "text": "A ještě svíčku s číslem šest.",
+          "bytes": 18017,
+          "loudness": -18
+        },
+        "order.next.digit.7": {
+          "hash": "0881773a1240f94e",
+          "text": "A ještě svíčku s číslem sedm.",
+          "bytes": 20316,
+          "loudness": -18
+        },
+        "order.next.digit.8": {
+          "hash": "3af10e2de8a75a22",
+          "text": "A ještě svíčku s číslem osm.",
+          "bytes": 20942,
+          "loudness": -18
+        },
+        "order.next.digit.9": {
+          "hash": "3ab335cfdc99ade4",
+          "text": "A ještě svíčku s číslem devět.",
+          "bytes": 20316,
+          "loudness": -18
+        },
+        "order.next.letter.a": {
+          "hash": "6a833488ee304f3f",
+          "text": "A ještě perníček s písmenkem á.",
+          "bytes": 23659,
+          "loudness": -18
+        },
+        "order.next.letter.b": {
+          "hash": "8cedff5f553c58ad",
+          "text": "A ještě perníček s písmenkem bé.",
+          "bytes": 22196,
+          "loudness": -18
+        },
+        "order.next.letter.c": {
+          "hash": "7db72a404277420a",
+          "text": "A ještě perníček s písmenkem cé.",
+          "bytes": 21360,
+          "loudness": -18
+        },
+        "order.next.letter.d": {
+          "hash": "39b0e55999f9c9a4",
+          "text": "A ještě perníček s písmenkem dé.",
+          "bytes": 22196,
+          "loudness": -18
+        },
+        "order.next.letter.e": {
+          "hash": "0dafd6515afbff43",
+          "text": "A ještě perníček s písmenkem é.",
+          "bytes": 22196,
+          "loudness": -18
+        },
+        "order.next.letter.f": {
+          "hash": "bdd1963a7f04ce1d",
+          "text": "A ještě perníček s písmenkem ef.",
+          "bytes": 23659,
+          "loudness": -18
+        },
+        "order.next.letter.g": {
+          "hash": "545571e1a6863c9b",
+          "text": "A ještě perníček s písmenkem gé.",
+          "bytes": 21778,
+          "loudness": -18
+        },
+        "order.next.letter.h": {
+          "hash": "66fe86d4627feee1",
+          "text": "A ještě perníček s písmenkem há.",
+          "bytes": 21778,
+          "loudness": -18
+        },
+        "order.next.letter.i": {
+          "hash": "f4a07c1259163448",
+          "text": "A ještě perníček s písmenkem í.",
+          "bytes": 25749,
+          "loudness": -18
+        },
+        "order.next.letter.j": {
+          "hash": "968043808e71017e",
+          "text": "A ještě perníček s písmenkem jé.",
+          "bytes": 22196,
+          "loudness": -18
+        },
+        "order.next.letter.k": {
+          "hash": "2fd464fe28ffc04a",
+          "text": "A ještě perníček s písmenkem ká.",
+          "bytes": 21778,
+          "loudness": -18
+        },
+        "order.next.letter.l": {
+          "hash": "60c08b92acc64a29",
+          "text": "A ještě perníček s písmenkem el.",
+          "bytes": 19480,
+          "loudness": -18
+        },
+        "order.next.letter.m": {
+          "hash": "1ea612b39140325b",
+          "text": "A ještě perníček s písmenkem em.",
+          "bytes": 24286,
+          "loudness": -18
+        },
+        "order.next.letter.n": {
+          "hash": "3f2df1adebfe2062",
+          "text": "A ještě perníček s písmenkem en.",
+          "bytes": 23241,
+          "loudness": -18
+        },
+        "order.next.letter.o": {
+          "hash": "352d8965b60f80d1",
+          "text": "A ještě perníček s písmenkem ó.",
+          "bytes": 20525,
+          "loudness": -18
+        },
+        "order.next.letter.p": {
+          "hash": "ed3f78e3b39850cd",
+          "text": "A ještě perníček s písmenkem pé.",
+          "bytes": 22405,
+          "loudness": -18
+        },
+        "order.next.letter.r": {
+          "hash": "d546da910846e97b",
+          "text": "A ještě perníček s písmenkem er.",
+          "bytes": 20942,
+          "loudness": -18
+        },
+        "order.next.letter.s": {
+          "hash": "1bcd3676c29bcfc1",
+          "text": "A ještě perníček s písmenkem es.",
+          "bytes": 23241,
+          "loudness": -18
+        },
+        "order.next.letter.t": {
+          "hash": "96f2ec10230e5211",
+          "text": "A ještě perníček s písmenkem té.",
+          "bytes": 20942,
+          "loudness": -18
+        },
+        "order.next.letter.u": {
+          "hash": "51beba31b900d5da",
+          "text": "A ještě perníček s písmenkem ú.",
+          "bytes": 20942,
+          "loudness": -18
+        },
+        "order.next.letter.v": {
+          "hash": "a5d4471e508b612e",
+          "text": "A ještě perníček s písmenkem vé.",
+          "bytes": 21778,
+          "loudness": -18
+        },
+        "order.next.letter.z": {
+          "hash": "cbd4f0500225014f",
+          "text": "A ještě perníček s písmenkem zet.",
+          "bytes": 22196,
+          "loudness": -18
+        },
         "praise.female.1": {
           "hash": "6a44867904220c20",
           "text": "Šikovná!",

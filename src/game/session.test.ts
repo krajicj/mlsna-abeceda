@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { STARTER_CUSTOMERS } from '../data/customers';
 import { countItemOf, MAX_COUNT } from './counting';
 import { createTrack, MASTERY_KNOWN } from './mastery';
-import { itemResult } from './progress';
+import { elementOf, itemResult } from './progress';
 import { createRng } from './rng';
 import { createSave, parseSave, type SaveData, type StorageLike } from './save';
 import { createSession } from './session';
@@ -202,6 +202,63 @@ describe('session.complete', () => {
     const next = session.complete([]);
     expect(next.index).toBe(2);
     expect(session.save.progress.ordersCompleted).toBe(1);
+  });
+});
+
+describe('session – two-item orders (STEP-12)', () => {
+  /** A save that is waiting for the order at `index` – nothing else about it is special. */
+  function atOrder(index: number): SaveData {
+    const base = createSave();
+    return {
+      ...base,
+      progress: { ordersCompleted: index - 1, stars: index - 1, lastPlayed: null },
+    };
+  }
+
+  it('hands the kitchen two items from the eleventh order on', () => {
+    const session = createSession(memoryStorage(atOrder(11)), { rng: createRng(5) });
+    expect(session.order.index).toBe(11);
+    expect(session.order.items).toHaveLength(2);
+    expect(session.order.items.filter((item) => item.type === 'letter')).toHaveLength(1);
+  });
+
+  it('remembers the elements of BOTH tracks and does not ask for them again', () => {
+    for (let seed = 1; seed <= 20; seed += 1) {
+      const session = createSession(memoryStorage(atOrder(11)), { rng: createRng(seed) });
+      const before = session.order.items.map(elementOf);
+      session.complete([]);
+      const after = session.order.items.map(elementOf);
+      expect(after).toHaveLength(2);
+      for (const element of after) expect(before).not.toContain(element);
+    }
+  });
+
+  it('replays a whole seeded sitting across the boundary of the tenth order', () => {
+    const run = (): string => {
+      const session = createSession(memoryStorage(), { rng: createRng(17) });
+      return JSON.stringify(
+        Array.from({ length: 14 }, () => {
+          const items = session.order.items;
+          session.complete([]);
+          return items;
+        }),
+      );
+    };
+    expect(run()).toBe(run());
+  });
+
+  it('stores nothing new for it – the save stays on version 1 (rule 4)', () => {
+    const storage = memoryStorage(atOrder(11));
+    const session = createSession(storage, { rng: createRng(3) });
+    session.complete([]);
+    const raw = storage.getItem(SAVE_KEY) ?? '';
+    expect(parseSave(raw)?.version).toBe(1);
+    expect(Object.keys(JSON.parse(raw) as object).sort()).toEqual([
+      'progress',
+      'settings',
+      'tracks',
+      'version',
+    ]);
   });
 });
 

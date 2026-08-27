@@ -43,9 +43,9 @@ export function addFruit(state: CountingState): {
 }
 
 /**
- * The first `count` item of an order, or `null`. From STEP-09 on, when `ordersCompleted` starts to
- * grow, an order can hold only a letter or a digit – the kitchen then stays static. A pure
- * function so that branch can be tested without a DOM.
+ * The first `count` item of an order, or `null`. An order can hold only a letter or a digit – the
+ * bowl then stays a picture – and from STEP-12 it can hold counting AND a choice at once, both in
+ * play. A pure function so both branches can be tested without a DOM.
  */
 export function countItemOf(order: Order): Extract<OrderItem, { readonly type: 'count' }> | null {
   for (const item of order.items) if (item.type === 'count') return item;
