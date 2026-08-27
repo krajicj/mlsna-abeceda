@@ -5,7 +5,7 @@
  */
 import type { Order, OrderItem } from './orders';
 
-/** Č1 counts to 5; Č2 (to 10) needs a second row on the cake – STEP-21. */
+/** Č1 counts to 5; Č2 (to 10) needs a second row on the cake – STEP-22. */
 export const MAX_COUNT = 5;
 
 export interface CountingState {

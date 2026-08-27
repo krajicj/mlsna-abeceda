@@ -11,6 +11,8 @@ export const MASTERY_MAX = 5;
 export const MASTERY_KNOWN = 3;
 /** How much of the active set must be known before a new element joins in. */
 export const READY_RATIO = 0.8;
+/** An element below MASTERY_KNOWN is asked for this many times more often (návrh 5.4). */
+export const WEAK_WEIGHT = 3;
 
 export interface TrackState {
   readonly level: Level;
@@ -60,6 +62,15 @@ export function recordSuccess(track: TrackState, element: string, firstTry: bool
 
 export function recordMistake(track: TrackState, element: string): TrackState {
   return withScore(track, element, scoreOf(track, element) - 1);
+}
+
+/**
+ * How often the generator should ask about this element: 1 for a mastered one, `WEAK_WEIGHT` for the
+ * rest (návrh 5.4). An element outside the active set scores 0 through `scoreOf` and therefore
+ * weighs `WEAK_WEIGHT` – the generator never asks about one, so the value only has to be defined.
+ */
+export function weightOf(track: TrackState, element: string): number {
+  return isMastered(track, element) ? 1 : WEAK_WEIGHT;
 }
 
 /** Empty set → yes, there is room for the first element. */

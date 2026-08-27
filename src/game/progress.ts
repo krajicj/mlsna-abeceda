@@ -1,10 +1,25 @@
 /**
  * What a finished order does to the saved game (docs/navrh-hry.md ch. 5.4, 7): the mastery score of
- * every element the child worked with, one star and the counters. Pure – a `SaveData` in, a new
- * `SaveData` out, nothing mutated and nothing written to storage (that is `session.ts`). Keeping it
- * DOM-free and side-effect-free is what makes the scoring rules testable without a browser.
+ * every element the child worked with, then the growth of both tracks, one star and the counters.
+ * Pure – a `SaveData` in, a new `SaveData` out, nothing mutated and nothing written to storage (that
+ * is `session.ts`). Keeping it DOM-free and side-effect-free is what makes the rules testable
+ * without a browser.
  */
-import { recordMistake, recordSuccess, type TrackState } from './mastery';
+import {
+  letterPool,
+  MAX_LETTER_LEVEL,
+  MAX_NUMBER_LEVEL,
+  numberPool,
+  type Level,
+} from './curriculum';
+import {
+  advanceLevel,
+  canAdvanceLevel,
+  maybeIntroduce,
+  recordMistake,
+  recordSuccess,
+  type TrackState,
+} from './mastery';
 import type { OrderItem } from './orders';
 import type { SaveData } from './save';
 
@@ -68,6 +83,35 @@ function withResult(track: TrackState, result: ItemResult): TrackState {
 }
 
 /**
+ * The track after a finished order (návrh 5.4): the whole pool known → one stage up, otherwise at
+ * most one new element. The stage is checked first – `advanceLevel` brings a new element of its own,
+ * so introducing on top of it would make two appear at once. `maxLevel` is the highest stage the
+ * kitchen can really play; above it the track simply stops growing (the save must never claim a
+ * stage the generator cannot build).
+ */
+function growTrack(
+  track: TrackState,
+  poolFor: (level: Level) => readonly string[],
+  maxLevel: Level,
+): TrackState {
+  const pool = poolFor(track.level);
+  if (canAdvanceLevel(track, pool)) {
+    if (track.level >= maxLevel) return track;
+    return advanceLevel(track, poolFor((track.level + 1) as Level));
+  }
+  return maybeIntroduce(track, pool);
+}
+
+/**
+ * The single element `after` has and `before` had not – what `completeOrder` just introduced. `null`
+ * when nothing was added, or when more than one appeared (a repaired save); never guess which.
+ */
+export function introducedElement(before: TrackState, after: TrackState): string | null {
+  const added = after.active.filter((element) => !before.active.includes(element));
+  return added.length === 1 ? (added[0] as string) : null;
+}
+
+/**
  * The order is done. Elements outside the active set are ignored (`mastery.ts` keeps scores only
  * for what is in play), the star and the counters always land – even for an empty `results`, so a
  * dev-console order the child never really played still closes the loop.
@@ -85,7 +129,10 @@ export function completeOrder(
   }
   return {
     ...save,
-    tracks: { numbers, letters },
+    tracks: {
+      numbers: growTrack(numbers, numberPool, MAX_NUMBER_LEVEL),
+      letters: growTrack(letters, (level) => letterPool(save.settings, level), MAX_LETTER_LEVEL),
+    },
     progress: {
       ordersCompleted: save.progress.ordersCompleted + 1,
       stars: save.progress.stars + STARS_PER_ORDER,

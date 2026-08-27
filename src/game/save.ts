@@ -4,7 +4,7 @@
  * full quota) must not stop the game. Storage is injected so the logic stays testable in Node.
  */
 import { type Letter } from '../data/curriculum';
-import { letterPool, numberPool, type Level } from './curriculum';
+import { LEVEL1_INITIAL_LETTERS, letterPool, numberPool, type Level } from './curriculum';
 import { createTrack, MASTERY_MAX, type TrackState } from './mastery';
 import { EMPTY_SETTINGS, normalizeSettings, type Settings } from './settings';
 import { SAVE_KEY, SAVE_VERSION } from './version';
@@ -38,14 +38,17 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-/** A brand new game: numbers 1–5 (the child knows those) and the first four letters. */
+/**
+ * A brand new game: numbers 1–5 (the child knows those) and the first two letters – the rest of the
+ * P1 pool joins one by one as they are learnt (návrh 5.4).
+ */
 export function createSave(settings: Settings = EMPTY_SETTINGS): SaveData {
   return {
     version: SAVE_VERSION,
     settings,
     tracks: {
       numbers: createTrack(1, numberPool(1)),
-      letters: createTrack(1, letterPool(settings, 1)),
+      letters: createTrack(1, letterPool(settings, 1), LEVEL1_INITIAL_LETTERS),
     },
     progress: { ordersCompleted: 0, stars: 0, lastPlayed: null },
   };

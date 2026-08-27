@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { LEVEL1_INITIAL_LETTERS } from './curriculum';
 import {
   createSave,
   parseSave,
@@ -41,16 +42,32 @@ const throwingStorage: StorageLike = {
 };
 
 describe('createSave', () => {
-  it('starts on stage 1 with numbers 1–5 and four letters', () => {
+  it('starts on stage 1 with numbers 1–5 and two letters', () => {
     const save = createSave(SETTINGS);
     expect(save.version).toBe(SAVE_VERSION);
     expect(save.tracks.numbers.active).toEqual(['1', '2', '3', '4', '5']);
-    expect(save.tracks.letters.active).toEqual(['A', 'N', 'I', 'K']);
+    // The rest of the P1 pool joins one by one, as the first two are learnt (STEP-11).
+    expect(save.tracks.letters.active).toEqual(['A', 'N']);
+    expect(save.tracks.letters.active).toHaveLength(LEVEL1_INITIAL_LETTERS);
+    expect(save.tracks.letters.scores).toEqual({ A: 0, N: 0 });
     expect(save.progress).toEqual({ ordersCompleted: 0, stars: 0, lastPlayed: null });
   });
 
   it('works with no settings', () => {
-    expect(createSave().tracks.letters.active).toEqual(['O', 'S', 'T', 'A']);
+    expect(createSave().tracks.letters.active).toEqual(['O', 'S']);
+  });
+
+  it('keeps a saved four-letter set – only a brand new game starts small', () => {
+    const played = JSON.stringify({
+      ...createSave(),
+      tracks: {
+        numbers: createSave().tracks.numbers,
+        letters: { level: 1, active: ['O', 'S', 'T', 'A'], scores: { O: 3, S: 2, T: 1, A: 0 } },
+      },
+    });
+    const save = parseSave(played);
+    expect(save?.version).toBe(SAVE_VERSION);
+    expect(save?.tracks.letters.active).toEqual(['O', 'S', 'T', 'A']);
   });
 });
 
@@ -108,7 +125,7 @@ describe('parseSave', () => {
 describe('readSave / writeSave / resetSave', () => {
   it('gives a fresh game for empty or broken storage', () => {
     expect(readSave(memoryStorage()).progress.ordersCompleted).toBe(0);
-    expect(readSave(memoryStorage('{oops')).tracks.letters.active).toEqual(['O', 'S', 'T', 'A']);
+    expect(readSave(memoryStorage('{oops')).tracks.letters.active).toEqual(['O', 'S']);
   });
 
   it('survives storage that throws on every call', () => {
@@ -135,7 +152,7 @@ describe('readSave / writeSave / resetSave', () => {
     expect(storage.map.has(SAVE_KEY)).toBe(false);
     expect(fresh.settings).toEqual(EMPTY_SETTINGS);
     expect(fresh.progress.ordersCompleted).toBe(0);
-    expect(fresh.tracks.letters.active).toEqual(['O', 'S', 'T', 'A']);
+    expect(fresh.tracks.letters.active).toEqual(['O', 'S']);
   });
 });
 
@@ -171,11 +188,6 @@ describe('withSettings', () => {
 
   it('goes back to a neutral set when the settings are cleared', () => {
     const withName = createSave(SETTINGS);
-    expect(withSettings(withName, EMPTY_SETTINGS).tracks.letters.active).toEqual([
-      'O',
-      'S',
-      'T',
-      'A',
-    ]);
+    expect(withSettings(withName, EMPTY_SETTINGS).tracks.letters.active).toEqual(['O', 'S']);
   });
 });

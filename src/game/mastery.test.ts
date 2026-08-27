@@ -9,6 +9,8 @@ import {
   recordMistake,
   recordSuccess,
   scoreOf,
+  WEAK_WEIGHT,
+  weightOf,
   type TrackState,
 } from './mastery';
 
@@ -129,5 +131,29 @@ describe('canAdvanceLevel / advanceLevel', () => {
 
   it('never goes past stage five', () => {
     expect(advanceLevel(createTrack(5, ['A']), ['A', 'B']).level).toBe(5);
+  });
+});
+
+describe('weightOf', () => {
+  const track = withScores(createTrack(1, NUMBERS), { '1': 5, '2': 3, '3': 2, '4': 0 });
+
+  it('gives a mastered element the plain weight and a weak one WEAK_WEIGHT', () => {
+    expect(weightOf(track, '1')).toBe(1);
+    expect(weightOf(track, '2')).toBe(1); // exactly MASTERY_KNOWN already counts as known
+    expect(weightOf(track, '3')).toBe(WEAK_WEIGHT);
+    expect(weightOf(track, '4')).toBe(WEAK_WEIGHT);
+  });
+
+  it('is defined for an element outside the active set', () => {
+    // The generator never asks about one; the value only has to exist, not to mean anything.
+    expect(weightOf(track, '9')).toBe(WEAK_WEIGHT);
+  });
+
+  it('is always a positive finite number', () => {
+    for (const element of [...NUMBERS, 'X']) {
+      const weight = weightOf(track, element);
+      expect(Number.isFinite(weight)).toBe(true);
+      expect(weight).toBeGreaterThan(0);
+    }
   });
 });

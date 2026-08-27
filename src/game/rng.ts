@@ -31,6 +31,29 @@ export function pick<T>(rng: Rng, items: readonly T[]): T {
   return items[indexIn(rng, items.length)] as T; // indexIn always lands inside the array
 }
 
+/**
+ * One item, chance proportional to `weight` (návrh 5.4: an element the child does not know yet comes
+ * up more often). Weights that are not finite or ≤ 0 count as zero; when every weight ends up zero
+ * it falls back to a uniform `pick`. An empty array throws, like `pick`.
+ */
+export function pickWeighted<T>(rng: Rng, items: readonly T[], weight: (item: T) => number): T {
+  if (items.length === 0) throw new RangeError('pickWeighted() needs a non-empty array');
+  const weights = items.map((item) => {
+    const value = weight(item);
+    return Number.isFinite(value) && value > 0 ? value : 0;
+  });
+  const total = weights.reduce((sum, value) => sum + value, 0);
+  if (total <= 0) return pick(rng, items);
+  const raw = rng();
+  const threshold = (Number.isFinite(raw) ? Math.min(Math.max(raw, 0), 1) : 0) * total;
+  let running = 0;
+  for (let i = 0; i < items.length; i += 1) {
+    running += weights[i] as number;
+    if (threshold < running) return items[i] as T;
+  }
+  return items[items.length - 1] as T; // only rounding can get us here
+}
+
 /** Fisher–Yates; returns a new array, the input is left alone. */
 export function shuffle<T>(rng: Rng, items: readonly T[]): T[] {
   const out = items.slice();

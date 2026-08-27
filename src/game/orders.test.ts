@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FRUITS } from '../data/curriculum';
+import { MAX_COUNT } from './counting';
 import { createTrack, type TrackState } from './mastery';
 import { generateOrder, orderElements, type Order, type OrderInput } from './orders';
 import { createRng } from './rng';
@@ -262,5 +263,142 @@ describe('orderElements', () => {
     const letterItem = letter.items[0];
     if (letterItem?.type !== 'letter') throw new Error('expected a letter item');
     expect(orderElements(letter)).toEqual([letterItem.letter]);
+  });
+});
+
+describe('weighted target (návrh 5.4)', () => {
+  /** How often each letter was the target over a long run of seeds. */
+  function letterCounts(
+    letters: TrackState,
+    overrides: Partial<OrderInput> = {},
+  ): (letter: string) => number {
+    const seen = new Map<string, number>(LETTERS.map((letter) => [letter, 0]));
+    for (let seed = 0; seed < 400; seed += 1) {
+      const order = generateOrder({
+        ...input({ index: 2, ...overrides }),
+        tracks: { numbers: allKnown(createTrack(1, NUMBERS)), letters },
+        rng: createRng(seed),
+      });
+      const item = order.items[0];
+      if (item?.type !== 'letter') throw new Error('expected a letter item');
+      seen.set(item.letter, (seen.get(item.letter) ?? 0) + 1);
+    }
+    return (letter) => seen.get(letter) ?? 0;
+  }
+
+  it('asks about a letter the child does not know yet three times as often', () => {
+    // A weighs 3, the other three weigh 1 → A is half of the run, the rest a sixth each.
+    const seen = letterCounts(scored(createTrack(1, LETTERS), { A: 0, N: 3, I: 3, K: 3 }));
+    expect(seen('A') / 400).toBeGreaterThan(0.38);
+    expect(seen('A') / 400).toBeLessThan(0.62);
+    for (const letter of ['N', 'I', 'K']) expect(seen(letter)).toBeGreaterThan(0);
+  });
+
+  it('still asks about the mastered ones – weighting is not exclusion', () => {
+    const seen = letterCounts(scored(createTrack(1, LETTERS), { A: 0, N: 0, I: 3, K: 3 }));
+    expect(seen('I') + seen('K')).toBeGreaterThan(0);
+    expect(seen('A') + seen('N')).toBeGreaterThan(seen('I') + seen('K'));
+  });
+
+  it('picks evenly when the child knows the whole set equally well', () => {
+    const seen = letterCounts(allKnown(createTrack(1, LETTERS)));
+    for (const letter of LETTERS) {
+      expect(seen(letter) / 400).toBeGreaterThan(0.15);
+      expect(seen(letter) / 400).toBeLessThan(0.35);
+    }
+  });
+});
+
+describe('a freshly introduced element', () => {
+  it('is the target of the next order of its track', () => {
+    everySeed({ index: 2, introduced: { letters: 'K' } }, (order) => {
+      const item = order.items[0];
+      if (item?.type !== 'letter') throw new Error('expected a letter item');
+      expect(item.letter).toBe('K');
+    });
+  });
+
+  it('is skipped when the no-repeat rule already rules it out', () => {
+    everySeed({ index: 2, introduced: { letters: 'K' }, avoid: ['K'] }, (order) => {
+      const item = order.items[0];
+      if (item?.type !== 'letter') throw new Error('expected a letter item');
+      expect(item.letter).not.toBe('K');
+    });
+  });
+
+  it('does not leak into the other track', () => {
+    everySeed({ index: 3, introduced: { letters: 'K' } }, (order) => {
+      const item = order.items[0];
+      if (item?.type !== 'digit') throw new Error('expected a digit item');
+      expect(NUMBERS).toContain(String(item.value));
+    });
+  });
+
+  it('is ignored when it is not in the active set at all', () => {
+    everySeed({ index: 2, introduced: { letters: 'Z' } }, (order) => {
+      const item = order.items[0];
+      if (item?.type !== 'letter') throw new Error('expected a letter item');
+      expect(LETTERS).toContain(item.letter);
+    });
+  });
+});
+
+describe('counting stays inside the cake', () => {
+  const bigNumbers = allKnown(createTrack(2, ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']));
+
+  it('never asks for more pieces of fruit than fit on the cake', () => {
+    for (let seed = 0; seed < 60; seed += 1) {
+      const order = generateOrder({
+        ...input({ index: 1 }),
+        tracks: { numbers: bigNumbers, letters: allKnown(createTrack(1, LETTERS)) },
+        rng: createRng(seed),
+      });
+      const item = order.items[0];
+      if (item?.type !== 'count') throw new Error('expected a count item');
+      expect(item.amount).toBeLessThanOrEqual(MAX_COUNT);
+      expect(item.amount).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('leaves an introduced eight for the candle order instead of counting to eight', () => {
+    for (let seed = 0; seed < 60; seed += 1) {
+      const counted = generateOrder({
+        ...input({ index: 1, introduced: { numbers: '8' } }),
+        tracks: { numbers: bigNumbers, letters: allKnown(createTrack(1, LETTERS)) },
+        rng: createRng(seed),
+      });
+      const countItem = counted.items[0];
+      if (countItem?.type !== 'count') throw new Error('expected a count item');
+      expect(countItem.amount).toBeLessThanOrEqual(MAX_COUNT);
+
+      const digits = generateOrder({
+        ...input({ index: 3, introduced: { numbers: '8' } }),
+        tracks: { numbers: bigNumbers, letters: allKnown(createTrack(1, LETTERS)) },
+        rng: createRng(seed),
+      });
+      const digitItem = digits.items[0];
+      if (digitItem?.type !== 'digit') throw new Error('expected a digit item');
+      expect(digitItem.value).toBe(8); // the candle order takes it right away
+    }
+  });
+});
+
+describe('a new game with two letters', () => {
+  const twoLetters = createTrack(1, ['O', 'S']);
+
+  it('makes a shelf of two instead of three', () => {
+    for (let seed = 0; seed < 30; seed += 1) {
+      const order = generateOrder({
+        settings: EMPTY_SETTINGS,
+        tracks: { numbers: allKnown(createTrack(1, NUMBERS)), letters: twoLetters },
+        index: 2,
+        rng: createRng(seed),
+      });
+      const item = order.items[0];
+      if (item?.type !== 'letter') throw new Error('expected a letter item');
+      expect(item.choices).toHaveLength(2);
+      expect(item.choices).toContain(item.letter);
+      for (const choice of item.choices) expect(['O', 'S']).toContain(choice);
+    }
   });
 });

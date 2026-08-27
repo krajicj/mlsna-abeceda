@@ -8,6 +8,7 @@ import { generateOrder, type Order } from './orders';
 import {
   completeOrder,
   elementOf,
+  introducedElement,
   todayStamp,
   trackOf,
   type ItemResult,
@@ -25,7 +26,7 @@ export interface Session {
   readonly order: Order;
   /**
    * Who is carrying the current order (návrh kap. 6). Deliberately NOT in the save: after a reload
-   * any animal may walk in, and restoring the session is STEP-12's job.
+   * any animal may walk in, and restoring the session is STEP-13's job.
    */
   readonly customer: CustomerId;
   /** Writes the finished order into the save and generates the next one; returns it. */
@@ -43,10 +44,17 @@ export function createSession(
    * The last element each track asked for. Orders alternate the tracks, so "the previous order" is
    * usually the other track's – what must not repeat is the last element of the *same* one
    * (`OrderInput.avoid`). Kept per track instead of reading the alternation rule of `orders.ts`,
-   * which longer orders (STEP-11) are going to change.
+   * which longer orders (STEP-12) are going to change.
    */
   const last: Record<TrackName, string | null> = { numbers: null, letters: null };
   let lastFruit: FruitKind | null = null;
+  /**
+   * The element `completeOrder` has just introduced, waiting for the first order of its track that
+   * can actually use it (návrh 5.4). Deliberately NOT in the save: a new field would mean a new
+   * `SAVE_VERSION`, and `parseSave()` throws a record of another version away – a wiped record is a
+   * far worse price than losing one nudge on reload.
+   */
+  const pending: Record<TrackName, string | null> = { numbers: null, letters: null };
 
   function remember(order: Order): void {
     for (const item of order.items) {
@@ -56,15 +64,23 @@ export function createSession(
   }
 
   function nextOrder(): Order {
-    return generateOrder({
+    const order = generateOrder({
       settings: save.settings,
       tracks: save.tracks,
       index: save.progress.ordersCompleted + 1,
       // The same thing twice in a row would read as "the game did not notice I answered".
       avoid: [last.numbers, last.letters].filter((element): element is string => element !== null),
       avoidFruit: lastFruit,
+      introduced: { numbers: pending.numbers, letters: pending.letters },
       rng,
     });
+    // Ticked off only once an order really asked for it: an introduced eight does not fit a counting
+    // order, so it keeps waiting for the one with the candle.
+    for (const item of order.items) {
+      const track = trackOf(item);
+      if (pending[track] === elementOf(item)) pending[track] = null;
+    }
+    return order;
   }
 
   // Built here and not in the scene: this is the one place with an injected rng, so a seeded
@@ -86,10 +102,15 @@ export function createSession(
     },
     complete(results) {
       remember(order);
+      const before = save;
       // A storage that refuses to write does not stop the loop: the session keeps the new record
       // in memory and the child plays on (writeSave swallows the failure).
       save = completeOrder(save, results, todayStamp(now()));
       writeSave(storage, save);
+      for (const track of ['numbers', 'letters'] as const) {
+        const introduced = introducedElement(before.tracks[track], save.tracks[track]);
+        if (introduced !== null) pending[track] = introduced;
+      }
       order = nextOrder();
       customer = customers.next();
       return order;

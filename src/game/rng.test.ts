@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createRng, pick, sample, shuffle } from './rng';
+import { createRng, pick, pickWeighted, sample, shuffle } from './rng';
 
 describe('createRng', () => {
   it('repeats the same sequence for the same seed', () => {
@@ -72,5 +72,70 @@ describe('shuffle', () => {
     const rng = createRng(11);
     const orders = new Set(Array.from({ length: 20 }, () => shuffle(rng, items).join('')));
     expect(orders.size).toBeGreaterThan(1);
+  });
+});
+
+describe('pickWeighted', () => {
+  /** How often each item came up over `rounds` picks. */
+  const counts = (
+    items: readonly string[],
+    weight: (item: string) => number,
+    rounds = 4000,
+  ): ((item: string) => number) => {
+    const rng = createRng(3);
+    const seen = new Map<string, number>(items.map((item) => [item, 0]));
+    for (let i = 0; i < rounds; i += 1) {
+      const item = pickWeighted(rng, items, weight);
+      seen.set(item, (seen.get(item) ?? 0) + 1);
+    }
+    return (item) => seen.get(item) ?? 0;
+  };
+
+  it('follows the weights over a long run', () => {
+    // A weighs 3, B and C weigh 1 → A comes up about 3/5 of the time, B and C about 1/5 each.
+    const seen = counts(['A', 'B', 'C'], (item) => (item === 'A' ? 3 : 1));
+    expect(seen('A') / 4000).toBeGreaterThan(0.55);
+    expect(seen('A') / 4000).toBeLessThan(0.65);
+    expect(seen('B') / 4000).toBeGreaterThan(0.15);
+    expect(seen('C') / 4000).toBeGreaterThan(0.15);
+  });
+
+  it('never returns an item whose weight is zero', () => {
+    const seen = counts(['A', 'B'], (item) => (item === 'A' ? 1 : 0));
+    expect(seen('B')).toBe(0);
+    expect(seen('A')).toBe(4000);
+  });
+
+  it('falls back to a uniform pick when every weight is zero or NaN', () => {
+    const zero = counts(['A', 'B'], () => 0);
+    expect(zero('A')).toBeGreaterThan(0);
+    expect(zero('B')).toBeGreaterThan(0);
+    const nan = counts(['A', 'B'], () => Number.NaN);
+    expect(nan('A') + nan('B')).toBe(4000);
+  });
+
+  it('always gives the only item of a one-element array', () => {
+    expect(pickWeighted(createRng(1), ['A'], () => 0)).toBe('A');
+    expect(pickWeighted(createRng(1), ['A'], () => 5)).toBe('A');
+  });
+
+  it('never returns undefined, not even for a broken rng', () => {
+    for (const rng of [() => 1, () => Number.NaN, () => -1, () => 0.999999999]) {
+      expect(['A', 'B', 'C']).toContain(pickWeighted(rng, ['A', 'B', 'C'], () => 1));
+    }
+  });
+
+  it('throws on an empty array, like pick', () => {
+    expect(() => pickWeighted(createRng(1), [], () => 1)).toThrow(RangeError);
+  });
+
+  it('repeats the same choices for the same seed', () => {
+    const run = (): string[] => {
+      const rng = createRng(17);
+      return Array.from({ length: 10 }, () =>
+        pickWeighted(rng, ['A', 'B', 'C'], (item) => (item === 'B' ? 3 : 1)),
+      );
+    };
+    expect(run()).toEqual(run());
   });
 });

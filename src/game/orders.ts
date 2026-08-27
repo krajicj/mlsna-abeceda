@@ -10,9 +10,10 @@ import {
   type FruitKind,
   type Letter,
 } from '../data/curriculum';
+import { MAX_COUNT } from './counting';
 import { choiceCount, letterWord } from './curriculum';
-import { isMastered, type TrackState } from './mastery';
-import { pick, sample, shuffle, systemRng, type Rng } from './rng';
+import { isMastered, weightOf, type TrackState } from './mastery';
+import { pick, pickWeighted, sample, shuffle, systemRng, type Rng } from './rng';
 import type { Settings } from './settings';
 
 export type OrderItem =
@@ -38,6 +39,14 @@ export interface OrderInput {
   /** Elements of the last order of the same track – do not ask for those again right away. */
   readonly avoid?: readonly string[];
   readonly avoidFruit?: FruitKind | null;
+  /**
+   * The element each track has just introduced. It becomes the target of that track's next order
+   * (návrh 5.4); an element the item cannot use (an eight for counting) is simply not taken.
+   */
+  readonly introduced?: {
+    readonly numbers?: string | null;
+    readonly letters?: string | null;
+  };
   readonly rng?: Rng;
 }
 
@@ -51,10 +60,28 @@ function unique(elements: readonly string[]): string[] {
   return [...new Set(elements)];
 }
 
-/** The element the child is asked for; the no-repeat rule gives way to a one-element set. */
-function pickTarget(rng: Rng, track: TrackState, avoid: readonly string[]): string {
-  const candidates = track.active.filter((element) => !avoid.includes(element));
-  return pick(rng, candidates.length > 0 ? candidates : track.active);
+function introducedOf(input: OrderInput, track: 'numbers' | 'letters'): string | null {
+  return input.introduced?.[track] ?? null;
+}
+
+/**
+ * The element the child is asked for (návrh 5.4). A freshly introduced element goes first, otherwise
+ * the pick is weighted – what is not mastered yet comes up `WEAK_WEIGHT`× more often. `allow` narrows
+ * the set to what the item can actually use (counting stops at `MAX_COUNT`); both that filter and the
+ * no-repeat rule give way rather than let the generator run out of elements.
+ */
+function pickTarget(
+  rng: Rng,
+  track: TrackState,
+  avoid: readonly string[],
+  allow: ((element: string) => boolean) | null,
+  introduced: string | null,
+): string {
+  const candidates = allow === null ? track.active : track.active.filter(allow);
+  const fresh = candidates.filter((element) => !avoid.includes(element));
+  const pool = fresh.length > 0 ? fresh : candidates.length > 0 ? candidates : track.active;
+  if (introduced !== null && pool.includes(introduced)) return introduced;
+  return pickWeighted(rng, pool, (element) => weightOf(track, element));
 }
 
 /**
@@ -79,7 +106,15 @@ function buildChoices(
 }
 
 function countItem(rng: Rng, input: OrderInput, avoid: readonly string[]): OrderItem {
-  const element = pickTarget(rng, input.tracks.numbers, avoid);
+  // Only five pieces of fruit fit on the cake (MAX_CAKE_FRUIT), so a bigger number waits for a
+  // candle order – the second row on the cake is STEP-22.
+  const element = pickTarget(
+    rng,
+    input.tracks.numbers,
+    avoid,
+    (candidate) => Number(candidate) <= MAX_COUNT,
+    introducedOf(input, 'numbers'),
+  );
   const fruits = FRUITS.filter((fruit) => fruit !== input.avoidFruit);
   return {
     type: 'count',
@@ -90,7 +125,7 @@ function countItem(rng: Rng, input: OrderInput, avoid: readonly string[]): Order
 
 function digitItem(rng: Rng, input: OrderInput, avoid: readonly string[]): OrderItem {
   const track = input.tracks.numbers;
-  const element = pickTarget(rng, track, avoid);
+  const element = pickTarget(rng, track, avoid, null, introducedOf(input, 'numbers'));
   const size = choiceCount(track.level);
   return {
     type: 'digit',
@@ -101,7 +136,8 @@ function digitItem(rng: Rng, input: OrderInput, avoid: readonly string[]): Order
 
 function letterItem(rng: Rng, input: OrderInput, avoid: readonly string[]): OrderItem {
   const track = input.tracks.letters;
-  const element = pickTarget(rng, track, avoid) as Letter; // the letters track holds letters
+  // the letters track holds letters
+  const element = pickTarget(rng, track, avoid, null, introducedOf(input, 'letters')) as Letter;
   const size = choiceCount(track.level);
   return {
     type: 'letter',

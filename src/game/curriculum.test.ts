@@ -3,9 +3,13 @@ import { BASE_LETTERS } from '../data/curriculum';
 import {
   choiceCount,
   foldLetters,
+  LEVEL1_INITIAL_LETTERS,
+  LEVEL1_LETTERS,
   letterOrder,
   letterPool,
   letterWord,
+  MAX_LETTER_LEVEL,
+  MAX_NUMBER_LEVEL,
   numberPool,
 } from './curriculum';
 import { EMPTY_SETTINGS, type Settings } from './settings';
@@ -91,7 +95,7 @@ describe('letterPool', () => {
     expect(letterPool(short, 2).slice(0, 3)).toEqual(['E', 'M', 'A']);
   });
 
-  it('grows to fourteen letters on stage 3 (stage 4 adds diacritics in STEP-24)', () => {
+  it('grows to fourteen letters on stage 3 (stage 4 adds diacritics in STEP-26)', () => {
     expect(letterPool(FAMILY, 3)).toEqual([
       'A',
       'N',
@@ -151,7 +155,7 @@ describe('letterWord', () => {
     expect(letterWord('B', settings)).toBe('brácha');
   });
 
-  it('says ementál for E until the name clip exists (STEP-17)', () => {
+  it('says ementál for E until the name clip exists (STEP-19)', () => {
     expect(letterWord('E', FAMILY)).toBe('ementál');
     expect(letterWord('E', EMPTY_SETTINGS)).toBe('ementál');
   });
@@ -162,5 +166,22 @@ describe('choiceCount', () => {
     expect(choiceCount(1)).toBe(3);
     expect(choiceCount(2)).toBe(4);
     expect(choiceCount(5)).toBe(4);
+  });
+});
+
+describe('stage ceilings', () => {
+  it('never lets a track climb higher than the kitchen can play', () => {
+    // A save must never claim a stage the generator cannot build; STEP-22 and STEP-25 raise these.
+    for (const ceiling of [MAX_NUMBER_LEVEL, MAX_LETTER_LEVEL]) {
+      expect(ceiling).toBeGreaterThanOrEqual(1);
+      expect(ceiling).toBeLessThanOrEqual(5);
+      expect(Number.isInteger(ceiling)).toBe(true);
+    }
+  });
+
+  it('starts a new game below the full stage-1 letter pool', () => {
+    expect(LEVEL1_INITIAL_LETTERS).toBeGreaterThan(0);
+    expect(LEVEL1_INITIAL_LETTERS).toBeLessThan(LEVEL1_LETTERS);
+    expect(letterPool(EMPTY_SETTINGS, 1).length).toBe(LEVEL1_LETTERS);
   });
 });

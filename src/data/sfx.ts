@@ -124,7 +124,7 @@ export function customerYumSfx(id: string): string {
 /**
  * The rungs of the counting ladder in semitones above `pling` (C5 D5 E5 G5 A5) – the same scale the
  * oscillators used to synthesise before the clips existed. A step past the end wraps around, so an
- * order longer than five pieces (STEP-11) keeps climbing instead of running out.
+ * order longer than five pieces (STEP-12) keeps climbing instead of running out.
  */
 export const PLING_SEMITONES: readonly number[] = [0, 2, 4, 7, 9];
 

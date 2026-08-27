@@ -137,6 +137,11 @@ Generátor objednávek si bere položky z obou drah podle toho, kde zrovna kter�
 | Č4 | + sčítání | součty do 5, pak do 10 |
 | Č5 | + „o jednu víc / míň“, nula | výhled |
 
+**Č2 přijde nadvakrát.** Číslice 6–10 otevře STEP-11, ale **počítání zůstane do pěti**
+a „kolik je“ počká na STEP-22: na horní plochu dortu se vejde pět kousků ovoce
+(`MAX_CAKE_FRUIT`) a šestý by neměl kam. Druhá řada na dortu je práce s artem, ne
+s generátorem, tak jde do vlastního kroku.
+
 **Písmena** (start od nuly):
 
 | Stupeň | Co se objevuje | Sada |
@@ -146,6 +151,11 @@ Generátor objednávek si bere položky z obou drah podle toho, kde zrovna kter�
 | P3 | + slovo se vzorem (3–4 písmena) | + častá písmena do ~14 |
 | P4 | + slovo bez vzoru | + písmena s háčkem/čárkou ze jména (Š, Č, Á…), jméno dítěte jako milník |
 | P5 | + lísteček | + zbytek abecedy bez Q, W, X, Y, CH; výhled: malá písmena |
+
+„2 distraktory“ u P1 platí pro **plnou** sadu stupně. Nová hra ale startuje jen se dvěma
+písmeny (STEP-11), takže první nabídky nesou dva perníčky a na tři vyrostou, až se aktivní
+sada rozroste. Kratší nabídku návrh dovoluje i jinde (kap. 5.4) a pro dítě, které písmena
+teprve potkává, je snazší.
 
 ### 5.3 Skládání objednávky
 
@@ -168,13 +178,21 @@ Každé písmeno a číslo má **skóre zvládnutí** 0–5:
 - Skóre se zapisuje **až když je celá objednávka hotová** (spolu s hvězdičkou), ne po jednotlivé
   položce – klepnutí navíc během finále se tak do skóre ještě vejde.
 - Nové prvky se zavádějí, když ≥ 80 % aktuální sady má skóre ≥ 3, vždy jeden nový.
-  Nový prvek se objeví nejpozději do 2 objednávek od zavedení.
+  Nový prvek se objeví nejpozději do 2 objednávek od zavedení. Zavedený prvek je cílem
+  **první další objednávky své dráhy, která ho umí použít** (zavedená osmička počká na
+  objednávku se svíčkou, do počítací se nevejde). Je to přísnější než „nejpozději do dvou
+  objednávek“ a nepotřebuje to nic ukládat — samotná trojnásobná váha garanci nedá (při
+  čtyřech zvládnutých a jednom novém je šance 3/7, tedy ~32 % případů trvá déle než dvě
+  objednávky).
 - Výběr z „pytlíku“: prvky se skóre < 3 mají 3× vyšší váhu; nic se neopakuje dvakrát za sebou.
 - Distraktory: ze zvládnutých prvků a tvarově odlišné od správné odpovědi. Vyloučené
   dvojice: O–C, O–D, C–G, E–F, M–N, P–R, U–V, I–J, S–Z, B–R, H–N a 1–7, 6–9, 3–8, 5–6.
   (K a O vedle sebe tedy ano, M a N ne.) Když zvládnutých prvků není dost, pravidlo se
   uvolní – radši kratší nabídka než žádná objednávka.
 - Postup na další stupeň: vše v aktuálním stupni má skóre ≥ 3. Zpět jen rodič.
+  Dráha nikdy nevyleze výš, než co kuchyně opravdu umí zahrát: dnes Č2 a P2. Strop zvedne
+  STEP-22 (čísla) a STEP-25 (písmena). Bez něj by save tvrdil stupeň, jehož obsah generátor
+  neumí složit.
 - **Pořadí písmen** (počítá se z nastavení): 1) písmena jména dítěte v pořadí, v jakém jsou
   ve jméně, ta s háčkem/čárkou se **přeskočí** (Anička → A, N, I, K; Č přijde až v P4),
   2) počáteční písmena členů rodiny, ta se naopak **složí** na základní tvar (Šimon → S),

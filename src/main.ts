@@ -68,7 +68,7 @@ if (app) {
 
   if (import.meta.env.DEV) {
     // Handles for the manual checks in docs/steps/STEP-02-*.md and STEP-03-*.md; stripped from
-    // the build, so real names never reach the deployed game (settings UI comes in STEP-17).
+    // the build, so real names never reach the deployed game (settings UI comes in STEP-18).
     Object.assign(window, {
       __stage: stage,
       __audio: audio,

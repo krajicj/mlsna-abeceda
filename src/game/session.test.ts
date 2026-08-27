@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { STARTER_CUSTOMERS } from '../data/customers';
 import { countItemOf, MAX_COUNT } from './counting';
-import { createTrack } from './mastery';
+import { createTrack, MASTERY_KNOWN } from './mastery';
 import { itemResult } from './progress';
 import { createRng } from './rng';
 import { createSave, parseSave, type SaveData, type StorageLike } from './save';
@@ -202,5 +202,104 @@ describe('session.complete', () => {
     const next = session.complete([]);
     expect(next.index).toBe(2);
     expect(session.save.progress.ordersCompleted).toBe(1);
+  });
+});
+
+describe('session – a freshly introduced element', () => {
+  const known = (elements: readonly string[]): Record<string, number> =>
+    Object.fromEntries(elements.map((element) => [element, MASTERY_KNOWN]));
+
+  /** A save whose letters are both mastered, so the next finished order introduces a third one. */
+  function lettersReady(ordersCompleted: number): SaveData {
+    const base = createSave();
+    return {
+      ...base,
+      tracks: {
+        numbers: base.tracks.numbers,
+        letters: { level: 1, active: ['O', 'S'], scores: known(['O', 'S']) },
+      },
+      progress: { ordersCompleted, stars: ordersCompleted, lastPlayed: null },
+    };
+  }
+
+  /** The same for numbers: 1–5 known, so the next finished order opens Č2 with a six. */
+  function numbersReady(ordersCompleted: number): SaveData {
+    const base = createSave();
+    const all = ['1', '2', '3', '4', '5'];
+    return {
+      ...base,
+      tracks: {
+        numbers: { level: 1, active: all, scores: known(all) },
+        letters: base.tracks.letters,
+      },
+      progress: { ordersCompleted, stars: ordersCompleted, lastPlayed: null },
+    };
+  }
+
+  it('waits through an order of the other track and then becomes the target', () => {
+    for (let seed = 1; seed <= 20; seed += 1) {
+      // Position 2 is a letter, 3 a digit, 4 a letter again.
+      const session = createSession(memoryStorage(lettersReady(1)), { rng: createRng(seed) });
+      session.complete([]); // the letter order is done → 'T' joins the set
+      expect(session.save.tracks.letters.active).toEqual(['O', 'S', 'T']);
+      expect(session.order.items[0]?.type).toBe('digit'); // the numbers track goes first
+      session.complete([]);
+      const item = session.order.items[0];
+      expect(item?.type).toBe('letter');
+      if (item?.type !== 'letter') continue;
+      expect(item.letter).toBe('T'); // held all the way to the letter order
+    }
+  });
+
+  it('goes straight into the next order of its own track', () => {
+    const session = createSession(memoryStorage(lettersReady(3)), { rng: createRng(6) });
+    session.complete([]); // position 4 was a letter, position 5 is counting…
+    session.complete([]); // …position 6 is a letter again
+    const item = session.order.items[0];
+    expect(item?.type).toBe('letter');
+    if (item?.type !== 'letter') throw new Error('expected a letter item');
+    expect(item.letter).toBe('T');
+  });
+
+  it('lets a digit above five wait for the candle instead of the cake', () => {
+    for (let seed = 1; seed <= 10; seed += 1) {
+      // Position 6 is a letter, 7 a digit – the six may be asked for right away.
+      const digits = createSession(memoryStorage(numbersReady(5)), { rng: createRng(seed) });
+      digits.complete([]);
+      expect(digits.save.tracks.numbers.level).toBe(2);
+      const digitItem = digits.order.items[0];
+      expect(digitItem?.type).toBe('digit');
+      if (digitItem?.type === 'digit') expect(digitItem.value).toBe(6);
+
+      // Position 4 is a letter, 5 is counting – six pieces of fruit do not fit on the cake.
+      const counting = createSession(memoryStorage(numbersReady(3)), { rng: createRng(seed) });
+      counting.complete([]);
+      const countItem = counting.order.items[0];
+      expect(countItem?.type).toBe('count');
+      if (countItem?.type === 'count') expect(countItem.amount).toBeLessThanOrEqual(MAX_COUNT);
+      expect(counting.save.tracks.numbers.active).toContain('6');
+    }
+  });
+
+  it('keeps the save on version 1 – nothing about this is stored', () => {
+    const storage = memoryStorage(lettersReady(1));
+    const session = createSession(storage, { rng: createRng(3) });
+    session.complete([]);
+    const raw = storage.getItem(SAVE_KEY) ?? '';
+    expect(parseSave(raw)?.version).toBe(1);
+    expect(raw).not.toContain('introduced');
+    expect(raw).not.toContain('pending');
+  });
+
+  it('is still reproducible from the same seed', () => {
+    const run = (): string[] => {
+      const session = createSession(memoryStorage(lettersReady(1)), { rng: createRng(31) });
+      return Array.from({ length: 6 }, () => {
+        const item = session.order.items[0];
+        session.complete([]);
+        return item === undefined ? '' : JSON.stringify(item);
+      });
+    };
+    expect(run()).toEqual(run());
   });
 });

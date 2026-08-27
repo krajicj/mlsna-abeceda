@@ -101,7 +101,7 @@ export const kitchenScene: Scene = (ctx) => {
   }
 
   // One picker per kind for the whole scene, so two sentences in a row are never the same one –
-  // whichever item earned them. The gender comes from the settings in STEP-17; until then neutral.
+  // whichever item earned them. The gender comes from the settings in STEP-18; until then neutral.
   const praise = createPraisePicker();
   const finish = createFinishPicker();
   const starLine = createStarPicker();
@@ -176,7 +176,7 @@ export const kitchenScene: Scene = (ctx) => {
   function startFinale(): void {
     if (finishing) return;
     finishing = true;
-    // M1 orders hold one item; ticking them all keeps this honest when they grow (STEP-11).
+    // M1 orders hold one item; ticking them all keeps this honest when they grow (STEP-12).
     order.items.forEach((_, index) => bubble.tick(index));
     pacer.after(FINALE_DELAY_MS, () => finale.run());
   }
