@@ -31,7 +31,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-11 | [Adaptivní výběr, zavádění prvků a postup stupňů](steps/STEP-11-adaptive-selection-and-levels.md) | M2 | 09 | done |
 | STEP-12 | [Delší objednávka: dvě položky, souběžné plnění, jeden hlas a jeden hlídač nečinnosti](steps/STEP-12-two-item-order.md) | M2 | 11 | done |
 | STEP-13 | [Slučitelný formát save (v2): migrace, `earned`/`purchases`, slučování](steps/STEP-13-mergeable-save-format.md) | M2 | 11 | done |
-| STEP-14 | Konec sezení (limit 10), zavírací scéna, obnova sezení po reloadu | M2 | 13 | — |
+| STEP-14 | [Konec sezení: zavírací mříž, minutka a rodičovský zámek](steps/STEP-14-session-end-and-closing.md) | M2 | 13 | done |
 | STEP-15 | Obchůdek | M3 | 13 | — |
 | STEP-16 | Album | M3 | 13 | — |
 | STEP-17 | Překvapení | M3 | 13 | — |
@@ -98,7 +98,8 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   prvků (`maybeIntroduce`) a postup na další stupeň dodělal **STEP-11**.
 - **Manifest má po STEP-09 celkem 252 hlášek** (246 z M1 + 3× „hotovo“, 2× hvězdička, „Otoč mě!“).
   Sada M1 je tím kompletní; STEP-10 přidal 2 pobídky ke zvonečku (**254**) a STEP-12 přidal
-  62 vět pro druhou položku objednávky (**316**), další přijdou se STEP-14 (konec sezení).
+  62 vět pro druhou položku objednávky (**316**); STEP-14 přidal 5 vět zavřené kuchyně (**321**)
+  a jeden zvukový efekt (`shutter`, 14 → **15**).
 - **Borůvka a třešeň** se kreslí už ve STEP-05 (miska i ovoce na dortu podle druhu z objednávky),
   protože generátor ze STEP-03 vybírá ze všech tří startovních druhů; STEP-15 (obchůdek) pak řeší
   jen odemykání *dalšího* ovoce.
@@ -180,6 +181,24 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   klip** přehrávaný přes `playbackRate` na půltónech `[0, 2, 4, 7, 9]` – text-to-sound-effects
   neumí zadat výšku tónu. `audio/chime.ts` zůstává natrvalo. Nový efekt = řádek v `src/data/sfx.ts`
   a `docker compose run --rm sfx`.
+- **Konec sezení vypadá jinak, než sliboval návrh (STEP-14, srpen 2026).** Při plánování se
+  rozhodly čtyři věci. **Cedule „Zavřeno" odpadá** – text v herním UI zakazuje pravidlo 1; místo ní
+  sjede ze shora **mříž** (kuchyně za ní zůstane vidět) a na ní visí **kuchyňská minutka**
+  s ubývající výsečí, která odpočítává dvě hodiny do otevření. **Zvířátka nemávají** (rozhodnutí
+  autora): zákazník odejde jako po každé objednávce a teprve pak se zavírá. Zavřenou kuchyni jde
+  otevřít **dočasným kódem `1234`** na ikoně zámku vpravo dole – náhražka rodičovského koutku, aby
+  zavřená kuchyně nebyla na dvě hodiny slepá ulička; STEP-19 ji nahradí držením hvězdiček
+  a příkladem 4 × 3. A **stav sezení se ukládá** (kolik objednávek, kdy byla poslední, do kdy
+  zavřeno), takže ho reload neobejde; „obnova sezení po reloadu“ z roadmapy znamená právě tohle,
+  ne obnovu rozehrané objednávky – tou se nic neztrácí, protože save se zapisuje až s dokončenou
+  objednávkou.
+- **Sezení je páté pole save, a `SAVE_VERSION` zůstává na 2 (STEP-14).** Pole `session` je čistě
+  přírůstkové: chybí-li, opraví se na výchozí, a starší build ho ignoruje. Bump na 3 by naopak
+  znamenal, že build s `SAVE_VERSION = 2` (nacachovaná stránka) potká `version: 3`, `migrateRecord()`
+  vrátí null a dcera začne novou hru – přesně to, před čím pravidlo 4 chrání. Pravidlo „změna
+  formátu = migrace s bumpem“ míří na změny, které **přeznačují existující data** (jako v1 → v2
+  u hvězdiček). Sezení se navíc **neslučuje**: je to vlastnost zařízení, ne postupu, takže při
+  importu zůstává to lokální (stejně jako `settings`).
 - **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-22 do STEP-04: zatím se
   vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
   kuchyně nešlo posoudit. STEP-22 řeší jen PWA a offline.

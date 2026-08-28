@@ -3,7 +3,7 @@
  * DOM-free on purpose: the scene positions its boxes from here, and STEP-05/06 read the same
  * numbers to animate a strawberry from the bowl onto the cake or to fill the shelves.
  */
-import { STAGE_MAX_WIDTH, STAGE_MIN_WIDTH } from '../stage/layout';
+import { STAGE_HEIGHT, STAGE_MAX_WIDTH, STAGE_MIN_WIDTH } from '../stage/layout';
 import { CANDLE_HEIGHT, CANDLE_WIDTH } from './candle';
 import { COOKIE_SIZE } from './cookie';
 import { fruitWidth } from './fruit';
@@ -392,4 +392,91 @@ export const FLOOR_TILE_HEIGHT = 36;
 /** How many tile columns cover the floor (two rows of 64×36 tiles). */
 export function floorColumns(stageWidth: number): number {
   return Math.ceil(clampStageWidth(stageWidth) / FLOOR_TILE_WIDTH);
+}
+
+/**
+ * The closed kitchen (STEP-14). Deliberately NOT part of `kitchenLayout()`: these boxes only ever
+ * apply while everything else is behind the shutter, and a timer in the middle of the scene would
+ * break the 8 px invariant the kitchen layout is held to (it would sit on the cake and the bowl).
+ */
+export const CLOCK_SIZE = 260;
+/** Where the timer hangs on the shutter – high enough to clear the keypad. */
+export const CLOCK_TOP = 150;
+export const LOCK_SIZE = 96; // ≥ 88 (CLAUDE.md, rule 3)
+export const LOCK_MARGIN = 16;
+export const KEY_SIZE = 96; // ≥ 88
+export const KEY_GAP = 12;
+export const KEYPAD_PADDING = 24;
+/** How many digits the code has; the row of dots at the top of the panel shows that many. */
+export const CODE_LENGTH = 4;
+export const CODE_HEIGHT = 48;
+const CODE_GAP = 12;
+const KEYPAD_COLUMNS = 3;
+const KEYPAD_ROWS = 4;
+
+export const KEYPAD_WIDTH =
+  KEYPAD_COLUMNS * KEY_SIZE + (KEYPAD_COLUMNS - 1) * KEY_GAP + 2 * KEYPAD_PADDING;
+export const KEYPAD_HEIGHT =
+  2 * KEYPAD_PADDING +
+  CODE_HEIGHT +
+  CODE_GAP +
+  KEYPAD_ROWS * KEY_SIZE +
+  (KEYPAD_ROWS - 1) * KEY_GAP;
+
+export interface ClosedLayout {
+  /** The kitchen timer hanging on the shutter, centred on the stage. */
+  readonly clock: Rect;
+  /** The padlock in the bottom right corner – the way to the keypad. */
+  readonly lock: Rect;
+  /** The keypad panel; it opens over the middle of the stage and covers the timer on purpose. */
+  readonly keypad: Rect;
+}
+
+/** Pure: stage width → the boxes of the closed kitchen. Clamps the width like `kitchenLayout()`. */
+export function closedLayout(stageWidth: number): ClosedLayout {
+  const width = clampStageWidth(stageWidth);
+  return {
+    clock: {
+      x: Math.round((width - CLOCK_SIZE) / 2),
+      y: CLOCK_TOP,
+      width: CLOCK_SIZE,
+      height: CLOCK_SIZE,
+    },
+    lock: {
+      x: width - LOCK_MARGIN - LOCK_SIZE,
+      y: STAGE_HEIGHT - LOCK_MARGIN - LOCK_SIZE,
+      width: LOCK_SIZE,
+      height: LOCK_SIZE,
+    },
+    keypad: {
+      x: Math.round((width - KEYPAD_WIDTH) / 2),
+      y: Math.round((STAGE_HEIGHT - KEYPAD_HEIGHT) / 2),
+      width: KEYPAD_WIDTH,
+      height: KEYPAD_HEIGHT,
+    },
+  };
+}
+
+/** The row of dots of the typed code, across the top of the panel. */
+export function codeSlot(panel: Rect): Rect {
+  return {
+    x: panel.x + KEYPAD_PADDING,
+    y: panel.y + KEYPAD_PADDING,
+    width: panel.width - 2 * KEYPAD_PADDING,
+    height: CODE_HEIGHT,
+  };
+}
+
+/** The ten keys of the panel: 1–9 in three rows, 0 in the middle of the fourth. */
+export function keypadKeys(panel: Rect): Rect[] {
+  const left = panel.x + KEYPAD_PADDING;
+  const top = panel.y + KEYPAD_PADDING + CODE_HEIGHT + CODE_GAP;
+  const box = (column: number, row: number): Rect => ({
+    x: left + column * (KEY_SIZE + KEY_GAP),
+    y: top + row * (KEY_SIZE + KEY_GAP),
+    width: KEY_SIZE,
+    height: KEY_SIZE,
+  });
+  const digits = Array.from({ length: 9 }, (_, index) => box(index % 3, Math.floor(index / 3)));
+  return [...digits, box(1, KEYPAD_ROWS - 1)];
 }

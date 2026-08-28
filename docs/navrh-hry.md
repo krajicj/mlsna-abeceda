@@ -105,8 +105,17 @@ Stejné mechaniky, jiný obrázek – každý nový výrobek je odměna z obchů
 
 ### Konec sezení
 Po **10 objednávkách** (výchozí; rodič nastaví jiný počet, minutový limit nebo vypne) kuchyně zavře:
-zhasne světlo, zvířátka zamávají, vypravěč: „Kuchyně dneska zavírá, dobrou noc!“ a cedule
-„Zavřeno“. Znovu otevře rodič (zámek), nebo sama po 2 hodinách. Účel: hra sama říká „dost“.
+zákazník odejde jako po každé objednávce, kuchyně ztmavne, ze shora sjede **mříž** jako u krámku
+v obchoďáku (kuchyně za ní zůstane vidět) a vypravěč řekne „Kuchyně dneska zavírá, dobrou noc!“.
+Na mříži visí **kuchyňská minutka**: ubývající výseč odpočítává dvě hodiny do otevření. Cedule
+„Zavřeno“ tu není a nebude – text v herním UI zakazuje pravidlo 1, mříž a hodiny řeknou totéž
+obrázkem. Klepnutí na mříž odpoví „Kuchyně má zavřeno“; zvířátka nemávají (rozhodnutí autora,
+srpen 2026).
+
+**Stav sezení se ukládá** (`session` v záznamu): kolik objednávek má sezení za sebou, kdy byla
+poslední a do kdy je zavřeno. Reload tedy zavíračku neobejde – kuchyně se otevře rovnou zavřená,
+jen bez rachotu. Po pauze delší než dvě hodiny se sezení počítá znovu od jedné. Znovu otevře
+rodič (zámek, kap. 9), nebo kuchyně sama, jakmile minutka doběhne. Účel: hra sama říká „dost“.
 
 ## 5. Učení: dvě dráhy, jedna objednávka
 
@@ -328,6 +337,11 @@ Co **nebude:** streaky, denní odměny, časově omezené nabídky, odemykání 
 ## 9. Rodičovský koutek
 
 Zámek: podržet hvězdičky vpravo nahoře 3 s → „Kolik je 4 × 3?“ s číselnou klávesnicí.
+
+Než koutek vznikne (STEP-19), zastupuje ho **dočasná číselná klávesnice na zavřené kuchyni**:
+ikona visacího zámku v pravém dolním rohu, kód `1234`, který jenom vynuluje sezení a vytáhne
+mříž. Není to tajemství (repozitář je veřejný), jen brána pro čtyřletou – a jediné místo hry,
+kde je číslice UI, ne učební obsah.
 
 - **Dítě a rodina:** jméno + oslovení + rod (kvůli pochvalám, kap. 3), členové rodiny
   (jméno, role); u každého jména vidět, zda má hlasový klip.

@@ -10,11 +10,14 @@ import { fruitBowl } from './bowl';
 import { bubbleFruit, orderBubble, orderCheck, speakerIcon } from './bubble';
 import { cakeBase, cakeGlaze } from './cake';
 import { candle } from './candle';
+import { kitchenTimer } from './clock';
 import { cookie } from './cookie';
 import { hintRing } from './hint';
 import { kitchenBackdrop } from './kitchen';
 import { confettiPiece, CONFETTI_COUNT, CONFETTI_SIZE } from './confetti';
 import { bowlLid } from './lid';
+import { codeDots, keyCap, padlock } from './lock';
+import { shutter } from './shutter';
 import { countPill } from './pill';
 import { star, starsPill } from './star';
 import { fruit, fruitWidth } from './fruit';
@@ -47,6 +50,13 @@ const MODULES: Record<string, string> = {
   star: star(),
   starsPill: starsPill(3),
   confettiPiece: confettiPiece(0),
+  shutter: shutter(1024, 768),
+  timerFull: kitchenTimer({ size: 260, progress: 1 }),
+  timerHalf: kitchenTimer({ size: 260, progress: 0.5 }),
+  timerEmpty: kitchenTimer({ size: 260, progress: 0 }),
+  padlock: padlock(),
+  keyCap: keyCap('7'),
+  codeDots: codeDots(2, 4),
 };
 
 /** Minimal well-formedness check: every tag closes, in the right order, exactly once. */
@@ -104,6 +114,12 @@ describe('art modules', () => {
     ['star', MODULES['star'], '0 0 40 40', 40, 40],
     ['starsPill', MODULES['starsPill'], '0 0 160 64', 160, 64],
     ['confettiPiece', MODULES['confettiPiece'], '0 0 18 18', 18, 18],
+    ['shutter', MODULES['shutter'], '0 0 1024 768', 1024, 768],
+    ['timerHalf', MODULES['timerHalf'], '0 0 260 260', 260, 260],
+    ['padlock', MODULES['padlock'], '0 0 96 96', 96, 96],
+    ['keyCap', MODULES['keyCap'], '0 0 96 96', 96, 96],
+    // Four dots 20 px across with 12 px between them.
+    ['codeDots', MODULES['codeDots'], '0 0 116 48', 116, 48],
   ])('%s has the size the layout expects', (_name, markup, viewBox, width, height) => {
     expect(attribute(markup!, 'viewBox')).toBe(viewBox);
     expect(attribute(markup!, 'width')).toBe(String(width));

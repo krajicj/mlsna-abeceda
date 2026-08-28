@@ -303,3 +303,94 @@
 .finale-star[hidden] {
   display: none;
 }
+
+/* The closed kitchen (STEP-14): a shutter over the whole scene, a timer on it, a padlock in the
+   corner. Above the finale (z-index 3) and below the orientation guard (10 in src/style.css). */
+.kitchen-closing {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+
+.kitchen-closing[hidden] {
+  display: none;
+}
+
+/* The kitchen stays visible through the grille – only darker, the way a shop after closing is. */
+.kitchen-dim {
+  position: absolute;
+  inset: 0;
+  background: rgb(59 42 26 / 45%);
+}
+
+/* The whole grille answers a tap ("máme zavřeno"), so there is no dead half of the screen. */
+.kitchen-shutter {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* The timer hangs on the grille and comes down with it; nothing about it is tapped. */
+.kitchen-clock {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* 96×96, over the 88 px of rule 3. The one way past the shutter before the timer runs out. */
+.kitchen-lock {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* The keypad is a modal layer: it covers the timer on purpose, and a tap beside it closes it. */
+.kitchen-keypad {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+}
+
+.kitchen-keypad[hidden] {
+  display: none;
+}
+
+.kitchen-keypad-back {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+}
+
+.kitchen-card {
+  position: absolute;
+  background: var(--wall);
+  border: 4px solid var(--ink);
+  border-radius: 28px;
+  pointer-events: auto;
+}
+
+.kitchen-code {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* 96×96 keys – the parent corner is the one place in the game where a digit is UI, not content. */
+.kitchen-key {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-kitchen .kitchen-closing * {
+    animation: none;
+  }
+}
+
+/* No bell behind the shutter: the kitchen is closed, and nothing about it may look ringable. */
+.scene-kitchen.is-closed .kitchen-bell,
+.scene-kitchen.is-closed .kitchen-bell-hint {
+  display: none;
+}

@@ -11,6 +11,7 @@ import {
   type ChoiceItem,
   type ChoiceState,
 } from '../../game/choice';
+import { isClosed } from '../../game/closing';
 import { countItemOf, type CountingState } from '../../game/counting';
 import { letterWord } from '../../game/curriculum';
 import { createIdleWatcher, type IdleWatcher } from '../../game/idle';
@@ -18,6 +19,7 @@ import type { Order, OrderItem } from '../../game/orders';
 import { itemResult, type ItemResult } from '../../game/progress';
 import {
   askAgainSpeech,
+  closingPreload,
   createBellPicker,
   createFinishPicker,
   createPraisePicker,
@@ -31,6 +33,7 @@ import { starBalance } from '../../game/stars';
 import type { Scene } from '../../stage/scenes';
 import { createBellHandle } from './bell';
 import { createBubble } from './bubble';
+import { createClosing } from './closing';
 import { createChoiceItem, type ChoiceItemHandle } from './choice-item';
 import { createCustomer } from './customer';
 import { createCountItem } from './count-item';
@@ -70,6 +73,10 @@ interface KitchenDevHandle {
   finish(): void;
   /** Puts a number in the star counter (the picture only – the save is not touched). */
   stars(count: number): void;
+  /** Closes the kitchen for `minutes` (default the two hours of `CLOSED_MS`) and drops the shutter. */
+  close(minutes?: number): void;
+  /** Lifts the shutter and starts a new sitting. */
+  open(): void;
   state(): CountingState | null;
   /** The choice still in play; with two of them the cookie comes first. */
   choice(): ChoiceState | null;
@@ -200,6 +207,17 @@ export const kitchenScene: Scene = (ctx) => {
     onDone: () => finishOrder(),
   });
 
+  // Built last, so its layer lies over everything the kitchen draws – the shutter closes the whole
+  // scene, the finale included.
+  const closing = createClosing({
+    root: el,
+    voice: ctx.voice,
+    sfx: ctx.sfx,
+    state: () => ctx.session.save.session,
+    onCode: () => ctx.session.reopen(),
+    onOpen: () => bell.show(),
+  });
+
   // The context is unlocked by now (the title screen saw to that), so this is where the bytes
   // fetched in main.ts actually turn into buffers.
   ctx.sfx.preload();
@@ -321,7 +339,12 @@ export const kitchenScene: Scene = (ctx) => {
     letterItem.clear();
     bubble.show(null);
     ctx.voice.preload(orderPreload(order));
-    customer.leave(() => bell.show());
+    // The tenth order of the sitting closes the kitchen (STEP-14) – but only once the customer has
+    // walked out, so the shutter never comes down over an animal standing at the counter.
+    customer.leave(() => {
+      if (isClosed(ctx.session.save.session, Date.now())) closing.close();
+      else bell.show();
+    });
   }
 
   /** The child rang: the bell gets out of the way and the next customer walks in. */
@@ -370,13 +393,18 @@ export const kitchenScene: Scene = (ctx) => {
   finale.layout(layout);
   customer.layout(layout);
   bell.layout(layout);
+  closing.layout(0);
   // The kitchen opens EMPTY: no customer, no bubble, no order, only the bell (návrh kap. 4 – "the
   // bell rings, a customer comes"). The first thing the child does in the game is decide to start
   // it. An empty card would promise an order that nobody has placed yet.
   bubble.show(null);
   stars.set(starBalance(ctx.session.save.stars));
   ctx.voice.preload(orderPreload(order));
-  bell.show();
+  ctx.voice.preload(closingPreload());
+  // A sitting that ended before the page was reloaded is still over: the shutter is simply already
+  // down, without the rattle (STEP-14).
+  if (isClosed(ctx.session.save.session, Date.now())) closing.close({ animate: false });
+  else bell.show();
 
   /** DEV only: the offer of the order when it fits, otherwise what stands on the shelf. */
   function devChoices(type: ChoiceItem['type']): string[] {
@@ -430,6 +458,14 @@ export const kitchenScene: Scene = (ctx) => {
       startFinale();
     },
     stars: (count) => stars.set(count, { pop: true }),
+    close(minutes) {
+      ctx.session.close(minutes === undefined ? undefined : minutes * 60_000);
+      closing.close();
+    },
+    open() {
+      ctx.session.reopen();
+      closing.open();
+    },
     state: () => countItem.state(),
     choice: () => letterItem.state() ?? digitItem.state(),
     layout: () => layout,
@@ -455,6 +491,7 @@ export const kitchenScene: Scene = (ctx) => {
       finale.layout(layout);
       customer.layout(layout);
       bell.layout(layout);
+      closing.layout(size.width);
     },
     destroy() {
       // The scene does not own the narrator, but nothing it started may outlive it.
@@ -464,6 +501,7 @@ export const kitchenScene: Scene = (ctx) => {
       finale.destroy();
       customer.destroy();
       bell.destroy();
+      closing.destroy();
       countItem.destroy();
       for (const item of choiceItems) item.destroy();
       bubble.destroy();

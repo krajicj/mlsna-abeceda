@@ -21,11 +21,18 @@ import {
   CAKE_FRUIT_HEIGHT,
   CAKE_TOP_CENTER_X,
   CAKE_TOP_ITEM_BOTTOM,
+  CLOCK_SIZE,
+  CODE_LENGTH,
   COUNTER_EDGE_TOP,
   COUNTER_FRONT_TOP,
   COUNTER_TOP,
   FRUIT_GAP,
   FRUIT_SLOT,
+  KEYPAD_HEIGHT,
+  KEYPAD_PADDING,
+  KEYPAD_WIDTH,
+  KEY_GAP,
+  KEY_SIZE,
   LID_HEIGHT,
   LID_RIM_Y,
   MAX_CAKE_FRUIT,
@@ -41,15 +48,19 @@ import {
   STARS_PILL_HEIGHT,
   STARS_PILL_WIDTH,
   STAR_SIZE,
+  LOCK_SIZE,
   bowlFruitSpots,
   bubbleSlots,
   bubbleSpeakerSlot,
   cakeCandleSlot,
   cakeCookieSlot,
   cakeFruitSlots,
+  closedLayout,
+  codeSlot,
   counterPanels,
   floorColumns,
   fruitSlots,
+  keypadKeys,
   kitchenLayout,
   lidRect,
   pillSlots,
@@ -471,6 +482,77 @@ describe('counterPanels', () => {
 
   it('matches the worked example from the step plan', () => {
     expect(counterPanels(1024)[0]).toEqual({ x: 38, y: 574, width: 300, height: 104 });
+  });
+});
+
+describe('closedLayout (STEP-14)', () => {
+  it.each(WIDTHS)('keeps the timer, the lock and the panel inside the %i px stage', (width) => {
+    for (const box of Object.values(closedLayout(width))) {
+      expect(inside(box, width)).toBe(true);
+    }
+  });
+
+  it.each(WIDTHS)('centres the timer and the panel at %i px', (width) => {
+    const { clock, keypad } = closedLayout(width);
+    expect(clock.x + clock.width / 2).toBeCloseTo(width / 2, 0);
+    expect(keypad.x + keypad.width / 2).toBeCloseTo(width / 2, 0);
+    expect(clock.width).toBe(CLOCK_SIZE);
+    expect(keypad.width).toBe(KEYPAD_WIDTH);
+    expect(keypad.height).toBe(KEYPAD_HEIGHT);
+  });
+
+  it.each(WIDTHS)('holds the lock in the bottom right corner at %i px', (width) => {
+    const { lock } = closedLayout(width);
+    expect(Math.min(lock.width, lock.height)).toBeGreaterThanOrEqual(MIN_TARGET);
+    expect(lock.x + lock.width).toBeLessThan(width);
+    expect(lock.y + lock.height).toBeLessThan(STAGE_HEIGHT);
+    expect(lock.width).toBe(LOCK_SIZE);
+  });
+
+  it('takes any width the console throws at it, like kitchenLayout', () => {
+    expect(closedLayout(Number.NaN)).toEqual(closedLayout(1024));
+    expect(closedLayout(4000)).toEqual(closedLayout(1366));
+  });
+});
+
+describe('keypadKeys and codeSlot', () => {
+  it.each(WIDTHS)('lays ten keys inside the panel at %i px', (width) => {
+    const panel = closedLayout(width).keypad;
+    const keys = keypadKeys(panel);
+    expect(keys).toHaveLength(10);
+    for (const key of keys) {
+      expect(Math.min(key.width, key.height)).toBeGreaterThanOrEqual(MIN_TARGET);
+      expect(key.x).toBeGreaterThanOrEqual(panel.x + KEYPAD_PADDING);
+      expect(key.x + key.width).toBeLessThanOrEqual(panel.x + panel.width - KEYPAD_PADDING);
+      expect(key.y).toBeGreaterThanOrEqual(panel.y + KEYPAD_PADDING);
+      expect(key.y + key.height).toBeLessThanOrEqual(panel.y + panel.height - KEYPAD_PADDING);
+    }
+  });
+
+  it('never lets two keys overlap', () => {
+    const keys = keypadKeys(closedLayout(1024).keypad);
+    for (const [index, key] of keys.entries()) {
+      for (const other of keys.slice(index + 1)) {
+        expect(separation(key, other)).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('puts the nought in the middle of the fourth row', () => {
+    const keys = keypadKeys(closedLayout(1024).keypad);
+    const nought = keys[9]!;
+    const five = keys[4]!;
+    expect(nought.x).toBe(five.x);
+    expect(nought.y).toBe(keys[6]!.y + KEY_SIZE + KEY_GAP);
+  });
+
+  it('runs the row of typed dots across the top of the panel', () => {
+    const panel = closedLayout(1024).keypad;
+    const dots = codeSlot(panel);
+    expect(CODE_LENGTH).toBe(4);
+    expect(dots.y).toBe(panel.y + KEYPAD_PADDING);
+    expect(dots.width).toBe(panel.width - 2 * KEYPAD_PADDING);
+    expect(dots.y + dots.height).toBeLessThanOrEqual(keypadKeys(panel)[0]!.y);
   });
 });
 
