@@ -104,6 +104,7 @@ services:
     networks: [isolated]
     environment:
       VITE_POLL: ${VITE_POLL:-0}
+      VITE_ALLOWED_HOSTS: ${VITE_ALLOWED_HOSTS:-}
     command: pnpm dev
 
   dev: # publishes the dev server to the host: http://localhost:5173/mlsna-abeceda/
