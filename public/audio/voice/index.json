@@ -24,6 +24,30 @@
           "bytes": 12792,
           "loudness": -18
         },
+        "closed.1": {
+          "hash": "83ff5d034d880b5e",
+          "text": "Kuchyně má zavřeno. Přijď zase za chvilku!",
+          "bytes": 24704,
+          "loudness": -18
+        },
+        "closed.2": {
+          "hash": "0f65ec12d0536665",
+          "text": "Teď je zavřeno. Až doběhnou hodiny, otevřeme!",
+          "bytes": 29929,
+          "loudness": -18
+        },
+        "closing.1": {
+          "hash": "2d6e7be53604d639",
+          "text": "Kuchyně dneska zavírá, dobrou noc!",
+          "bytes": 21778,
+          "loudness": -18
+        },
+        "closing.2": {
+          "hash": "d305422d0ef46218",
+          "text": "Kuchyně zavírá. Ahoj a přijď zas!",
+          "bytes": 22405,
+          "loudness": -18
+        },
         "count.1": {
           "hash": "c77fbc6731a44730",
           "text": "Jedna.",
@@ -634,6 +658,12 @@
           "hash": "b1b3c6130e2efb94",
           "text": "Zet jako zebra.",
           "bytes": 11747,
+          "loudness": -18
+        },
+        "open.1": {
+          "hash": "b2ffecaf5ba40d7d",
+          "text": "Kuchyně je zase otevřená!",
+          "bytes": 14673,
           "loudness": -18
         },
         "order.count.1.blueberry": {

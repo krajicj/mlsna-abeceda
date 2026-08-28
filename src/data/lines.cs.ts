@@ -178,6 +178,25 @@ const STAR: readonly string[] = ['Máš hvězdičku!', 'Hvězdička je tvoje!'];
  */
 const BELL: readonly string[] = ['Zazvoň na zvoneček!', 'Klepni na zvoneček!'];
 
+/**
+ * The tenth order of a sitting is done and the shutter is coming down (návrh kap. 4). Said over the
+ * rattle, once – the picture (a shutter and a kitchen timer) is what carries the message.
+ */
+const CLOSING: readonly string[] = [
+  'Kuchyně dneska zavírá, dobrou noc!',
+  'Kuchyně zavírá. Ahoj a přijď zas!',
+];
+
+/** A tap on the shutter, and the answer to a kitchen that opens already closed. */
+const CLOSED: readonly string[] = [
+  'Kuchyně má zavřeno. Přijď zase za chvilku!',
+  'Teď je zavřeno. Až doběhnou hodiny, otevřeme!',
+];
+
+/** The shutter goes back up – the timer ran out, or a grown-up typed the code. */
+export const OPEN_LINE = 'open.1';
+const OPEN_TEXT = 'Kuchyně je zase otevřená!';
+
 /** The portrait overlay of `stage/orientation.ts` – a picture plus this one sentence (rule 1). */
 export const TURN_LINE = 'guard.turn';
 const TURN_TEXT = 'Otoč mě!';
@@ -296,6 +315,14 @@ export function bellLines(): readonly string[] {
   return BELL.map((_, index) => `bell.${index + 1}`);
 }
 
+export function closingLines(): readonly string[] {
+  return CLOSING.map((_, index) => `closing.${index + 1}`);
+}
+
+export function closedLines(): readonly string[] {
+  return CLOSED.map((_, index) => `closed.${index + 1}`);
+}
+
 const lines: Line[] = [];
 const ids = new Set<string>();
 
@@ -358,6 +385,9 @@ for (const gender of ['neutral', 'female', 'male'] as const) {
 for (const [index, text] of FINISH.entries()) add(`finish.${index + 1}`, text);
 for (const [index, text] of STAR.entries()) add(`star.${index + 1}`, text);
 for (const [index, text] of BELL.entries()) add(`bell.${index + 1}`, text);
+for (const [index, text] of CLOSING.entries()) add(`closing.${index + 1}`, text);
+for (const [index, text] of CLOSED.entries()) add(`closed.${index + 1}`, text);
+add(OPEN_LINE, OPEN_TEXT);
 add(TURN_LINE, TURN_TEXT);
 
 export const LINES: readonly Line[] = lines;

@@ -91,6 +91,14 @@
       "bytes": 6941,
       "loudness": -22
     },
+    "shutter": {
+      "hash": "9fdac8ecabf79596",
+      "prompt": "metal roller shop shutter closing with a short rattle, cartoon, clean, no music",
+      "durationSeconds": 1.5,
+      "promptInfluence": 0.3,
+      "bytes": 12374,
+      "loudness": -22
+    },
     "sparkle": {
       "hash": "27edbefafe21617e",
       "prompt": "short magical sparkle twinkle, bright, cartoon reward",

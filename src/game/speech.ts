@@ -7,6 +7,8 @@
 import type { FruitKind } from '../data/curriculum';
 import {
   bellLines,
+  closedLines,
+  closingLines,
   countAloudLine,
   countEnoughLine,
   finishLines,
@@ -18,6 +20,7 @@ import {
   orderNextCountLine,
   orderNextDigitLine,
   orderNextLetterLine,
+  OPEN_LINE,
   praiseLines,
   seekLine,
   starLines,
@@ -189,4 +192,19 @@ export function createStarPicker(options?: { readonly rng?: Rng }): LinePicker {
 /** Nudges towards the bell while the counter stands empty (STEP-10). */
 export function createBellPicker(options?: { readonly rng?: Rng }): LinePicker {
   return createLinePicker(bellLines(), options?.rng ?? systemRng);
+}
+
+/** "Kuchyně dneska zavírá" – the shutter is coming down after the tenth order (STEP-14). */
+export function createClosingPicker(options?: { readonly rng?: Rng }): LinePicker {
+  return createLinePicker(closingLines(), options?.rng ?? systemRng);
+}
+
+/** "Máme zavřeno" – a tap on the shutter, and a kitchen that opens closed. */
+export function createClosedPicker(options?: { readonly rng?: Rng }): LinePicker {
+  return createLinePicker(closedLines(), options?.rng ?? systemRng);
+}
+
+/** The five clips of the closed kitchen; the scene fetches them once, when it is built. */
+export function closingPreload(): readonly string[] {
+  return [...closingLines(), ...closedLines(), OPEN_LINE];
 }

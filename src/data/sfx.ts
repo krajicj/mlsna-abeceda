@@ -98,6 +98,11 @@ export const SFX: readonly SoundEffect[] = [
     prompt: 'contented cartoon cat purr with a small mrrp, short',
     durationSeconds: 1.0,
   },
+  {
+    id: 'shutter',
+    prompt: 'metal roller shop shutter closing with a short rattle, cartoon, clean, no music',
+    durationSeconds: 1.5,
+  },
 ];
 
 const IDS: ReadonlySet<string> = new Set(SFX.map((effect) => effect.id));

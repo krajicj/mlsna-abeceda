@@ -14,6 +14,9 @@ import {
   askAgainSpeech,
   correctionSpeech,
   countSpeech,
+  closingPreload,
+  createClosedPicker,
+  createClosingPicker,
   createFinishPicker,
   createLinePicker,
   createPraisePicker,
@@ -291,6 +294,34 @@ describe('createPraisePicker', () => {
     for (let draw = 0; draw < 20; draw += 1) {
       expect(girl.next()[0]).toMatch(/^praise\.female\./);
       expect(boy.next()[0]).toMatch(/^praise\.male\./);
+    }
+  });
+});
+
+describe('the pickers of the closed kitchen (STEP-14)', () => {
+  it('preloads exactly the five clips the shutter needs, all of them in the manifest', () => {
+    const ids = closingPreload();
+    expect(ids).toHaveLength(5);
+    expect(new Set(ids).size).toBe(5);
+    for (const id of ids) expect({ id, known: hasLine(id) }).toEqual({ id, known: true });
+  });
+
+  it('alternates the two closing and the two closed lines, and preloads both sets', () => {
+    for (const picker of [
+      createClosingPicker({ rng: createRng(5) }),
+      createClosedPicker({ rng: createRng(5) }),
+    ]) {
+      const seen = new Set<string>();
+      let previous = '';
+      for (let draw = 0; draw < 20; draw += 1) {
+        const id = picker.next()[0]!;
+        expect(id).not.toBe(previous);
+        expect(hasLine(id)).toBe(true);
+        expect(closingPreload()).toContain(id);
+        seen.add(id);
+        previous = id;
+      }
+      expect(seen.size).toBe(2);
     }
   });
 });

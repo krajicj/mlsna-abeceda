@@ -46,9 +46,10 @@ function textOf(id: string): string {
 describe('manifest of voice lines', () => {
   it('holds exactly the groups the plan pays for', () => {
     // 254 clips ≈ 4 750 characters (docs/steps/STEP-07, +6 in STEP-09, +2 in STEP-10), +62 for
-    // the second item of an order in STEP-12. Adding lines means paying for them and regenerating
-    // – the number is here so that cost is a conscious edit, not a surprise.
-    expect(LINES).toHaveLength(316);
+    // the second item of an order in STEP-12, +5 for the closed kitchen in STEP-14. Adding lines
+    // means paying for them and regenerating – the number is here so that cost is a conscious
+    // edit, not a surprise.
+    expect(LINES).toHaveLength(321);
   });
 
   it('has unique ids usable as file names', () => {

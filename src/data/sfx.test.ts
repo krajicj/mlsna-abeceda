@@ -17,7 +17,7 @@ describe('manifest of sound effects', () => {
   it('holds exactly the effects the plan pays for', () => {
     // Every entry is a paid request to ElevenLabs; the number is here so adding one is a conscious
     // edit and not a surprise on the bill (the same guard as the voice manifest).
-    expect(SFX).toHaveLength(14);
+    expect(SFX).toHaveLength(15);
   });
 
   it('has unique ids usable as file names', () => {
