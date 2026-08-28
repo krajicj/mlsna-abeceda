@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { STARTER_CUSTOMERS } from '../data/customers';
+import { CLOSED_MS, isClosed, NEW_SESSION, SESSION_ORDER_LIMIT } from './closing';
 import { countItemOf, MAX_COUNT } from './counting';
 import { createTrack, MASTERY_KNOWN } from './mastery';
 import { elementOf, itemResult } from './progress';
@@ -206,6 +207,75 @@ describe('session.complete', () => {
   });
 });
 
+describe('session – the end of a sitting (STEP-14)', () => {
+  const AT = new Date(2026, 7, 24, 14, 0);
+  const clock = (): Date => AT;
+
+  it('closes the kitchen on the tenth order and not before', () => {
+    const storage = memoryStorage();
+    const session = createSession(storage, { now: clock });
+    for (let index = 1; index < SESSION_ORDER_LIMIT; index += 1) {
+      session.complete([]);
+      expect(session.save.session.orders).toBe(index);
+      expect(isClosed(session.save.session, AT.getTime())).toBe(false);
+    }
+    session.complete([]);
+    expect(session.save.session.orders).toBe(SESSION_ORDER_LIMIT);
+    expect(isClosed(session.save.session, AT.getTime())).toBe(true);
+    // The record on the device knows it too, so a reload cannot walk around the shutter.
+    expect(parseSave(storage.getItem(SAVE_KEY))?.session.closedUntil).toBe(
+      AT.getTime() + CLOSED_MS,
+    );
+  });
+
+  it('still writes the record exactly once per finished order', () => {
+    const storage = memoryStorage();
+    createSession(storage, { now: clock }).complete([]);
+    expect(storage.writes).toEqual([SAVE_KEY]);
+  });
+
+  it('closes from the console for as long as it is asked to', () => {
+    const storage = memoryStorage();
+    const session = createSession(storage, { now: clock });
+    session.close(60_000);
+    expect(isClosed(session.save.session, AT.getTime())).toBe(true);
+    expect(isClosed(session.save.session, AT.getTime() + 60_000)).toBe(false);
+    expect(parseSave(storage.getItem(SAVE_KEY))?.session.closedUntil).toBe(AT.getTime() + 60_000);
+    session.close();
+    expect(session.save.session.closedUntil).toBe(AT.getTime() + CLOSED_MS);
+  });
+
+  it('reopens into a brand new sitting without touching what was learnt', () => {
+    const storage = memoryStorage();
+    const session = createSession(storage, { now: clock });
+    for (let index = 0; index < SESSION_ORDER_LIMIT; index += 1) session.complete([]);
+    const learnt = session.save;
+    session.reopen();
+    expect(session.save.session).toEqual(NEW_SESSION);
+    expect(session.save.tracks).toEqual(learnt.tracks);
+    expect(session.save.stars).toEqual(learnt.stars);
+    expect(session.save.progress).toEqual(learnt.progress);
+    expect(session.save.settings).toEqual(learnt.settings);
+    expect(parseSave(storage.getItem(SAVE_KEY))?.session).toEqual(NEW_SESSION);
+
+    // The next order is the first of the new sitting, and the kitchen stays open.
+    session.complete([]);
+    expect(session.save.session.orders).toBe(1);
+    expect(isClosed(session.save.session, AT.getTime())).toBe(false);
+  });
+
+  it('starts a new sitting after a pause longer than the closing time', () => {
+    let at = new Date(2026, 7, 24, 9, 0).getTime();
+    const session = createSession(memoryStorage(), { now: () => new Date(at) });
+    session.complete([]);
+    session.complete([]);
+    expect(session.save.session.orders).toBe(2);
+    at += CLOSED_MS + 1;
+    session.complete([]);
+    expect(session.save.session.orders).toBe(1);
+  });
+});
+
 describe('session – two-item orders (STEP-12)', () => {
   /** A save that is waiting for the order at `index` – nothing else about it is special. */
   function atOrder(index: number): SaveData {
@@ -257,6 +327,7 @@ describe('session – two-item orders (STEP-12)', () => {
     expect(Object.keys(JSON.parse(raw) as object).sort()).toEqual([
       'pending',
       'progress',
+      'session',
       'settings',
       'stars',
       'tracks',

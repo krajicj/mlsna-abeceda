@@ -94,5 +94,9 @@ export function mergeSave(local: SaveData, incoming: SaveData): SaveData {
     },
     stars: mergeStars(local.stars, incoming.stars),
     pending: mergePending(local.pending, incoming.pending),
+    // The sitting belongs to the device and the moment, not to progress (STEP-14), so it stays
+    // with `local` the way `settings` do. Taking the lower `orders` would hand the limit back, and
+    // taking the higher `closedUntil` would lock the very kitchen the child is sitting at.
+    session: local.session,
   };
 }

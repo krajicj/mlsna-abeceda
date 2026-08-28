@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { NEW_SESSION } from './closing';
 import { LEVEL1_INITIAL_LETTERS } from './curriculum';
 import {
   createSave,
@@ -53,6 +54,10 @@ describe('createSave', () => {
     expect(save.progress).toEqual({ ordersCompleted: 0, lastPlayed: null });
     expect(save.stars).toEqual({ earned: 0, purchases: {} });
     expect(save.pending).toEqual({ numbers: null, letters: null });
+  });
+
+  it('starts with a sitting that has not begun', () => {
+    expect(createSave(SETTINGS).session).toEqual(NEW_SESSION);
   });
 
   it('works with no settings', () => {
@@ -179,6 +184,9 @@ describe('parseSave – a record of the older format (v1)', () => {
     expect(save?.progress).toEqual({ ordersCompleted: 7, lastPlayed: '2026-08-20' });
     expect(save?.stars).toEqual({ earned: 7, purchases: {} });
     expect(save?.pending).toEqual({ numbers: null, letters: null });
+    // The sitting is new in STEP-14 and came without a version bump: a record that never heard of
+    // it simply starts its first sitting.
+    expect(save?.session).toEqual(NEW_SESSION);
   });
 
   it('is stored back as v2 under the same key', () => {
@@ -215,6 +223,42 @@ describe('parseSave – repairing the parts new in v2', () => {
   it('takes anything but a string as nothing at all', () => {
     const raw = JSON.stringify({ ...createSave(), pending: { numbers: 3, letters: [] } });
     expect(parseSave(raw)?.pending).toEqual({ numbers: null, letters: null });
+  });
+});
+
+describe('parseSave – the sitting (STEP-14)', () => {
+  const withSession = (session: unknown): SaveData | null =>
+    parseSave(JSON.stringify({ ...createSave(), session }));
+
+  const CLOSED = {
+    orders: 10,
+    lastOrderAt: 1_756_296_000_000,
+    closedFrom: 1_756_296_000_000,
+    closedUntil: 1_756_303_200_000,
+  };
+
+  it('keeps a whole sitting as it stands', () => {
+    expect(withSession(CLOSED)?.session).toEqual(CLOSED);
+  });
+
+  it('starts a new sitting when the field is missing or unreadable, and keeps the record', () => {
+    for (const session of [undefined, null, 'x', [], 42]) {
+      const save = withSession(session);
+      expect(save?.session).toEqual(NEW_SESSION);
+      expect(save?.tracks.letters.active).toEqual(['O', 'S']); // the record itself survived
+      expect(save?.version).toBe(SAVE_VERSION); // the field arrived without a version bump
+    }
+  });
+
+  it('repairs one broken field without taking the healthy ones with it', () => {
+    const save = withSession({ ...CLOSED, lastOrderAt: -5, orders: 'x' });
+    expect(save?.session).toEqual({ ...CLOSED, lastOrderAt: 0, orders: 0 });
+  });
+
+  it('survives a round trip through the storage', () => {
+    const storage = memoryStorage();
+    writeSave(storage, { ...createSave(), session: CLOSED });
+    expect(readSave(storage).session).toEqual(CLOSED);
   });
 });
 

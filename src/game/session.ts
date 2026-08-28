@@ -3,6 +3,7 @@
  * a finished order is written back (rule 4 – progress is sacred, so nothing else touches storage).
  * A session that is merely opened never writes; only `complete()` does.
  */
+import { afterOrder, closeUntil, NEW_SESSION } from './closing';
 import { createCustomerQueue } from './customers';
 import { generateOrder, type Order } from './orders';
 import {
@@ -31,6 +32,13 @@ export interface Session {
   readonly customer: CustomerId;
   /** Writes the finished order into the save and generates the next one; returns it. */
   complete(results: readonly ItemResult[]): Order;
+  /**
+   * Closes the kitchen for `ms` (default `CLOSED_MS`, clamped to `[0, MAX_CLOSED_MS]`) and writes
+   * the save. The minute limit of the parent corner (STEP-19) will reach in here.
+   */
+  close(ms?: number): void;
+  /** A new sitting with the kitchen open; writes the save. Nothing learnt is touched. */
+  reopen(): void;
 }
 
 export function createSession(
@@ -105,7 +113,9 @@ export function createSession(
     complete(results) {
       remember(order);
       const before = save;
-      save = completeOrder(save, results, todayStamp(now()));
+      // One question to the clock: the day stamp and the sitting must not come from two readings.
+      const stamp = now();
+      save = completeOrder(save, results, todayStamp(stamp));
       for (const track of ['numbers', 'letters'] as const) {
         const introduced = introducedElement(before.tracks[track], save.tracks[track]);
         if (introduced !== null) pending[track] = introduced;
@@ -113,12 +123,25 @@ export function createSession(
       // The next order is generated first, because generating it is what ticks a pending element
       // off: the record then matches the order the child is about to be given.
       order = nextOrder();
-      save = { ...save, pending: { numbers: pending.numbers, letters: pending.letters } };
+      save = {
+        ...save,
+        pending: { numbers: pending.numbers, letters: pending.letters },
+        // The tenth order of a sitting closes the kitchen; the scene reads that off the record.
+        session: afterOrder(save.session, stamp.getTime()),
+      };
       // A storage that refuses to write does not stop the loop: the session keeps the new record
       // in memory and the child plays on (writeSave swallows the failure).
       writeSave(storage, save);
       customer = customers.next();
       return order;
+    },
+    close(ms) {
+      save = { ...save, session: closeUntil(save.session, now().getTime(), ms) };
+      writeSave(storage, save);
+    },
+    reopen() {
+      save = { ...save, session: NEW_SESSION };
+      writeSave(storage, save);
     },
   };
 }

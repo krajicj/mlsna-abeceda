@@ -6,6 +6,7 @@
  * logic stays testable in Node.
  */
 import { type Letter } from '../data/curriculum';
+import { NEW_SESSION, type SessionState } from './closing';
 import { LEVEL1_INITIAL_LETTERS, letterPool, numberPool, type Level } from './curriculum';
 import { createTrack, MASTERY_MAX, type TrackState } from './mastery';
 import { asRecord, migrateRecord } from './migrate';
@@ -39,6 +40,14 @@ export interface SaveData {
   readonly progress: SaveProgress;
   readonly stars: StarsState;
   readonly pending: PendingElements;
+  /**
+   * How far the running sitting has got and whether the kitchen is closed (STEP-14). Added without
+   * a version bump on purpose: the field is purely additive, a record without it is repaired to
+   * `NEW_SESSION`, and an older build simply ignores it – whereas a bump to 3 would make that older
+   * build (a cached page on the tablet) throw the record away and start a new game. See the step
+   * plan `docs/steps/STEP-14-session-end-and-closing.md`.
+   */
+  readonly session: SessionState;
 }
 
 const NO_PENDING: PendingElements = { numbers: null, letters: null };
@@ -60,6 +69,7 @@ export function createSave(settings: Settings = EMPTY_SETTINGS): SaveData {
     progress: { ordersCompleted: 0, lastPlayed: null },
     stars: NO_STARS,
     pending: NO_PENDING,
+    session: NEW_SESSION,
   };
 }
 
@@ -136,6 +146,21 @@ function repairPending(
 }
 
 /**
+ * Four independent counts, each repaired on its own: a broken `lastOrderAt` must not cost the
+ * sitting its `orders`. Nothing checks that they make sense together – `isClosed()` copes with a
+ * `closedUntil` from any century by itself.
+ */
+function repairSession(input: unknown): SessionState {
+  const record = asRecord(input);
+  return {
+    orders: repairCount(record?.['orders']),
+    lastOrderAt: repairCount(record?.['lastOrderAt']),
+    closedFrom: repairCount(record?.['closedFrom']),
+    closedUntil: repairCount(record?.['closedUntil']),
+  };
+}
+
+/**
  * Unreadable JSON or a record there is no migration path from → null (a fresh game, and `readSave`
  * keeps the original text). Anything else is lifted to the current version and then repaired.
  */
@@ -164,6 +189,7 @@ export function parseSave(raw: string | null): SaveData | null {
     progress: repairProgress(migrated['progress']),
     stars: repairStars(migrated['stars']),
     pending: repairPending(migrated['pending'], tracks),
+    session: repairSession(migrated['session']),
   };
 }
 

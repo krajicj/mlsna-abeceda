@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { NEW_SESSION, type SessionState } from './closing';
 import { mergePending, mergeSave, mergeStars, mergeTrack } from './merge';
 import { createSave, type SaveData } from './save';
 import type { StarsState } from './stars';
@@ -164,6 +165,22 @@ describe('mergeSave', () => {
       stars: { earned: 7, purchases: { 'toy.ball': 1 } },
     };
     expect(mergeSave(local, incoming).stars).toEqual({ earned: 7, purchases: { 'toy.ball': 4 } });
+  });
+
+  it('keeps the sitting of the device it is merged on (STEP-14)', () => {
+    const closed: SessionState = {
+      orders: 10,
+      lastOrderAt: 1_756_296_000_000,
+      closedFrom: 1_756_296_000_000,
+      closedUntil: 1_756_303_200_000,
+    };
+    const local: SaveData = { ...tablet(), session: closed };
+    const incoming: SaveData = { ...notebook(), session: { ...NEW_SESSION, orders: 3 } };
+    // The imported closing must not lock the kitchen the child is sitting at, and the imported
+    // count must not hand the limit back either.
+    expect(mergeSave(local, incoming).session).toEqual(closed);
+    expect(mergeSave(incoming, local).session).toEqual(incoming.session);
+    expect(mergeSave(local, local)).toEqual(local);
   });
 
   it('never mutates either record', () => {
