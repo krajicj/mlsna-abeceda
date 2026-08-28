@@ -26,7 +26,7 @@ export interface VoicePlayer {
   preload(lines: readonly string[]): void;
   /** Something is playing or loading right now. */
   readonly speaking: boolean;
-  /** 0..1 on the voice bus (parent corner, STEP-19). */
+  /** 0..1 on the voice bus (parent corner, STEP-20). */
   setVolume(volume: number): void;
   destroy(): void;
 }

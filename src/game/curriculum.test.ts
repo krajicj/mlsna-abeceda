@@ -95,7 +95,7 @@ describe('letterPool', () => {
     expect(letterPool(short, 2).slice(0, 3)).toEqual(['E', 'M', 'A']);
   });
 
-  it('grows to fourteen letters on stage 3 (stage 4 adds diacritics in STEP-27)', () => {
+  it('grows to fourteen letters on stage 3 (stage 4 adds diacritics in STEP-28)', () => {
     expect(letterPool(FAMILY, 3)).toEqual([
       'A',
       'N',
@@ -155,7 +155,7 @@ describe('letterWord', () => {
     expect(letterWord('B', settings)).toBe('brácha');
   });
 
-  it('says ementál for E until the name clip exists (STEP-20)', () => {
+  it('says ementál for E until the name clip exists (STEP-21)', () => {
     expect(letterWord('E', FAMILY)).toBe('ementál');
     expect(letterWord('E', EMPTY_SETTINGS)).toBe('ementál');
   });
@@ -171,7 +171,7 @@ describe('choiceCount', () => {
 
 describe('stage ceilings', () => {
   it('never lets a track climb higher than the kitchen can play', () => {
-    // A save must never claim a stage the generator cannot build; STEP-23 and STEP-26 raise these.
+    // A save must never claim a stage the generator cannot build; STEP-24 and STEP-27 raise these.
     for (const ceiling of [MAX_NUMBER_LEVEL, MAX_LETTER_LEVEL]) {
       expect(ceiling).toBeGreaterThanOrEqual(1);
       expect(ceiling).toBeLessThanOrEqual(5);

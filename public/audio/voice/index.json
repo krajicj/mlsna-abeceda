@@ -120,6 +120,12 @@
           "bytes": 21778,
           "loudness": -18
         },
+        "count.enough.1.raspberry": {
+          "hash": "92f0bd154d83a392",
+          "text": "Už máme jednu malinu, to stačí!",
+          "bytes": 20525,
+          "loudness": -18
+        },
         "count.enough.1.strawberry": {
           "hash": "455251062f18882f",
           "text": "Už máme jednu jahodu, to stačí!",
@@ -136,6 +142,12 @@
           "hash": "fec3abde6f450c5f",
           "text": "Už máme deset třešní, to stačí!",
           "bytes": 19480,
+          "loudness": -18
+        },
+        "count.enough.10.raspberry": {
+          "hash": "0e2066006190fa5c",
+          "text": "Už máme deset malin, to stačí!",
+          "bytes": 20525,
           "loudness": -18
         },
         "count.enough.10.strawberry": {
@@ -156,6 +168,12 @@
           "bytes": 18017,
           "loudness": -18
         },
+        "count.enough.2.raspberry": {
+          "hash": "64c0181999832de5",
+          "text": "Už máme dvě maliny, to stačí!",
+          "bytes": 20315,
+          "loudness": -18
+        },
         "count.enough.2.strawberry": {
           "hash": "833d5256ff56e346",
           "text": "Už máme dvě jahody, to stačí!",
@@ -172,6 +190,12 @@
           "hash": "8209d9183db559a1",
           "text": "Už máme tři třešně, to stačí!",
           "bytes": 19062,
+          "loudness": -18
+        },
+        "count.enough.3.raspberry": {
+          "hash": "46ce2cf0d28f4456",
+          "text": "Už máme tři maliny, to stačí!",
+          "bytes": 18435,
           "loudness": -18
         },
         "count.enough.3.strawberry": {
@@ -192,6 +216,12 @@
           "bytes": 21778,
           "loudness": -18
         },
+        "count.enough.4.raspberry": {
+          "hash": "a33add09c2b64cff",
+          "text": "Už máme čtyři maliny, to stačí!",
+          "bytes": 20942,
+          "loudness": -18
+        },
         "count.enough.4.strawberry": {
           "hash": "90c8063c7c3f3378",
           "text": "Už máme čtyři jahody, to stačí!",
@@ -208,6 +238,12 @@
           "hash": "6d8c6b6bef6bfa26",
           "text": "Už máme pět třešní, to stačí!",
           "bytes": 18435,
+          "loudness": -18
+        },
+        "count.enough.5.raspberry": {
+          "hash": "ceca3e8908883b95",
+          "text": "Už máme pět malin, to stačí!",
+          "bytes": 19062,
           "loudness": -18
         },
         "count.enough.5.strawberry": {
@@ -228,6 +264,12 @@
           "bytes": 20525,
           "loudness": -18
         },
+        "count.enough.6.raspberry": {
+          "hash": "fd799af4b47e9ba3",
+          "text": "Už máme šest malin, to stačí!",
+          "bytes": 19898,
+          "loudness": -18
+        },
         "count.enough.6.strawberry": {
           "hash": "f82b72e29dcb7010",
           "text": "Už máme šest jahod, to stačí!",
@@ -244,6 +286,12 @@
           "hash": "254081e4259b7f46",
           "text": "Už máme sedm třešní, to stačí!",
           "bytes": 23659,
+          "loudness": -18
+        },
+        "count.enough.7.raspberry": {
+          "hash": "df70bea8c185cb28",
+          "text": "Už máme sedm malin, to stačí!",
+          "bytes": 19898,
           "loudness": -18
         },
         "count.enough.7.strawberry": {
@@ -264,6 +312,12 @@
           "bytes": 20942,
           "loudness": -18
         },
+        "count.enough.8.raspberry": {
+          "hash": "baa2d2d9d7ed01e1",
+          "text": "Už máme osm malin, to stačí!",
+          "bytes": 16554,
+          "loudness": -18
+        },
         "count.enough.8.strawberry": {
           "hash": "e461f8c43eb81ded",
           "text": "Už máme osm jahod, to stačí!",
@@ -280,6 +334,12 @@
           "hash": "1f9bef3e4e2e77f2",
           "text": "Už máme devět třešní, to stačí!",
           "bytes": 19898,
+          "loudness": -18
+        },
+        "count.enough.9.raspberry": {
+          "hash": "a1270d237fc9b4f1",
+          "text": "Už máme devět malin, to stačí!",
+          "bytes": 20525,
           "loudness": -18
         },
         "count.enough.9.strawberry": {
@@ -678,6 +738,12 @@
           "bytes": 14255,
           "loudness": -18
         },
+        "order.count.1.raspberry": {
+          "hash": "dd0853894a5442e7",
+          "text": "Prosím jednu malinu.",
+          "bytes": 13628,
+          "loudness": -18
+        },
         "order.count.1.strawberry": {
           "hash": "bdef5a29ec441c3e",
           "text": "Prosím jednu jahodu.",
@@ -694,6 +760,12 @@
           "hash": "be4ae0d13b75a6de",
           "text": "Prosím deset třešní.",
           "bytes": 13628,
+          "loudness": -18
+        },
+        "order.count.10.raspberry": {
+          "hash": "04faf426b13d591f",
+          "text": "Prosím deset malin.",
+          "bytes": 13837,
           "loudness": -18
         },
         "order.count.10.strawberry": {
@@ -714,6 +786,12 @@
           "bytes": 13837,
           "loudness": -18
         },
+        "order.count.2.raspberry": {
+          "hash": "0fe50e203652a1e7",
+          "text": "Prosím dvě maliny.",
+          "bytes": 13210,
+          "loudness": -18
+        },
         "order.count.2.strawberry": {
           "hash": "3537e6561379d095",
           "text": "Prosím dvě jahody.",
@@ -730,6 +808,12 @@
           "hash": "c4e210075ce703d9",
           "text": "Prosím tři třešně.",
           "bytes": 13837,
+          "loudness": -18
+        },
+        "order.count.3.raspberry": {
+          "hash": "e912727d24aaed60",
+          "text": "Prosím tři maliny.",
+          "bytes": 12792,
           "loudness": -18
         },
         "order.count.3.strawberry": {
@@ -750,6 +834,12 @@
           "bytes": 15091,
           "loudness": -18
         },
+        "order.count.4.raspberry": {
+          "hash": "30329d7edc9ab00a",
+          "text": "Prosím čtyři maliny.",
+          "bytes": 13837,
+          "loudness": -18
+        },
         "order.count.4.strawberry": {
           "hash": "0eab6629069dacce",
           "text": "Prosím čtyři jahody.",
@@ -766,6 +856,12 @@
           "hash": "2546ed73d3c8b613",
           "text": "Prosím pět třešní.",
           "bytes": 15509,
+          "loudness": -18
+        },
+        "order.count.5.raspberry": {
+          "hash": "e8c7919946be24f9",
+          "text": "Prosím pět malin.",
+          "bytes": 14673,
           "loudness": -18
         },
         "order.count.5.strawberry": {
@@ -786,6 +882,12 @@
           "bytes": 15509,
           "loudness": -18
         },
+        "order.count.6.raspberry": {
+          "hash": "8463c6e8da418269",
+          "text": "Prosím šest malin.",
+          "bytes": 13628,
+          "loudness": -18
+        },
         "order.count.6.strawberry": {
           "hash": "016b451ab19f1f93",
           "text": "Prosím šest jahod.",
@@ -802,6 +904,12 @@
           "hash": "c6c7484d79835c6f",
           "text": "Prosím sedm třešní.",
           "bytes": 16972,
+          "loudness": -18
+        },
+        "order.count.7.raspberry": {
+          "hash": "f03683f9f605de61",
+          "text": "Prosím sedm malin.",
+          "bytes": 13628,
           "loudness": -18
         },
         "order.count.7.strawberry": {
@@ -822,6 +930,12 @@
           "bytes": 13628,
           "loudness": -18
         },
+        "order.count.8.raspberry": {
+          "hash": "17e40b3de7caccb0",
+          "text": "Prosím osm malin.",
+          "bytes": 13628,
+          "loudness": -18
+        },
         "order.count.8.strawberry": {
           "hash": "e4fa5b991778c012",
           "text": "Prosím osm jahod.",
@@ -837,6 +951,12 @@
         "order.count.9.cherry": {
           "hash": "342bdb08af50854f",
           "text": "Prosím devět třešní.",
+          "bytes": 13837,
+          "loudness": -18
+        },
+        "order.count.9.raspberry": {
+          "hash": "9b6bd88ee18b360c",
+          "text": "Prosím devět malin.",
           "bytes": 13837,
           "loudness": -18
         },
@@ -1050,6 +1170,12 @@
           "bytes": 14673,
           "loudness": -18
         },
+        "order.next.count.1.raspberry": {
+          "hash": "cda11ec370a63360",
+          "text": "A ještě jednu malinu.",
+          "bytes": 15718,
+          "loudness": -18
+        },
         "order.next.count.1.strawberry": {
           "hash": "eb996df631ac1dfd",
           "text": "A ještě jednu jahodu.",
@@ -1068,6 +1194,12 @@
           "bytes": 15091,
           "loudness": -18
         },
+        "order.next.count.10.raspberry": {
+          "hash": "bd4f5f61f7a64742",
+          "text": "A ještě deset malin.",
+          "bytes": 14673,
+          "loudness": -18
+        },
         "order.next.count.10.strawberry": {
           "hash": "deb4034ea778b352",
           "text": "A ještě deset jahod.",
@@ -1083,6 +1215,12 @@
         "order.next.count.2.cherry": {
           "hash": "8c96ae27525e7e99",
           "text": "A ještě dvě třešně.",
+          "bytes": 13837,
+          "loudness": -18
+        },
+        "order.next.count.2.raspberry": {
+          "hash": "4857ab3369ba070b",
+          "text": "A ještě dvě maliny.",
           "bytes": 13837,
           "loudness": -18
         },
@@ -1104,6 +1242,12 @@
           "bytes": 15091,
           "loudness": -18
         },
+        "order.next.count.3.raspberry": {
+          "hash": "bf2d558ea7cf354a",
+          "text": "A ještě tři maliny.",
+          "bytes": 14255,
+          "loudness": -18
+        },
         "order.next.count.3.strawberry": {
           "hash": "cc5912ba044b59cc",
           "text": "A ještě tři jahody.",
@@ -1120,6 +1264,12 @@
           "hash": "7d91b38c4dabd104",
           "text": "A ještě čtyři třešně.",
           "bytes": 14255,
+          "loudness": -18
+        },
+        "order.next.count.4.raspberry": {
+          "hash": "319917245ed33501",
+          "text": "A ještě čtyři maliny.",
+          "bytes": 15718,
           "loudness": -18
         },
         "order.next.count.4.strawberry": {
@@ -1140,6 +1290,12 @@
           "bytes": 14255,
           "loudness": -18
         },
+        "order.next.count.5.raspberry": {
+          "hash": "7721010b2b58b6fc",
+          "text": "A ještě pět malin.",
+          "bytes": 12374,
+          "loudness": -18
+        },
         "order.next.count.5.strawberry": {
           "hash": "f8b4e4b180cd5dfe",
           "text": "A ještě pět jahod.",
@@ -1158,6 +1314,12 @@
           "bytes": 14255,
           "loudness": -18
         },
+        "order.next.count.6.raspberry": {
+          "hash": "2de635bf639009f0",
+          "text": "A ještě šest malin.",
+          "bytes": 15509,
+          "loudness": -18
+        },
         "order.next.count.6.strawberry": {
           "hash": "b6e8e77ffa8154a6",
           "text": "A ještě šest jahod.",
@@ -1173,6 +1335,12 @@
         "order.next.count.7.cherry": {
           "hash": "b4caeed6bb484dc8",
           "text": "A ještě sedm třešní.",
+          "bytes": 15091,
+          "loudness": -18
+        },
+        "order.next.count.7.raspberry": {
+          "hash": "de201b61b2bf6abc",
+          "text": "A ještě sedm malin.",
           "bytes": 15091,
           "loudness": -18
         },
@@ -1194,6 +1362,12 @@
           "bytes": 13837,
           "loudness": -18
         },
+        "order.next.count.8.raspberry": {
+          "hash": "60a8ff70e8e565b8",
+          "text": "A ještě osm malin.",
+          "bytes": 15509,
+          "loudness": -18
+        },
         "order.next.count.8.strawberry": {
           "hash": "92f6005498ac80ab",
           "text": "A ještě osm jahod.",
@@ -1210,6 +1384,12 @@
           "hash": "42002cec2df34231",
           "text": "A ještě devět třešní.",
           "bytes": 13210,
+          "loudness": -18
+        },
+        "order.next.count.9.raspberry": {
+          "hash": "64bba14678eb3994",
+          "text": "A ještě devět malin.",
+          "bytes": 15509,
           "loudness": -18
         },
         "order.next.count.9.strawberry": {
@@ -1732,6 +1912,120 @@
           "hash": "d77c0aaf1f3449c8",
           "text": "Hledáme zet.",
           "bytes": 10285,
+          "loudness": -18
+        },
+        "shop.ask.customer.frog": {
+          "hash": "9121e7b487f29660",
+          "text": "Chceš pozvat žabku za pět hvězdiček?",
+          "bytes": 20316,
+          "loudness": -18
+        },
+        "shop.ask.decor.cat": {
+          "hash": "3690fa829907effe",
+          "text": "Chceš koupit kočičku na polici za pět hvězdiček?",
+          "bytes": 27630,
+          "loudness": -18
+        },
+        "shop.ask.decor.curtains": {
+          "hash": "408caaf5ebed1d3f",
+          "text": "Chceš koupit záclony za čtyři hvězdičky?",
+          "bytes": 21360,
+          "loudness": -18
+        },
+        "shop.ask.decor.flower": {
+          "hash": "4ad32a389bcefaf0",
+          "text": "Chceš koupit kytku za tři hvězdičky?",
+          "bytes": 22196,
+          "loudness": -18
+        },
+        "shop.ask.decor.radio": {
+          "hash": "92e948d183791a33",
+          "text": "Chceš koupit rádio za pět hvězdiček?",
+          "bytes": 20525,
+          "loudness": -18
+        },
+        "shop.ask.fruit.raspberry": {
+          "hash": "6fe1791e8dcee652",
+          "text": "Chceš koupit maliny za tři hvězdičky?",
+          "bytes": 19480,
+          "loudness": -18
+        },
+        "shop.bought.customer.frog": {
+          "hash": "869fdd0e185c7522",
+          "text": "Žabka přijde na návštěvu!",
+          "bytes": 15091,
+          "loudness": -18
+        },
+        "shop.bought.decor.cat": {
+          "hash": "1f32f29588d4ca7f",
+          "text": "Kočička je tvoje!",
+          "bytes": 12374,
+          "loudness": -18
+        },
+        "shop.bought.decor.curtains": {
+          "hash": "1333445c10363a4c",
+          "text": "Záclony jsou tvoje!",
+          "bytes": 13837,
+          "loudness": -18
+        },
+        "shop.bought.decor.flower": {
+          "hash": "c88e744417adeaf2",
+          "text": "Kytka je tvoje!",
+          "bytes": 12792,
+          "loudness": -18
+        },
+        "shop.bought.decor.radio": {
+          "hash": "155c2838e488fe3e",
+          "text": "Rádio je tvoje!",
+          "bytes": 11328,
+          "loudness": -18
+        },
+        "shop.bought.fruit.raspberry": {
+          "hash": "490d8a6c2f822899",
+          "text": "Maliny jsou tvoje!",
+          "bytes": 14255,
+          "loudness": -18
+        },
+        "shop.hello.1": {
+          "hash": "02fc0156ba874f2b",
+          "text": "Vítej v obchůdku!",
+          "bytes": 15718,
+          "loudness": -18
+        },
+        "shop.hello.2": {
+          "hash": "a1a130b8347d273e",
+          "text": "Co si dneska koupíme?",
+          "bytes": 13210,
+          "loudness": -18
+        },
+        "shop.short.1": {
+          "hash": "ef224e8bcef437f5",
+          "text": "Chybí ti jedna hvězdička.",
+          "bytes": 15091,
+          "loudness": -18
+        },
+        "shop.short.2": {
+          "hash": "8a4934472a5b2a90",
+          "text": "Chybí ti dvě hvězdičky.",
+          "bytes": 13837,
+          "loudness": -18
+        },
+        "shop.short.3": {
+          "hash": "d89dfc64398b13a5",
+          "text": "Chybí ti tři hvězdičky.",
+          "bytes": 16136,
+          "loudness": -18
+        },
+        "shop.short.4": {
+          "hash": "5ef76f31f34049da",
+          "text": "Chybí ti čtyři hvězdičky.",
+          "bytes": 16136,
+          "loudness": -18
+        },
+        "shop.short.5": {
+          "hash": "5d222f6111a99189",
+          "text": "Chybí ti pět hvězdiček.",
+          "bytes": 14255,
           "loudness": -18
         },
         "star.1": {

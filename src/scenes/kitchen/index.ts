@@ -132,7 +132,7 @@ export const kitchenScene: Scene = (ctx) => {
   }
 
   // One picker per kind for the whole scene, so two sentences in a row are never the same one –
-  // whichever item earned them. The gender comes from the settings in STEP-19; until then neutral.
+  // whichever item earned them. The gender comes from the settings in STEP-20; until then neutral.
   const praise = createPraisePicker();
   const finish = createFinishPicker();
   const starLine = createStarPicker();

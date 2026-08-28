@@ -3,7 +3,9 @@ import { CUSTOMERS, STARTER_CUSTOMERS, isCustomerId, type CustomerId } from '../
 import { createCustomerQueue } from './customers';
 import { createRng } from './rng';
 
+/** The queue tests are about the three animals of a new game; the data tests are about all of them. */
 const ALL = STARTER_CUSTOMERS;
+const EVERY = Object.keys(CUSTOMERS) as CustomerId[];
 
 function run(count: number, seed: number, available: readonly CustomerId[] = ALL): CustomerId[] {
   const queue = createCustomerQueue({ available, rng: createRng(seed) });
@@ -11,15 +13,15 @@ function run(count: number, seed: number, available: readonly CustomerId[] = ALL
 }
 
 describe('customer data', () => {
-  it('draws every starter and gives it a Czech name', () => {
-    for (const id of ALL) {
+  it('draws every animal and gives it a Czech name', () => {
+    for (const id of EVERY) {
       expect(CUSTOMERS[id].id).toBe(id);
       expect(CUSTOMERS[id].label.length).toBeGreaterThan(2);
     }
   });
 
   it('anchors the mouth inside the drawing, as a fraction of its box', () => {
-    for (const id of ALL) {
+    for (const id of EVERY) {
       const { x, y } = CUSTOMERS[id].mouth;
       expect(x, id).toBeGreaterThan(0);
       expect(x, id).toBeLessThan(1);
@@ -29,10 +31,17 @@ describe('customer data', () => {
   });
 
   it('recognises its own ids and nothing else', () => {
-    for (const id of ALL) expect(isCustomerId(id)).toBe(true);
+    for (const id of EVERY) expect(isCustomerId(id)).toBe(true);
     expect(isCustomerId('dog')).toBe(false);
     expect(isCustomerId('')).toBe(false);
     expect(isCustomerId('Bear')).toBe(false);
+    // A key from JSON carries Object.prototype; reading the table must not answer for it.
+    expect(isCustomerId('toString')).toBe(false);
+  });
+
+  it('keeps the frog out of the starting three – she is bought in the shop (STEP-15)', () => {
+    expect(EVERY).toContain('frog');
+    expect(STARTER_CUSTOMERS).not.toContain('frog');
   });
 });
 

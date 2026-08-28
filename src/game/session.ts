@@ -17,8 +17,9 @@ import {
 } from './progress';
 import type { Rng } from './rng';
 import { readSave, writeSave, type SaveData, type StorageLike } from './save';
+import { buyShopItem, unlockedCustomers, unlockedFruits } from './shop';
 import type { FruitKind } from '../data/curriculum';
-import { STARTER_CUSTOMERS, type CustomerId } from '../data/customers';
+import type { CustomerId } from '../data/customers';
 
 export interface Session {
   /** The record as it stands; a new one after every `complete()`. */
@@ -34,11 +35,18 @@ export interface Session {
   complete(results: readonly ItemResult[]): Order;
   /**
    * Closes the kitchen for `ms` (default `CLOSED_MS`, clamped to `[0, MAX_CLOSED_MS]`) and writes
-   * the save. The minute limit of the parent corner (STEP-19) will reach in here.
+   * the save. The minute limit of the parent corner (STEP-20) will reach in here.
    */
   close(ms?: number): void;
   /** A new sitting with the kitchen open; writes the save. Nothing learnt is touched. */
   reopen(): void;
+  /**
+   * Buys a thing from the catalogue and writes it down – the one place a purchase is ever stored.
+   * An unlocked animal is put into the queue straight away, so it can walk in without a reload;
+   * the order already on the counter is left alone, a new fruit turns up in the next one.
+   * false = unknown id, already bought or not enough stars, and then nothing is written at all.
+   */
+  buy(id: string): boolean;
 }
 
 export function createSession(
@@ -81,6 +89,7 @@ export function createSession(
       // The same thing twice in a row would read as "the game did not notice I answered".
       avoid: [last.numbers, last.letters].filter((element): element is string => element !== null),
       avoidFruit: lastFruit,
+      fruits: unlockedFruits(save.stars),
       introduced: { numbers: pending.numbers, letters: pending.letters },
       rng,
     });
@@ -95,7 +104,7 @@ export function createSession(
 
   // Built here and not in the scene: this is the one place with an injected rng, so a seeded
   // session replays the customers as exactly as it replays the orders.
-  const customers = createCustomerQueue({ available: STARTER_CUSTOMERS, rng });
+  let customers = createCustomerQueue({ available: unlockedCustomers(save.stars), rng });
 
   let order = nextOrder();
   let customer = customers.next();
@@ -142,6 +151,18 @@ export function createSession(
     reopen() {
       save = { ...save, session: NEW_SESSION };
       writeSave(storage, save);
+    },
+    buy(id) {
+      const stars = buyShopItem(save.stars, id);
+      if (stars === null) return false;
+      save = { ...save, stars };
+      writeSave(storage, save);
+      // A new animal has to get into the bag the queue deals from, and the bag is dealt at the
+      // moment the queue is built – so the queue is built again. That resets its fairness (who
+      // has already been round this time), which is a fair price for the frog walking in during
+      // the same sitting she was bought in.
+      customers = createCustomerQueue({ available: unlockedCustomers(save.stars), rng });
+      return true;
     },
   };
 }

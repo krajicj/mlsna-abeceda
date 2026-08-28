@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CUSTOMERS } from './customers.ts';
 import {
   customerHelloSfx,
   customerYumSfx,
@@ -10,14 +11,15 @@ import {
 } from './sfx.ts';
 
 const ID_PATTERN = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
-/** Swapped for STARTER_CUSTOMERS once src/data/customers.ts exists (phase B of this step). */
-const ANIMALS = ['bear', 'rabbit', 'cat'] as const;
+/** Every animal, the bought ones included – a customer with no sound would walk in silently. */
+const ANIMALS = Object.keys(CUSTOMERS);
 
 describe('manifest of sound effects', () => {
   it('holds exactly the effects the plan pays for', () => {
     // Every entry is a paid request to ElevenLabs; the number is here so adding one is a conscious
-    // edit and not a surprise on the bill (the same guard as the voice manifest).
-    expect(SFX).toHaveLength(15);
+    // edit and not a surprise on the bill (the same guard as the voice manifest). +4 in STEP-15:
+    // the frog has a voice of her own and the shop has two sounds (used by the shelf in STEP-16).
+    expect(SFX).toHaveLength(19);
   });
 
   it('has unique ids usable as file names', () => {
@@ -53,6 +55,11 @@ describe('manifest of sound effects', () => {
       expect(hasSfx(customerHelloSfx(animal)), animal).toBe(true);
       expect(hasSfx(customerYumSfx(animal)), animal).toBe(true);
     }
+  });
+
+  it('has the two sounds the shop shelf will need (STEP-16)', () => {
+    expect(hasSfx('shop.buy')).toBe(true);
+    expect(hasSfx('shop.rattle')).toBe(true);
   });
 
   it('knows only the ids it lists', () => {

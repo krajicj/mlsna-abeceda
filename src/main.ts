@@ -8,6 +8,7 @@ import { letterOrder } from './game/curriculum';
 import { generateOrder, type Order } from './game/orders';
 import { createRng, systemRng } from './game/rng';
 import { createSession } from './game/session';
+import { ownedDecorations, shopOffer, unlockedCustomers, unlockedFruits } from './game/shop';
 import { orderPreload } from './game/speech';
 import { mergeSave } from './game/merge';
 import {
@@ -70,7 +71,7 @@ if (app) {
 
   if (import.meta.env.DEV) {
     // Handles for the manual checks in docs/steps/STEP-02-*.md and STEP-03-*.md; stripped from
-    // the build, so real names never reach the deployed game (settings UI comes in STEP-19).
+    // the build, so real names never reach the deployed game (settings UI comes in STEP-20).
     Object.assign(window, {
       __stage: stage,
       __audio: audio,
@@ -125,6 +126,39 @@ if (app) {
         clear: (): Settings => {
           writeSave(storage, withSettings(readSave(storage), EMPTY_SETTINGS));
           return EMPTY_SETTINGS;
+        },
+      },
+      /**
+       * The shop has no scene until STEP-16, so this is the only way to buy anything (STEP-15).
+       * `grant()` writes straight into storage, so – exactly like `__save.merge()` – the running
+       * session keeps its own copy and the new stars can only be spent after a reload.
+       */
+      __shop: {
+        offer: (): { id: string; price: number; state: string; missing: number }[] =>
+          shopOffer(readSave(storage).stars).map((entry) => ({
+            id: entry.item.id,
+            price: entry.item.price,
+            state: entry.state,
+            missing: entry.missing,
+          })),
+        buy: (id: string): boolean => session.buy(id),
+        grant: (count = 1): number => {
+          const save = readSave(storage);
+          const stars = { ...save.stars, earned: save.stars.earned + count };
+          writeSave(storage, { ...save, stars });
+          return stars.earned;
+        },
+        unlocked: (): {
+          fruits: readonly string[];
+          customers: readonly string[];
+          decorations: readonly string[];
+        } => {
+          const { stars } = readSave(storage);
+          return {
+            fruits: unlockedFruits(stars),
+            customers: unlockedCustomers(stars),
+            decorations: ownedDecorations(stars),
+          };
         },
       },
       __game: {

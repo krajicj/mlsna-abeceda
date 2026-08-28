@@ -4,7 +4,7 @@
  */
 import type { FamilyRole } from '../game/settings';
 
-/** The 22 base letters the game teaches. Diacritics (Š, Č, …) only from stage P4 – STEP-27. */
+/** The 22 base letters the game teaches. Diacritics (Š, Č, …) only from stage P4 – STEP-28. */
 export const BASE_LETTERS = [
   'A',
   'B',
@@ -144,6 +144,14 @@ export const CONFUSABLE_DIGITS: readonly (readonly [string, string])[] = [
   ['5', '6'],
 ];
 
-export type FruitKind = 'strawberry' | 'blueberry' | 'cherry';
+export type FruitKind = 'strawberry' | 'blueberry' | 'cherry' | 'raspberry';
 
-export const FRUITS: readonly FruitKind[] = ['strawberry', 'blueberry', 'cherry'];
+/**
+ * Every kind the game can say a sentence about – the manifest of voice lines is built from this
+ * one, so a fruit missing here has no clips. What the ORDER GENERATOR may ask for is a different
+ * set: the raspberry is sold in the shop (STEP-15) and only `unlockedFruits()` lets it through.
+ */
+export const FRUITS: readonly FruitKind[] = ['strawberry', 'blueberry', 'cherry', 'raspberry'];
+
+/** What the child starts with, before anything is bought (návrh 5.6 and kap. 7). */
+export const STARTER_FRUITS: readonly FruitKind[] = ['strawberry', 'blueberry', 'cherry'];

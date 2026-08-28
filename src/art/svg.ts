@@ -26,6 +26,9 @@ export const PALETTE = {
   blueberryLight: '#B7C0EC',
   cherry: '#B3261E',
   cherryLight: '#E2726B',
+  /** The fourth fruit, sold in the shop (STEP-15): pink-crimson, so it is not a second red berry. */
+  raspberry: '#C2255C',
+  raspberryLight: '#E06A99',
   stem: '#3F8F3A',
   leaf: '#4CAF50',
   seed: '#FFE08A',
@@ -34,6 +37,10 @@ export const PALETTE = {
   furRabbit: '#F0E4D2',
   furCat: '#E8A33D',
   furCatDark: '#C9822A',
+  /** The frog, bought in the shop (STEP-15) – the only customer with no fur at all. */
+  frog: '#7BC043',
+  frogDark: '#4E9A2F',
+  frogBelly: '#EAF7C8',
   earInner: '#E8A98A',
   muzzle: '#E9C9A3',
   blush: '#F48FB1',

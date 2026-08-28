@@ -43,6 +43,22 @@
       "bytes": 8613,
       "loudness": -22
     },
+    "customer.frog.hello": {
+      "hash": "cf18d0eca5280847",
+      "prompt": "short friendly cartoon frog croak, single ribbit, clean, no music",
+      "durationSeconds": 0.8,
+      "promptInfluence": 0.3,
+      "bytes": 6941,
+      "loudness": -22
+    },
+    "customer.frog.yum": {
+      "hash": "1f6fa559bc6edd2a",
+      "prompt": "happy cartoon frog gulp and short croak, satisfied, clean, no music",
+      "durationSeconds": 1,
+      "promptInfluence": 0.3,
+      "bytes": 8613,
+      "loudness": -22
+    },
     "customer.rabbit.hello": {
       "hash": "08f4712b1cd51c4f",
       "prompt": "cute high cartoon rabbit squeak, friendly and short, no words",
@@ -86,6 +102,22 @@
     "pling": {
       "hash": "49814c53b3e68634",
       "prompt": "short bright glockenspiel ding, single clean note, no reverb tail",
+      "durationSeconds": 0.8,
+      "promptInfluence": 0.3,
+      "bytes": 6941,
+      "loudness": -22
+    },
+    "shop.buy": {
+      "hash": "e04e9f66bb0d3ebe",
+      "prompt": "bright cash register ding with a short sparkle, cartoon shop, clean, no music",
+      "durationSeconds": 1.2,
+      "promptInfluence": 0.3,
+      "bytes": 10076,
+      "loudness": -22
+    },
+    "shop.rattle": {
+      "hash": "25a2a28cdc2a1439",
+      "prompt": "small wooden shelf rattle, gentle shake, cartoon, clean, no music",
       "durationSeconds": 0.8,
       "promptInfluence": 0.3,
       "bytes": 6941,

@@ -12,6 +12,7 @@ import {
   countAloudLine,
   countEnoughLine,
   finishLines,
+  hasLine,
   hintLine,
   letterWordLine,
   orderCountLine,
@@ -23,10 +24,15 @@ import {
   OPEN_LINE,
   praiseLines,
   seekLine,
+  shopAskLine,
+  shopBoughtLine,
+  shopHelloLines,
+  shopShortLine,
   starLines,
   wrongLine,
   type PraiseGender,
 } from '../data/lines.cs';
+import { SHOP_ITEMS } from '../data/shop';
 import type { Order, OrderItem } from './orders';
 import { pick, systemRng, type Rng } from './rng';
 
@@ -207,4 +213,50 @@ export function createClosedPicker(options?: { readonly rng?: Rng }): LinePicker
 /** The five clips of the closed kitchen; the scene fetches them once, when it is built. */
 export function closingPreload(): readonly string[] {
   return [...closingLines(), ...closedLines(), OPEN_LINE];
+}
+
+/** "Chceš koupit maliny za tři hvězdičky?" – the shelf asks before it takes any stars (STEP-15). */
+export function shopAskSpeech(id: string): readonly string[] {
+  return [shopAskLine(id)];
+}
+
+/** "Maliny jsou tvoje!" – said once the purchase is written down. */
+export function shopBoughtSpeech(id: string): readonly string[] {
+  return [shopBoughtLine(id)];
+}
+
+/**
+ * "Chybí ti tři hvězdičky." – said when the stars do not reach. Outside 1…5 the answer is silence
+ * rather than a wrong sentence: nothing in the catalogue costs more than five, and a game that says
+ * nothing is still a game that plays on (rule 2).
+ */
+export function shopShortSpeech(missing: number): readonly string[] {
+  const id = shopShortLine(missing);
+  return hasLine(id) ? [id] : [];
+}
+
+/** "Vítej v obchůdku!" – said as the shelf slides in, never the same one twice running. */
+export function createShopHelloPicker(options?: { readonly rng?: Rng }): LinePicker {
+  return createLinePicker(shopHelloLines(), options?.rng ?? systemRng);
+}
+
+/**
+ * Everything the shop can say, fetched when the scene is built: the greeting plus the question and
+ * the confirmation of every thing on the shelf. The shelf is small – six things, twelve sentences –
+ * and the child must not wait for a clip after a tap.
+ */
+export function shopPreload(): readonly string[] {
+  const ids = new Set<string>(shopHelloLines());
+  for (const item of SHOP_ITEMS) {
+    ids.add(shopAskLine(item.id));
+    ids.add(shopBoughtLine(item.id));
+  }
+  // Nothing can be short by more than the dearest thing costs, and `hasLine` keeps the loop honest
+  // if a price ever climbs past the five sentences Czech has here.
+  const dearest = Math.max(...SHOP_ITEMS.map((item) => item.price));
+  for (let missing = 1; missing <= dearest; missing += 1) {
+    const id = shopShortLine(missing);
+    if (hasLine(id)) ids.add(id);
+  }
+  return [...ids];
 }

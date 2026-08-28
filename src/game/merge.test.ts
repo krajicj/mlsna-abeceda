@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { ownedDecorations, unlockedFruits } from './shop';
 import { NEW_SESSION, type SessionState } from './closing';
 import { mergePending, mergeSave, mergeStars, mergeTrack } from './merge';
 import { createSave, type SaveData } from './save';
@@ -189,5 +190,20 @@ describe('mergeSave', () => {
     mergeSave(local, incoming);
     expect(local).toEqual(tablet());
     expect(incoming).toEqual(notebook());
+  });
+});
+
+describe('merging real purchases (STEP-15)', () => {
+  it('keeps a thing bought on either device, and the higher price paid for it', () => {
+    // The catalogue can change its prices; what the child paid is what the record keeps.
+    const onTablet: StarsState = { earned: 9, purchases: { 'fruit.raspberry': 3 } };
+    const onPhone: StarsState = {
+      earned: 6,
+      purchases: { 'fruit.raspberry': 2, 'decor.flower': 3 },
+    };
+    const merged = mergeStars(onTablet, onPhone);
+    expect(merged.purchases).toEqual({ 'fruit.raspberry': 3, 'decor.flower': 3 });
+    expect(unlockedFruits(merged)).toContain('raspberry');
+    expect(ownedDecorations(merged)).toEqual(['flower']);
   });
 });

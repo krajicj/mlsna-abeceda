@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FRUITS } from '../data/curriculum';
+import { STARTER_FRUITS } from '../data/curriculum';
 import { MAX_COUNT } from './counting';
 import { createTrack, type TrackState } from './mastery';
 import {
@@ -181,7 +181,9 @@ describe('count item', () => {
       if (item?.type !== 'count') throw new Error('expected a count item');
       expect(NUMBERS).toContain(String(item.amount));
       expect(typeof item.amount).toBe('number');
-      expect(FRUITS).toContain(item.fruit);
+      // The default set is the STARTING one, not every fruit the manifest can say: the raspberry
+      // has to be bought first (STEP-15) and must never turn up in an order on its own.
+      expect(STARTER_FRUITS).toContain(item.fruit);
     });
   });
 
@@ -190,6 +192,36 @@ describe('count item', () => {
       const item = order.items[0];
       if (item?.type !== 'count') throw new Error('expected a count item');
       expect(item.fruit).not.toBe('cherry');
+    });
+  });
+
+  it('asks only for the fruit the caller unlocked (STEP-15)', () => {
+    everySeed({ index: 1, fruits: ['raspberry'] }, (order) => {
+      const item = order.items[0];
+      if (item?.type !== 'count') throw new Error('expected a count item');
+      expect(item.fruit).toBe('raspberry');
+    });
+    everySeed({ index: 1, fruits: ['strawberry', 'raspberry'] }, (order) => {
+      const item = order.items[0];
+      if (item?.type !== 'count') throw new Error('expected a count item');
+      expect(['strawberry', 'raspberry']).toContain(item.fruit);
+    });
+  });
+
+  it('falls back to the starting three when the caller passes nothing', () => {
+    everySeed({ index: 1, fruits: [] }, (order) => {
+      const item = order.items[0];
+      if (item?.type !== 'count') throw new Error('expected a count item');
+      expect(STARTER_FRUITS).toContain(item.fruit);
+    });
+  });
+
+  it('does not run out of fruit when the only unlocked one is the one to avoid', () => {
+    // Rule 2: the generator gives way rather than throwing or looping – the child plays on.
+    everySeed({ index: 1, fruits: ['raspberry'], avoidFruit: 'raspberry' }, (order) => {
+      const item = order.items[0];
+      if (item?.type !== 'count') throw new Error('expected a count item');
+      expect(item.fruit).toBe('raspberry');
     });
   });
 });

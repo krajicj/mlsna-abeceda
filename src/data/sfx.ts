@@ -103,6 +103,28 @@ export const SFX: readonly SoundEffect[] = [
     prompt: 'metal roller shop shutter closing with a short rattle, cartoon, clean, no music',
     durationSeconds: 1.5,
   },
+  {
+    id: 'customer.frog.hello',
+    prompt: 'short friendly cartoon frog croak, single ribbit, clean, no music',
+    durationSeconds: 0.8,
+  },
+  {
+    id: 'customer.frog.yum',
+    prompt: 'happy cartoon frog gulp and short croak, satisfied, clean, no music',
+    durationSeconds: 1.0,
+  },
+  // The two sounds of the shop are used by the shelf in STEP-16; they are generated here so the
+  // author runs the generator (and pays for it) once, not twice.
+  {
+    id: 'shop.buy',
+    prompt: 'bright cash register ding with a short sparkle, cartoon shop, clean, no music',
+    durationSeconds: 1.2,
+  },
+  {
+    id: 'shop.rattle',
+    prompt: 'small wooden shelf rattle, gentle shake, cartoon, clean, no music',
+    durationSeconds: 0.8,
+  },
 ];
 
 const IDS: ReadonlySet<string> = new Set(SFX.map((effect) => effect.id));

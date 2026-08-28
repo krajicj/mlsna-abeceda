@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { FRUITS } from '../data/curriculum';
-import { STARTER_CUSTOMERS } from '../data/customers';
+import { CUSTOMERS, type CustomerId } from '../data/customers';
 import { bear } from './bear';
 import { bell, BELL_SIZE } from './bell';
 import { cat } from './cat';
 import { customerArt, CUSTOMER_HEIGHT, CUSTOMER_WIDTH } from './customers';
+import { frog } from './frog';
 import { rabbit } from './rabbit';
 import { fruitBowl } from './bowl';
 import { bubbleFruit, orderBubble, orderCheck, speakerIcon } from './bubble';
@@ -23,17 +24,22 @@ import { star, starsPill } from './star';
 import { fruit, fruitWidth } from './fruit';
 import { INK, PALETTE } from './svg';
 
+/** Every animal, the ones bought in the shop included – art nobody tests is art nobody drew. */
+const ALL_CUSTOMERS = Object.keys(CUSTOMERS) as CustomerId[];
+
 /** Every art module returns one <svg> element as a string. */
 const MODULES: Record<string, string> = {
   bear: bear(),
   rabbit: rabbit(),
   cat: cat(),
+  frog: frog(),
   bell: bell(),
   cakeBase: cakeBase(),
   fruitBowl: fruitBowl(),
   strawberry: fruit('strawberry', 88),
   blueberry: fruit('blueberry', 88),
   cherry: fruit('cherry', 88),
+  raspberry: fruit('raspberry', 88),
   cookie: cookie('K'),
   candle: candle('3'),
   countPill: countPill({ digit: '3', done: false }),
@@ -95,12 +101,14 @@ describe('art modules', () => {
     ['bear', MODULES['bear'], '0 0 260 320', 260, 320],
     ['rabbit', MODULES['rabbit'], '0 0 260 320', 260, 320],
     ['cat', MODULES['cat'], '0 0 260 320', 260, 320],
+    ['frog', MODULES['frog'], '0 0 260 320', 260, 320],
     ['bell', MODULES['bell'], '0 0 96 96', 96, 96],
     ['cakeBase', MODULES['cakeBase'], '-7 44 274 182', 220, 146],
     ['fruitBowl', MODULES['fruitBowl'], '0 0 320 140', 320, 140],
     ['strawberry', MODULES['strawberry'], '0 -6 40 52', 68, 88],
     ['blueberry', MODULES['blueberry'], '0 -6 40 52', 68, 88],
     ['cherry', MODULES['cherry'], '0 -6 40 52', 68, 88],
+    ['raspberry', MODULES['raspberry'], '0 -6 40 52', 68, 88],
     ['countPill', MODULES['countPill'], '0 0 40 40', 40, 40],
     ['bowlLid', MODULES['bowlLid'], '0 0 320 80', 320, 80],
     ['hintRing', MODULES['hintRing'], '0 0 96 96', 96, 96],
@@ -134,7 +142,7 @@ describe('art modules', () => {
     expect([...new Set(used)].filter((colour) => !allowed.has(colour))).toEqual([]);
   });
 
-  it.each(STARTER_CUSTOMERS)('draws %s on the shared customer box', (id) => {
+  it.each(ALL_CUSTOMERS)('draws %s on the shared customer box', (id) => {
     const markup = customerArt(id);
     expect(attribute(markup, 'viewBox')).toBe(`0 0 ${CUSTOMER_WIDTH} ${CUSTOMER_HEIGHT}`);
     expect(attribute(markup, 'width')).toBe(String(CUSTOMER_WIDTH));
@@ -142,18 +150,23 @@ describe('art modules', () => {
   });
 
   it('gives every customer its own clip path, so two of them never collide in the DOM', () => {
-    const ids = STARTER_CUSTOMERS.map(
+    const ids = ALL_CUSTOMERS.map(
       (id) => /<clipPath id="([^"]+)"/.exec(customerArt(id))?.[1] ?? '',
     );
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('tells the three customers apart by their fur', () => {
+  it('tells the customers apart by their skin', () => {
     expect(customerArt('bear')).toContain(PALETTE.fur);
     expect(customerArt('rabbit')).toContain(PALETTE.furRabbit);
     expect(customerArt('cat')).toContain(PALETTE.furCat);
+    expect(customerArt('frog')).toContain(PALETTE.frog);
     expect(customerArt('rabbit')).not.toContain(PALETTE.fur);
     expect(customerArt('cat')).not.toContain(PALETTE.furRabbit);
+    // The frog is the one customer with no fur at all – she must not borrow anyone's.
+    expect(customerArt('frog')).not.toContain(PALETTE.fur);
+    expect(customerArt('frog')).not.toContain(PALETTE.furRabbit);
+    expect(customerArt('frog')).not.toContain(PALETTE.furCat);
   });
 
   it('makes the bell a target a thumb can hit', () => {

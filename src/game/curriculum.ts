@@ -19,9 +19,9 @@ export type Level = 1 | 2 | 3 | 4 | 5;
 export const LEVEL1_LETTERS = 4;
 /** A brand new game starts with two letters, not the whole P1 pool (návrh 5.4). */
 export const LEVEL1_INITIAL_LETTERS = 2;
-/** The highest stage the kitchen can really play today; STEP-23 ("kolik je") raises it. */
+/** The highest stage the kitchen can really play today; STEP-24 ("kolik je") raises it. */
 export const MAX_NUMBER_LEVEL: Level = 2;
-/** The highest stage the kitchen can really play today; STEP-26 (the word pattern) raises it. */
+/** The highest stage the kitchen can really play today; STEP-27 (the word pattern) raises it. */
 export const MAX_LETTER_LEVEL: Level = 2;
 /** A short name plus a small family would leave stage 2 tiny – top it up from the order. */
 export const LEVEL2_MIN_LETTERS = 8;
@@ -78,7 +78,7 @@ export function letterPool(settings: Settings, level: Level): Letter[] {
       return order.slice(0, Math.max(LEVEL2_MIN_LETTERS, personalLetters(settings).length));
     case 3:
     case 4:
-      // P4 adds the diacritics of the child's name on top of these – STEP-27.
+      // P4 adds the diacritics of the child's name on top of these – STEP-28.
       return order.slice(0, LEVEL3_LETTERS);
     case 5:
       return order;

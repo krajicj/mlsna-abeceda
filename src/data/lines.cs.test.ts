@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { BASE_LETTERS, FRUITS, LETTER_WORDS, ROLE_WORDS } from './curriculum.ts';
+import { SHOP_ITEMS } from './shop.ts';
 import {
   CASTING_LINES,
   countAloudLine,
@@ -19,6 +20,10 @@ import {
   orderNextLetterLine,
   praiseLines,
   seekLine,
+  shopAskLine,
+  shopBoughtLine,
+  shopHelloLines,
+  shopShortLine,
   starLines,
   TURN_LINE,
   wrongLine,
@@ -46,10 +51,11 @@ function textOf(id: string): string {
 describe('manifest of voice lines', () => {
   it('holds exactly the groups the plan pays for', () => {
     // 254 clips ≈ 4 750 characters (docs/steps/STEP-07, +6 in STEP-09, +2 in STEP-10), +62 for
-    // the second item of an order in STEP-12, +5 for the closed kitchen in STEP-14. Adding lines
-    // means paying for them and regenerating – the number is here so that cost is a conscious
-    // edit, not a surprise.
-    expect(LINES).toHaveLength(321);
+    // the second item of an order in STEP-12, +5 for the closed kitchen in STEP-14, +49 for the
+    // shop in STEP-15 (30 for the raspberry, 19 for the shelf itself). Adding lines means paying
+    // for them and regenerating – the number is here so that cost is a conscious edit, not a
+    // surprise.
+    expect(LINES).toHaveLength(370);
   });
 
   it('has unique ids usable as file names', () => {
@@ -79,6 +85,9 @@ describe('manifest of voice lines', () => {
     expect(textOf(orderCountLine(5, 'strawberry'))).toBe('Prosím pět jahod.');
     expect(textOf(orderCountLine(4, 'cherry'))).toBe('Prosím čtyři třešně.');
     expect(textOf(orderCountLine(7, 'blueberry'))).toBe('Prosím sedm borůvek.');
+    expect(textOf(orderCountLine(1, 'raspberry'))).toBe('Prosím jednu malinu.');
+    expect(textOf(orderCountLine(3, 'raspberry'))).toBe('Prosím tři maliny.');
+    expect(textOf(orderCountLine(6, 'raspberry'))).toBe('Prosím šest malin.');
     expect(textOf(countEnoughLine(1, 'cherry'))).toBe('Už máme jednu třešeň, to stačí!');
     expect(textOf(countEnoughLine(3, 'strawberry'))).toBe('Už máme tři jahody, to stačí!');
   });
@@ -181,6 +190,45 @@ describe('manifest of voice lines', () => {
     for (const id of bellLines()) expect(hasLine(id), id).toBe(true);
   });
 
+  it('sells every thing in the catalogue with its price spelled out (STEP-15)', () => {
+    /** The numeral in the question has to be the one the catalogue charges. */
+    const NUMERALS: Readonly<Record<number, string>> = {
+      1: 'jednu',
+      2: 'dvě',
+      3: 'tři',
+      4: 'čtyři',
+      5: 'pět',
+    };
+    for (const item of SHOP_ITEMS) {
+      const ask = textOf(shopAskLine(item.id));
+      const bought = textOf(shopBoughtLine(item.id));
+      expect(ask, item.id).toMatch(/\?$/);
+      expect(bought.length, item.id).toBeGreaterThan(0);
+      // "za tři hvězdičky", "za pět hvězdiček" – the ending declines, the stem does not; a price
+      // changed without its sentence would make the shop lie about what it charges.
+      expect(ask, item.id).toContain(` ${NUMERALS[item.price]} hvězdič`);
+    }
+  });
+
+  it('has a whole sentence for every number of stars that can be missing (STEP-15)', () => {
+    const dearest = Math.max(...SHOP_ITEMS.map((item) => item.price));
+    for (let missing = 1; missing <= dearest; missing += 1) {
+      expect(hasLine(shopShortLine(missing)), String(missing)).toBe(true);
+    }
+    expect(textOf(shopShortLine(1))).toBe('Chybí ti jedna hvězdička.');
+    expect(textOf(shopShortLine(2))).toBe('Chybí ti dvě hvězdičky.');
+    expect(textOf(shopShortLine(5))).toBe('Chybí ti pět hvězdiček.');
+    // Nothing costs more than five, so the sixth sentence is not paid for and stays silent.
+    expect(hasLine(shopShortLine(6))).toBe(false);
+    expect(hasLine(shopShortLine(0))).toBe(false);
+  });
+
+  it('greets the child in the shop (STEP-15)', () => {
+    expect(shopHelloLines()).toEqual(['shop.hello.1', 'shop.hello.2']);
+    expect(textOf('shop.hello.1')).toBe('Vítej v obchůdku!');
+    for (const id of shopHelloLines()) expect(hasLine(id), id).toBe(true);
+  });
+
   it('asks the child to turn the device over', () => {
     expect(TURN_LINE).toBe('guard.turn');
     expect(textOf(TURN_LINE)).toBe('Otoč mě!');
@@ -214,6 +262,9 @@ describe('id helpers', () => {
     expect(letterWordLine('B', 'brácha')).toBe('letter.word.b.bracha');
     expect(countAloudLine(3)).toBe('count.3');
     expect(countEnoughLine(3, 'cherry')).toBe('count.enough.3.cherry');
+    expect(shopAskLine('fruit.raspberry')).toBe('shop.ask.fruit.raspberry');
+    expect(shopBoughtLine('customer.frog')).toBe('shop.bought.customer.frog');
+    expect(shopShortLine(3)).toBe('shop.short.3');
     expect(praiseLines('female')[0]).toBe('praise.female.1');
   });
 
@@ -232,6 +283,8 @@ describe('id helpers', () => {
     expect(hasLine(orderNextDigitLine(42))).toBe(false);
     expect(hasLine(orderCountLine(0, 'cherry'))).toBe(false);
     expect(hasLine(letterWordLine('K', 'kolo'))).toBe(false);
+    expect(hasLine(shopAskLine('fruit.banana'))).toBe(false);
+    expect(hasLine(shopShortLine(9))).toBe(false);
   });
 });
 

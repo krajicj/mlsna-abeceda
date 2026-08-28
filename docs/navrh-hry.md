@@ -147,7 +147,7 @@ Generátor objednávek si bere položky z obou drah podle toho, kde zrovna kter�
 | Č5 | + „o jednu víc / míň“, nula | výhled |
 
 **Č2 přijde nadvakrát.** Číslice 6–10 otevře STEP-11, ale **počítání zůstane do pěti**
-a „kolik je“ počká na STEP-23: na horní plochu dortu se vejde pět kousků ovoce
+a „kolik je“ počká na STEP-24: na horní plochu dortu se vejde pět kousků ovoce
 (`MAX_CAKE_FRUIT`) a šestý by neměl kam. Druhá řada na dortu je práce s artem, ne
 s generátorem, tak jde do vlastního kroku.
 
@@ -206,7 +206,7 @@ Každé písmeno a číslo má **skóre zvládnutí** 0–5:
   uvolní – radši kratší nabídka než žádná objednávka.
 - Postup na další stupeň: vše v aktuálním stupni má skóre ≥ 3. Zpět jen rodič.
   Dráha nikdy nevyleze výš, než co kuchyně opravdu umí zahrát: dnes Č2 a P2. Strop zvedne
-  STEP-23 (čísla) a STEP-26 (písmena). Bez něj by save tvrdil stupeň, jehož obsah generátor
+  STEP-24 (čísla) a STEP-27 (písmena). Bez něj by save tvrdil stupeň, jehož obsah generátor
   neumí složit.
 - **Pořadí písmen** (počítá se z nastavení): 1) písmena jména dítěte v pořadí, v jakém jsou
   ve jméně, ta s háčkem/čárkou se **přeskočí** (Anička → A, N, I, K; Č přijde až v P4),
@@ -338,7 +338,7 @@ Co **nebude:** streaky, denní odměny, časově omezené nabídky, odemykání 
 
 Zámek: podržet hvězdičky vpravo nahoře 3 s → „Kolik je 4 × 3?“ s číselnou klávesnicí.
 
-Než koutek vznikne (STEP-19), zastupuje ho **dočasná číselná klávesnice na zavřené kuchyni**:
+Než koutek vznikne (STEP-20), zastupuje ho **dočasná číselná klávesnice na zavřené kuchyni**:
 ikona visacího zámku v pravém dolním rohu, kód `1234`, který jenom vynuluje sezení a vytáhne
 mříž. Není to tajemství (repozitář je veřejný), jen brána pro čtyřletou – a jediné místo hry,
 kde je číslice UI, ne učební obsah.

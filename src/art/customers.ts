@@ -6,9 +6,10 @@
 import type { CustomerId } from '../data/customers';
 import { bear } from './bear';
 import { cat } from './cat';
+import { frog } from './frog';
 import { rabbit } from './rabbit';
 
-/** The box every customer is drawn in; `art.test.ts` holds all three of them to it. */
+/** The box every customer is drawn in; `art.test.ts` holds every one of them to it. */
 export const CUSTOMER_WIDTH = 260;
 export const CUSTOMER_HEIGHT = 320;
 
@@ -20,5 +21,7 @@ export function customerArt(id: CustomerId): string {
       return cat();
     case 'bear':
       return bear();
+    case 'frog':
+      return frog();
   }
 }

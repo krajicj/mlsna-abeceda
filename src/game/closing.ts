@@ -8,7 +8,7 @@
  * around the closing, and a kitchen that closed at bedtime is still closed in the morning.
  */
 
-/** How many orders one sitting holds (návrh kap. 4). STEP-19 makes it settable in the parent corner. */
+/** How many orders one sitting holds (návrh kap. 4). STEP-20 makes it settable in the parent corner. */
 export const SESSION_ORDER_LIMIT = 10;
 
 /**
@@ -27,7 +27,7 @@ export const CLOSED_MS = 60 * 60 * 1000;
 export const MAX_CLOSED_MS = 12 * 60 * 60 * 1000;
 
 /**
- * The temporary parent code until the parent corner arrives (STEP-19, návrh kap. 9). It is not a
+ * The temporary parent code until the parent corner arrives (STEP-20, návrh kap. 9). It is not a
  * secret – the repository is public – only a gate a four-year-old does not walk through. Compared
  * as a string: `typed.join('') === PARENT_CODE`.
  */

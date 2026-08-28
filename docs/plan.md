@@ -32,20 +32,21 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-12 | [Delší objednávka: dvě položky, souběžné plnění, jeden hlas a jeden hlídač nečinnosti](steps/STEP-12-two-item-order.md) | M2 | 11 | done |
 | STEP-13 | [Slučitelný formát save (v2): migrace, `earned`/`purchases`, slučování](steps/STEP-13-mergeable-save-format.md) | M2 | 11 | done |
 | STEP-14 | [Konec sezení: zavírací mříž, minutka a rodičovský zámek](steps/STEP-14-session-end-and-closing.md) | M2 | 13 | done |
-| STEP-15 | Obchůdek | M3 | 13 | — |
-| STEP-16 | Album | M3 | 13 | — |
-| STEP-17 | Překvapení | M3 | 13 | — |
-| STEP-18 | Druhý výrobek: zmrzlinka | M3 | 15 | — |
-| STEP-19 | Rodičovský koutek: zámek, nastavení dítěte a rodiny (jméno, rod, členové), limity, zvuk | M4 | 13, 14 | — |
-| STEP-20 | Hlasový balíček jmen (`personal.json`, index, oslovení) | M4 | 07, 19 | — |
-| STEP-21 | Pokrok, export/import, mazání dat | M4 | 13, 19 | — |
-| STEP-22 | PWA ručně (service worker, manifest), offline, ikona na ploše | M4 | 02 | — |
-| STEP-23 | „Kolik je“ a dva druhy ovoce (Č2–Č3) | M5 | 11 | — |
-| STEP-24 | Sčítání (Č4) | M5 | 23 | — |
-| STEP-25 | Výrobky: palačinky, koktejl | M5 | 18 | — |
-| STEP-26 | Slovo se vzorem (P3) | M6 | 11 | — |
-| STEP-27 | Slovo bez vzoru, diakritika ze jména, jméno jako milník (P4) | M6 | 26, 20 | — |
-| STEP-28 | Lísteček (P5) | M6 | 27 | — |
+| STEP-15 | [Obchůdek: katalog, nákup a odemykání (logika)](steps/STEP-15-shop-catalogue-and-unlocks.md) | M3 | 13 | done |
+| STEP-16 | Obchůdek: scéna, košík a výzdoba kuchyně | M3 | 15 | — |
+| STEP-17 | Album | M3 | 13 | — |
+| STEP-18 | Překvapení | M3 | 13 | — |
+| STEP-19 | Druhý výrobek: zmrzlinka | M3 | 15, 16 | — |
+| STEP-20 | Rodičovský koutek: zámek, nastavení dítěte a rodiny (jméno, rod, členové), limity, zvuk | M4 | 13, 14 | — |
+| STEP-21 | Hlasový balíček jmen (`personal.json`, index, oslovení) | M4 | 07, 20 | — |
+| STEP-22 | Pokrok, export/import, mazání dat | M4 | 13, 20 | — |
+| STEP-23 | PWA ručně (service worker, manifest), offline, ikona na ploše | M4 | 02 | — |
+| STEP-24 | „Kolik je“ a dva druhy ovoce (Č2–Č3) | M5 | 11 | — |
+| STEP-25 | Sčítání (Č4) | M5 | 24 | — |
+| STEP-26 | Výrobky: palačinky, koktejl | M5 | 19 | — |
+| STEP-27 | Slovo se vzorem (P3) | M6 | 11 | — |
+| STEP-28 | Slovo bez vzoru, diakritika ze jména, jméno jako milník (P4) | M6 | 27, 21 | — |
+| STEP-29 | Lísteček (P5) | M6 | 28 | — |
 
 ## Poznámky
 
@@ -88,7 +89,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   posunu o jedno ukazovaly na špatný krok (rodičovský koutek je 17, ne 16; „Kolik je" 21, ne 20;
   diakritika 25, ne 24). Hlášku „Otoč mě!" k overlay orientace vygeneroval **STEP-09** ve stejném
   běhu jako hlášky k dokončení objednávky; overlay ji říká při přechodu do portrétu.
-- Kroky se stejným „Po“ (např. 15/16/17, 03/04) jdou dělat nezávisle na sobě.
+- Kroky se stejným „Po“ (např. 17/18, 03/04) jdou dělat nezávisle na sobě.
 - **STEP-09** dostane navíc krátkou „dopékací“ pointu při dokončení objednávky (patro nebo
   poleva na výrobku, cinknutí trouby, konfety) – domluveno s autorem jako levná náhrada za
   mechaniku pečení, viz `navrh-hry.md` kap. 13 bod 2.
@@ -107,9 +108,9 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   a perníček opře zepředu. Při plánování STEP-11 se ukázalo, že u **dvoupoložkové** objednávky
   (STEP-12) kolize nehrozí: pravidlo z návrhu 5.3 („při 2+ položkách vždy aspoň jedna z každé
   dráhy“) nikdy nespojí počítání se svíčkou, a perníček stojí o kus níž než ovoce. Posunout
-  jedno z toho bude potřeba až u **tří** položek, tedy se stupni Č3/P3 (STEP-23, STEP-26).
+  jedno z toho bude potřeba až u **tří** položek, tedy se stupni Č3/P3 (STEP-24, STEP-27).
 - **Rod dítěte** (holčička / kluk / neutrální) přibyl do nastavení kvůli tvarům pochval
-  (`navrh-hry.md` kap. 3 a 9). STEP-07 vygeneruje všechny tři sady, přepínač je v STEP-19;
+  (`navrh-hry.md` kap. 3 a 9). STEP-07 vygeneruje všechny tři sady, přepínač je v STEP-20;
   do té doby hra chválí neutrálně.
 - **Ukládání postupu (srpen 2026):** `localStorage` sám nestačí – dcera hraje na víc zařízeních
   a WebKit maže script-writable úložiště po sedmi dnech používání Safari bez interakce se
@@ -127,7 +128,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
      písmena na perníčcích a číslice na svíčkách zůstanou v původním měřítku vedle vyrostlé
      grafiky; po reloadu je to v pořádku. Je to starší chování `resize()` ve scéně (týká se
      i svíček, kterých se STEP-11 nedotkl), na tabletu na to dítě nenarazí — ale u PWA
-     (STEP-22) nebo rodičovského koutku by to chtělo srovnat.
+     (STEP-23) nebo rodičovského koutku by to chtělo srovnat.
 
 - **Formát save patří do STEP-13 (srpen 2026, hotovo).** Při plánování STEP-11 se prošlo, co v uloženém
   záznamu doopravdy je. Dobrá zpráva: **skóre zvládnutí tam je od začátku** (`tracks`: `level`,
@@ -168,7 +169,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   jedna prosba. Manifest tím roste na **316 hlášek** a STEP-12 si vyžádá běh
   `docker compose run --rm voice` (generátor je přírůstkový, vyrobí jen nové). Když položka zazní
   sama, použije se vždycky tvar s „Prosím“, takže osamocené „A ještě…“ nikdy nezazní. Věty pro
-  **třetí** pozici se zatím nedělají – přijdou se stupni Č3/P3 (STEP-23, STEP-26).
+  **třetí** pozici se zatím nedělají – přijdou se stupni Č3/P3 (STEP-24, STEP-27).
 - **Police mají po STEP-12 vlastní modul každá.** Při implementaci se ukázalo, že dvoupoložková
   objednávka bývá **číslice + písmeno** (obě jsou „výběr z police“, jen každá z jiné dráhy), takže
   jeden `choice-item` na scénu nestačil – uměl vždycky jen jednu polici. `createChoiceItem` proto
@@ -189,7 +190,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   nové sezení). **Zvířátka nemávají** (rozhodnutí
   autora): zákazník odejde jako po každé objednávce a teprve pak se zavírá. Zavřenou kuchyni jde
   otevřít **dočasným kódem `1234`** na ikoně zámku vpravo dole – náhražka rodičovského koutku, aby
-  zavřená kuchyně nebyla na celou tu dobu slepá ulička; STEP-19 ji nahradí držením hvězdiček
+  zavřená kuchyně nebyla na celou tu dobu slepá ulička; STEP-20 ji nahradí držením hvězdiček
   a příkladem 4 × 3. A **stav sezení se ukládá** (kolik objednávek, kdy byla poslední, do kdy
   zavřeno), takže ho reload neobejde; „obnova sezení po reloadu“ z roadmapy znamená právě tohle,
   ne obnovu rozehrané objednávky – tou se nic neztrácí, protože save se zapisuje až s dokončenou
@@ -201,6 +202,19 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   formátu = migrace s bumpem“ míří na změny, které **přeznačují existující data** (jako v1 → v2
   u hvězdiček). Sezení se navíc **neslučuje**: je to vlastnost zařízení, ne postupu, takže při
   importu zůstává to lokální (stejně jako `settings`).
-- **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-22 do STEP-04: zatím se
+- **Obchůdek se rozdělil na dva kroky (srpen 2026).** Řádek roadmapy sliboval obchůdek v jednom
+  kroku; autor rozhodl jinak. **STEP-15 je logika a data** – katalog zboží, nákup nad `earned`
+  a `purchases` ze STEP-13, brány, kterými se koupené věci propíšou do hry (odemčené ovoce do
+  generátoru, odemčená zvířátka do fronty zákazníků), a obsah, který kuchyně už umí nakreslit sama:
+  **malina** jako čtvrté ovoce a **žabka** jako čtvrtý zákazník. Ve hře po něm není vidět nic
+  nového, koupit se dá jedině z konzole. **STEP-16 je scéna** – regál s cenami v prázdných
+  hvězdičkách, otázka a velké ✓ / ✗, zachrastění při nedostatku, **nákupní košík vedle počítadla
+  hvězdiček** (rozhodnutí autora) a výzdoba kuchyně (kytka, záclony, kočička na polici, rádio)
+  včetně jejích kreseb a míst. Sortiment prvního kola je podle návrhu kap. 7 všechno tři: ovoce,
+  zákazník i výzdoba. **Za zavřenou mříží se nenakupuje** (rozhodnutí autora) – zavřeno je zavřeno.
+  **Zbytek roadmapy se posunul o jedno číslo** (staré STEP-16 „Album“ je dnes STEP-17 atd.);
+  odkazy `STEP-NN` v komentářích kódu srovná implementace STEP-15 (22 míst ve 12 souborech, seznam
+  v jeho plánu). Hotové plány v `docs/steps/` se nepřečíslovávají.
+- **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-23 do STEP-04: zatím se
   vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
-  kuchyně nešlo posoudit. STEP-22 řeší jen PWA a offline.
+  kuchyně nešlo posoudit. STEP-23 řeší jen PWA a offline.

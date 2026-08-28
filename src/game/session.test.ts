@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { STARTER_CUSTOMERS } from '../data/customers';
+import { STARTER_FRUITS } from '../data/curriculum';
 import { CLOSED_MS, isClosed, NEW_SESSION, SESSION_ORDER_LIMIT } from './closing';
 import { countItemOf, MAX_COUNT } from './counting';
 import { createTrack, MASTERY_KNOWN } from './mastery';
@@ -45,7 +46,7 @@ describe('createSession', () => {
     expect(item).not.toBeNull();
     expect(item!.amount).toBeGreaterThanOrEqual(1);
     expect(item!.amount).toBeLessThanOrEqual(MAX_COUNT);
-    expect(['strawberry', 'blueberry', 'cherry']).toContain(item!.fruit);
+    expect(STARTER_FRUITS).toContain(item!.fruit);
   });
 
   it('continues where the saved progress left off', () => {
@@ -450,5 +451,85 @@ describe('session – a freshly introduced element', () => {
       });
     };
     expect(run()).toEqual(run());
+  });
+});
+
+describe('session.buy', () => {
+  /** Only `complete()` and `buy()` write; a session that is merely opened writes nothing. */
+  function withStars(earned: number): StorageLike & { readonly writes: string[] } {
+    return memoryStorage({ ...createSave(), stars: { earned, purchases: {} } });
+  }
+
+  it('writes the purchase down and keeps the stars earned', () => {
+    const storage = withStars(5);
+    const session = createSession(storage);
+    expect(session.buy('fruit.raspberry')).toBe(true);
+    expect(session.save.stars).toEqual({ earned: 5, purchases: { 'fruit.raspberry': 3 } });
+    const stored = parseSave(storage.getItem(SAVE_KEY) ?? '');
+    expect(stored?.stars.purchases).toEqual({ 'fruit.raspberry': 3 });
+  });
+
+  it('writes nothing at all when the thing cannot be bought', () => {
+    const storage = withStars(2);
+    const session = createSession(storage);
+    expect(session.buy('fruit.raspberry')).toBe(false); // two stars, the raspberry costs three
+    expect(session.buy('fruit.banana')).toBe(false); // not in the catalogue
+    expect(storage.writes).toEqual([]);
+    expect(session.save.stars).toEqual({ earned: 2, purchases: {} });
+  });
+
+  it('refuses to charge for the same thing twice', () => {
+    const session = createSession(withStars(9));
+    expect(session.buy('fruit.raspberry')).toBe(true);
+    expect(session.buy('fruit.raspberry')).toBe(false);
+    expect(session.save.stars.purchases).toEqual({ 'fruit.raspberry': 3 });
+  });
+
+  it('lets the bought fruit into the orders that follow', () => {
+    const session = createSession(withStars(9), { rng: createRng(3) });
+    const before = Array.from({ length: 20 }, () => {
+      const item = countItemOf(session.order);
+      session.complete([]);
+      return item?.fruit ?? null;
+    });
+    expect(before).not.toContain('raspberry');
+    expect(session.buy('fruit.raspberry')).toBe(true);
+    const after = Array.from({ length: 20 }, () => {
+      const item = countItemOf(session.order);
+      session.complete([]);
+      return item?.fruit ?? null;
+    });
+    expect(after).toContain('raspberry');
+  });
+
+  it('leaves the order already on the counter alone', () => {
+    const session = createSession(withStars(9), { rng: createRng(5) });
+    const before = session.order;
+    session.buy('fruit.raspberry');
+    expect(session.order).toBe(before);
+  });
+
+  it('sends the bought animal in without a reload, and never before', () => {
+    const session = createSession(withStars(9), { rng: createRng(11) });
+    const before = Array.from({ length: 20 }, () => {
+      const who = session.customer;
+      session.complete([]);
+      return who;
+    });
+    expect(before).not.toContain('frog');
+    expect(session.buy('customer.frog')).toBe(true);
+    const after = Array.from({ length: 20 }, () => {
+      const who = session.customer;
+      session.complete([]);
+      return who;
+    });
+    expect(after).toContain('frog');
+  });
+
+  it('survives a reload – the purchase is read back with the record', () => {
+    const storage = withStars(9);
+    createSession(storage).buy('customer.frog');
+    const next = createSession(storage);
+    expect(next.save.stars.purchases).toEqual({ 'customer.frog': 5 });
   });
 });

@@ -7,7 +7,7 @@
 import {
   CONFUSABLE_DIGITS,
   CONFUSABLE_LETTERS,
-  FRUITS,
+  STARTER_FRUITS,
   type FruitKind,
   type Letter,
 } from '../data/curriculum';
@@ -32,7 +32,7 @@ export interface Order {
   readonly items: readonly OrderItem[];
 }
 
-/** Návrh 5.3: the first ten orders hold one item, then two. Three arrive with Č3/P3 (STEP-23/26). */
+/** Návrh 5.3: the first ten orders hold one item, then two. Three arrive with Č3/P3 (STEP-24/26). */
 export const SINGLE_ITEM_ORDERS = 10;
 export const MAX_ORDER_ITEMS = 2;
 
@@ -60,6 +60,12 @@ export interface OrderInput {
   /** Elements of the last order of the same track – do not ask for those again right away. */
   readonly avoid?: readonly string[];
   readonly avoidFruit?: FruitKind | null;
+  /**
+   * Which kinds of fruit may be ordered – `unlockedFruits()` of the shop (STEP-15). Missing or
+   * empty means the starting three: the default is deliberately NOT `FRUITS`, which also holds the
+   * raspberry the child has to buy, so nobody can be asked for fruit that is not in the kitchen.
+   */
+  readonly fruits?: readonly FruitKind[];
   /**
    * The element each track has just introduced. It becomes the target of that track's next order
    * (návrh 5.4); an element the item cannot use (an eight for counting) is simply not taken.
@@ -128,7 +134,7 @@ function buildChoices(
 
 function countItem(rng: Rng, input: OrderInput, avoid: readonly string[]): OrderItem {
   // Only five pieces of fruit fit on the cake (MAX_CAKE_FRUIT), so a bigger number waits for a
-  // candle order – the second row on the cake is STEP-23.
+  // candle order – the second row on the cake is STEP-24.
   const element = pickTarget(
     rng,
     input.tracks.numbers,
@@ -136,10 +142,11 @@ function countItem(rng: Rng, input: OrderInput, avoid: readonly string[]): Order
     (candidate) => Number(candidate) <= MAX_COUNT,
     introducedOf(input, 'numbers'),
   );
-  const fruits = FRUITS.filter((fruit) => fruit !== input.avoidFruit);
+  const unlocked = input.fruits?.length ? input.fruits : STARTER_FRUITS;
+  const fruits = unlocked.filter((fruit) => fruit !== input.avoidFruit);
   return {
     type: 'count',
-    fruit: pick(rng, fruits.length > 0 ? fruits : FRUITS),
+    fruit: pick(rng, fruits.length > 0 ? fruits : unlocked),
     amount: Number(element),
   };
 }

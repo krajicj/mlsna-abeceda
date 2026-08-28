@@ -1,8 +1,9 @@
 /**
- * The three starting fruits (docs/navrh-hry.md ch. 5.6). The strawberry is the `strawberry` group
- * of the design canvas; the blueberry and the cherry are not on the canvas and were drawn for
- * STEP-05 in the same key. All three share one drawing box, so the bowl, the cake and the flight
- * animation can swap them without moving anything.
+ * The fruit the kitchen counts (docs/navrh-hry.md ch. 5.6). The strawberry is the `strawberry`
+ * group of the design canvas; the blueberry and the cherry are not on the canvas and were drawn
+ * for STEP-05 in the same key, the raspberry for STEP-15 (it is bought in the shop). All of them
+ * share one drawing box, so the bowl, the cake and the flight animation can swap them without
+ * moving anything.
  */
 import type { FruitKind } from '../data/curriculum';
 import { PALETTE, stroke, svg } from './svg';
@@ -41,7 +42,29 @@ const cherry = `
   <ellipse cx="13.5" cy="22" rx="4.5" ry="3" transform="rotate(-25 13.5 22)" fill="${PALETTE.cherryLight}"></ellipse>
 `;
 
-const SHAPES: Readonly<Record<FruitKind, string>> = { strawberry, blueberry, cherry };
+/**
+ * A cluster of drupelets, not a smooth berry: the raspberry has to stay apart from the strawberry
+ * at the size of a piece in the bowl (44 px), and pink alone would not do it – the bumps carry it.
+ */
+const raspberry = `
+  <ellipse cx="13" cy="4" rx="7.5" ry="3.5" transform="rotate(-25 13 4)" fill="${PALETTE.leaf}" ${stroke(2.5)}></ellipse>
+  <ellipse cx="27" cy="4" rx="7.5" ry="3.5" transform="rotate(25 27 4)" fill="${PALETTE.leaf}" ${stroke(2.5)}></ellipse>
+  <path d="M20 44 C8 38 3 29 3 21 C3 12 11 7 20 7 C29 7 37 12 37 21 C37 29 32 38 20 44 Z" fill="${PALETTE.raspberry}" ${stroke(3.5)}></path>
+  <g fill="${PALETTE.raspberry}" ${stroke(2)}>
+    <circle cx="12" cy="16" r="5.5"></circle>
+    <circle cx="20" cy="13" r="5.5"></circle>
+    <circle cx="28" cy="16" r="5.5"></circle>
+    <circle cx="11" cy="26" r="5.5"></circle>
+    <circle cx="20" cy="24" r="5.5"></circle>
+    <circle cx="29" cy="26" r="5.5"></circle>
+    <circle cx="15" cy="35" r="5"></circle>
+    <circle cx="25" cy="35" r="5"></circle>
+  </g>
+  <circle cx="12" cy="16" r="2" fill="${PALETTE.raspberryLight}"></circle>
+  <circle cx="20" cy="13" r="2" fill="${PALETTE.raspberryLight}"></circle>
+`;
+
+const SHAPES: Readonly<Record<FruitKind, string>> = { strawberry, blueberry, cherry, raspberry };
 
 /** Width of a fruit of the given height – the drawing is never stretched. */
 export function fruitWidth(height: number): number {

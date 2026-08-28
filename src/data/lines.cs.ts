@@ -8,7 +8,8 @@
  *
  * CAREFUL: this file is also read by plain Node (the generator, type stripping), and Node resolves
  * no extensionless specifiers. Value imports must therefore carry the `.ts` extension and may only
- * come from `./curriculum.ts`; anything else has to be an `import type`, which is erased on load.
+ * come from `./curriculum.ts` and `./shop.ts` (both are import-free themselves); anything else has
+ * to be an `import type`, which is erased on load.
  */
 import {
   BASE_LETTERS,
@@ -19,6 +20,7 @@ import {
   type FruitKind,
   type Letter,
 } from './curriculum.ts';
+import { SHOP_ITEMS, type ShopItemId } from './shop.ts';
 
 /** Who says the line. STEP-10 adds 'animal' for the customers. */
 export type VoiceRole = 'narrator';
@@ -32,7 +34,7 @@ export interface Line {
   readonly voice?: VoiceRole;
 }
 
-/** Which set of praises the child hears; the setting arrives in STEP-19, until then 'neutral'. */
+/** Which set of praises the child hears; the setting arrives in STEP-20, until then 'neutral'. */
 export type PraiseGender = 'neutral' | 'female' | 'male';
 
 /** The numbers of M1 – the first ten, never a zero (návrh 5.2). */
@@ -132,6 +134,7 @@ const FRUIT_FORMS: Readonly<
   strawberry: { one: 'jednu jahodu', few: 'jahody', many: 'jahod' },
   blueberry: { one: 'jednu borůvku', few: 'borůvky', many: 'borůvek' },
   cherry: { one: 'jednu třešeň', few: 'třešně', many: 'třešní' },
+  raspberry: { one: 'jednu malinu', few: 'maliny', many: 'malin' },
 };
 
 /** Praise, three sets (návrh kap. 8). The gender is the child's, see PraiseGender. */
@@ -192,6 +195,57 @@ const CLOSED: readonly string[] = [
   'Kuchyně má zavřeno. Přijď zase za chvilku!',
   'Teď je zavřeno. Až doběhnou hodiny, otevřeme!',
 ];
+
+/**
+ * The two sentences of the shop, one per thing on the shelf (STEP-15): the question the narrator
+ * asks when the child taps it, and the answer when it is paid for. The price is IN the question
+ * ("za tři hvězdičky"), so a price cannot be changed without rewriting the sentence – the test in
+ * lines.cs.test.ts holds the two together. The table is keyed by `ShopItemId`, so a new thing in
+ * the catalogue does not compile until it has both sentences.
+ */
+const SHOP_TEXTS: Readonly<Record<ShopItemId, { readonly ask: string; readonly bought: string }>> =
+  {
+    'fruit.raspberry': {
+      ask: 'Chceš koupit maliny za tři hvězdičky?',
+      bought: 'Maliny jsou tvoje!',
+    },
+    'decor.flower': {
+      ask: 'Chceš koupit kytku za tři hvězdičky?',
+      bought: 'Kytka je tvoje!',
+    },
+    'decor.curtains': {
+      ask: 'Chceš koupit záclony za čtyři hvězdičky?',
+      bought: 'Záclony jsou tvoje!',
+    },
+    'customer.frog': {
+      ask: 'Chceš pozvat žabku za pět hvězdiček?',
+      bought: 'Žabka přijde na návštěvu!',
+    },
+    'decor.cat': {
+      ask: 'Chceš koupit kočičku na polici za pět hvězdiček?',
+      bought: 'Kočička je tvoje!',
+    },
+    'decor.radio': {
+      ask: 'Chceš koupit rádio za pět hvězdiček?',
+      bought: 'Rádio je tvoje!',
+    },
+  };
+
+/**
+ * "Chybí ti tři hvězdičky." – five whole sentences and not one built from a numeral plus a noun:
+ * Czech declines (jedna hvězdička × dvě hvězdičky × pět hvězdiček) and rule 7 forbids stitching.
+ * Five is enough because nothing in the catalogue costs more than five stars.
+ */
+const SHOP_SHORT: readonly string[] = [
+  'Chybí ti jedna hvězdička.',
+  'Chybí ti dvě hvězdičky.',
+  'Chybí ti tři hvězdičky.',
+  'Chybí ti čtyři hvězdičky.',
+  'Chybí ti pět hvězdiček.',
+];
+
+/** The shop opens (STEP-16); said once, while the shelf slides in. */
+const SHOP_HELLO: readonly string[] = ['Vítej v obchůdku!', 'Co si dneska koupíme?'];
 
 /** The shutter goes back up – the timer ran out, or a grown-up typed the code. */
 export const OPEN_LINE = 'open.1';
@@ -323,6 +377,24 @@ export function closedLines(): readonly string[] {
   return CLOSED.map((_, index) => `closed.${index + 1}`);
 }
 
+/** "Chceš koupit maliny za tři hvězdičky?" – the id carries the item id, so it reads in the log. */
+export function shopAskLine(id: string): string {
+  return `shop.ask.${id}`;
+}
+
+export function shopBoughtLine(id: string): string {
+  return `shop.bought.${id}`;
+}
+
+/** 1…5; anything else has no clip and `hasLine()` says so – the game then simply stays silent. */
+export function shopShortLine(missing: number): string {
+  return `shop.short.${missing}`;
+}
+
+export function shopHelloLines(): readonly string[] {
+  return SHOP_HELLO.map((_, index) => `shop.hello.${index + 1}`);
+}
+
 const lines: Line[] = [];
 const ids = new Set<string>();
 
@@ -387,6 +459,14 @@ for (const [index, text] of STAR.entries()) add(`star.${index + 1}`, text);
 for (const [index, text] of BELL.entries()) add(`bell.${index + 1}`, text);
 for (const [index, text] of CLOSING.entries()) add(`closing.${index + 1}`, text);
 for (const [index, text] of CLOSED.entries()) add(`closed.${index + 1}`, text);
+// Driven by the catalogue, so the shelf and the narrator can never hold different things.
+for (const item of SHOP_ITEMS) {
+  const texts = SHOP_TEXTS[item.id];
+  add(shopAskLine(item.id), texts.ask);
+  add(shopBoughtLine(item.id), texts.bought);
+}
+for (const [index, text] of SHOP_SHORT.entries()) add(shopShortLine(index + 1), text);
+for (const [index, text] of SHOP_HELLO.entries()) add(`shop.hello.${index + 1}`, text);
 add(OPEN_LINE, OPEN_TEXT);
 add(TURN_LINE, TURN_TEXT);
 

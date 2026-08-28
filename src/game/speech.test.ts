@@ -8,6 +8,7 @@ import {
   type Letter,
 } from '../data/curriculum';
 import { hasLine } from '../data/lines.cs';
+import { SHOP_ITEMS } from '../data/shop';
 import type { Order, OrderItem } from './orders';
 import { createRng } from './rng';
 import {
@@ -20,6 +21,7 @@ import {
   createFinishPicker,
   createLinePicker,
   createPraisePicker,
+  createShopHelloPicker,
   createStarPicker,
   enoughSpeech,
   hintSpeech,
@@ -28,6 +30,10 @@ import {
   orderPreload,
   orderSpeech,
   repeatSpeech,
+  shopAskSpeech,
+  shopBoughtSpeech,
+  shopPreload,
+  shopShortSpeech,
 } from './speech';
 
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
@@ -355,6 +361,55 @@ describe('the pickers of the finale', () => {
 
   it('alternates the two star lines', () => {
     const picker = createStarPicker({ rng: createRng(9) });
+    const seen = new Set<string>();
+    let previous = '';
+    for (let draw = 0; draw < 20; draw += 1) {
+      const id = picker.next()[0]!;
+      expect(id).not.toBe(previous);
+      expect(hasLine(id)).toBe(true);
+      seen.add(id);
+      previous = id;
+    }
+    expect(seen.size).toBe(2);
+  });
+});
+
+describe('the shop (STEP-15)', () => {
+  it('has a question and a confirmation for everything on the shelf', () => {
+    for (const item of SHOP_ITEMS) {
+      expectKnown(shopAskSpeech(item.id));
+      expectKnown(shopBoughtSpeech(item.id));
+    }
+  });
+
+  it('says how many stars are missing, up to the price of the dearest thing', () => {
+    const dearest = Math.max(...SHOP_ITEMS.map((item) => item.price));
+    for (let missing = 1; missing <= dearest; missing += 1) {
+      expectKnown(shopShortSpeech(missing));
+    }
+  });
+
+  it('stays silent instead of saying something wrong', () => {
+    // Rule 2: nothing here can block the game, so an impossible number is simply not spoken.
+    expect(shopShortSpeech(0)).toEqual([]);
+    expect(shopShortSpeech(9)).toEqual([]);
+    expect(shopShortSpeech(Number.NaN)).toEqual([]);
+    expect(shopAskSpeech('fruit.banana').filter(hasLine)).toEqual([]);
+  });
+
+  it('fetches everything the shelf can say before the child taps it', () => {
+    const ids = shopPreload();
+    expectKnown(ids);
+    expect(ids).toContain('shop.hello.1');
+    for (const item of SHOP_ITEMS) {
+      expect(ids).toContain(`shop.ask.${item.id}`);
+      expect(ids).toContain(`shop.bought.${item.id}`);
+    }
+    expect(ids).toContain('shop.short.5');
+  });
+
+  it('greets with a different sentence each time', () => {
+    const picker = createShopHelloPicker({ rng: createRng(6) });
     const seen = new Set<string>();
     let previous = '';
     for (let draw = 0; draw < 20; draw += 1) {

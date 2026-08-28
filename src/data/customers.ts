@@ -10,7 +10,7 @@
  * CAREFUL: read by plain Node too (type stripping), so this file stays import-free - the same rule
  * as curriculum.ts and sfx.ts.
  */
-export type CustomerId = 'bear' | 'rabbit' | 'cat';
+export type CustomerId = 'bear' | 'rabbit' | 'cat' | 'frog';
 
 export interface Customer {
   readonly id: CustomerId;
@@ -27,11 +27,15 @@ export const CUSTOMERS: Readonly<Record<CustomerId, Customer>> = {
   bear: { id: 'bear', label: 'medvídek', mouth: { x: 0.5, y: 0.469 } },
   rabbit: { id: 'rabbit', label: 'zajíček', mouth: { x: 0.5, y: 0.506 } },
   cat: { id: 'cat', label: 'kočička', mouth: { x: 0.5, y: 0.488 } },
+  /** Bought in the shop for five stars (STEP-15); a wide mouth sits higher than a muzzle. */
+  frog: { id: 'frog', label: 'žabka', mouth: { x: 0.5, y: 0.472 } },
 };
 
 /** Who is in the game from the first order (návrh kap. 6); more animals arrive with the shop. */
 export const STARTER_CUSTOMERS: readonly CustomerId[] = ['bear', 'rabbit', 'cat'];
 
+/** `hasOwnProperty` and not `in`: a key from JSON carries Object.prototype, so `in` would claim
+ *  'toString' is a customer. Reading the table keeps another animal down to one row above. */
 export function isCustomerId(value: string): value is CustomerId {
-  return value === 'bear' || value === 'rabbit' || value === 'cat';
+  return Object.prototype.hasOwnProperty.call(CUSTOMERS, value);
 }
