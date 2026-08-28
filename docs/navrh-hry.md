@@ -107,14 +107,14 @@ Stejné mechaniky, jiný obrázek – každý nový výrobek je odměna z obchů
 Po **10 objednávkách** (výchozí; rodič nastaví jiný počet, minutový limit nebo vypne) kuchyně zavře:
 zákazník odejde jako po každé objednávce, kuchyně ztmavne, ze shora sjede **mříž** jako u krámku
 v obchoďáku (kuchyně za ní zůstane vidět) a vypravěč řekne „Kuchyně dneska zavírá, dobrou noc!“.
-Na mříži visí **kuchyňská minutka**: ubývající výseč odpočítává dvě hodiny do otevření. Cedule
+Na mříži visí **kuchyňská minutka**: ubývající výseč odpočítává hodinu do otevření. Cedule
 „Zavřeno“ tu není a nebude – text v herním UI zakazuje pravidlo 1, mříž a hodiny řeknou totéž
 obrázkem. Klepnutí na mříž odpoví „Kuchyně má zavřeno“; zvířátka nemávají (rozhodnutí autora,
 srpen 2026).
 
 **Stav sezení se ukládá** (`session` v záznamu): kolik objednávek má sezení za sebou, kdy byla
 poslední a do kdy je zavřeno. Reload tedy zavíračku neobejde – kuchyně se otevře rovnou zavřená,
-jen bez rachotu. Po pauze delší než dvě hodiny se sezení počítá znovu od jedné. Znovu otevře
+jen bez rachotu. Po pauze delší než hodinu se sezení počítá znovu od jedné. Znovu otevře
 rodič (zámek, kap. 9), nebo kuchyně sama, jakmile minutka doběhne. Účel: hra sama říká „dost“.
 
 ## 5. Učení: dvě dráhy, jedna objednávka

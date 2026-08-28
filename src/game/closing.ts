@@ -1,6 +1,6 @@
 /**
  * The end of a sitting (docs/navrh-hry.md ch. 4): after ten orders the kitchen closes itself for
- * two hours – "the game itself says enough", so the grown-up does not have to. Pure and DOM-free
+ * an hour – "the game itself says enough", so the grown-up does not have to. Pure and DOM-free
  * like the rest of `src/game/`; the clock is always a parameter, never `Date.now()` inside, so the
  * whole thing is testable in Node and the scene stays the only place that knows what time it is.
  *
@@ -13,10 +13,11 @@ export const SESSION_ORDER_LIMIT = 10;
 
 /**
  * How long the kitchen stays closed – and, with the same number, how long a pause has to be before
- * the next order counts as the first of a NEW sitting. One number for both: a child who takes an
- * hour off finishes the sitting they started, one who comes back in the afternoon starts over.
+ * the next order counts as the first of a NEW sitting (the author's decision, srpen 2026: two hours
+ * was too long a wait). One number for both: a pause the kitchen would have slept through anyway
+ * starts a new sitting, a shorter one carries the sitting on.
  */
-export const CLOSED_MS = 2 * 60 * 60 * 1000;
+export const CLOSED_MS = 60 * 60 * 1000;
 
 /**
  * Not a closing time but a sanity ceiling: past this, `closedUntil` is not a closing any more, it
@@ -52,8 +53,8 @@ export const NEW_SESSION: SessionState = {
 
 /**
  * Does an order at `now` belong to the sitting the state describes, or does it start a new one?
- * A closing that has run out ends the sitting whatever the pause was – that is what the two hours
- * are for.
+ * A closing that has run out ends the sitting whatever the pause was – that is what the closing
+ * is for.
  */
 function continues(state: SessionState, now: number): boolean {
   // The kitchen has opened again in the meantime → the sitting before it is over.

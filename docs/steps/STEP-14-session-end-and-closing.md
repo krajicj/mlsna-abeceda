@@ -651,6 +651,12 @@ projito celé Ruční ověření:
 - Ruční ověření proběhlo na dev serveru, kde jsem na začátku **vymazal `localStorage`** (testovací
   záznam vývojáře, ne zařízení dcery); v prohlížeči teď leží rozehraná hra s 11 hvězdičkami.
 
+**Po dokončení kroku (rozhodnutí autora, srpen 2026): `CLOSED_MS` zkráceno ze dvou hodin na
+jednu.** Text plánu výše mluví o dvou hodinách, protože tak se stavěl; platné číslo je hodina.
+Je to jedna konstanta, takže se zkrátila i pauza, po které se sezení počítá znovu od jedné –
+`MAX_CLOSED_MS` (12 h, pojistka proti rozbitým hodinám) zůstává. Testy se nezměnily: počítají
+z konstanty, ne z čísla.
+
 **Návrhy mimo rozsah** (nedělal jsem je):
 
 - Mříž je hodně hustá (prut po 56 px). Až ji autor uvidí naživo, může chtít řidší rastr nebo

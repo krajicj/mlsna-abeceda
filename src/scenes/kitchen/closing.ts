@@ -1,7 +1,7 @@
 /**
  * The closed kitchen (docs/navrh-hry.md ch. 4). After the tenth order of a sitting a roller shutter
  * comes down over the whole scene the way a shop in a mall closes, a kitchen timer hangs on it and
- * counts the two hours down, and that is the whole message – no text anywhere (rule 1). The child
+ * counts the hour down, and that is the whole message – no text anywhere (rule 1). The child
  * cannot lose anything by it (rule 2): nothing is taken away, the kitchen simply opens again.
  *
  * The padlock in the corner is a stand-in for the parent corner (STEP-19): the code `PARENT_CODE`
@@ -38,9 +38,9 @@ const SHUTTER_MS = 900;
 const PANEL_MS = 180;
 const SHAKE_MS = 400;
 /**
- * How often the timer is redrawn. The wedge of a two-hour closing moves by half a degree in that
- * time, and it is also how late the kitchen can be to open itself – both are fine, and one timer
- * every 15 s costs nothing.
+ * How often the timer is redrawn. The wedge of an hour-long closing moves by a degree and a half in
+ * that time, and it is also how late the kitchen can be to open itself – both are fine, and one
+ * timer every 15 s costs nothing.
  */
 const TICK_MS = 15_000;
 

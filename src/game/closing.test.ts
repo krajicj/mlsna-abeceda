@@ -46,7 +46,7 @@ describe('afterOrder', () => {
     expect(isClosed(state, at(9))).toBe(false);
   });
 
-  it('closes the kitchen for two hours on the tenth', () => {
+  it('closes the kitchen for the whole closing time on the tenth', () => {
     const state = sitting(SESSION_ORDER_LIMIT);
     expect(state.orders).toBe(SESSION_ORDER_LIMIT);
     expect(state.closedFrom).toBe(at(10));
@@ -93,13 +93,13 @@ describe('afterOrder', () => {
 });
 
 describe('closeUntil', () => {
-  it('closes for two hours by default', () => {
+  it('closes for CLOSED_MS by default', () => {
     const state = closeUntil(NEW_SESSION, START);
     expect(state.closedFrom).toBe(START);
     expect(state.closedUntil).toBe(START + CLOSED_MS);
   });
 
-  it('closes for as long as it is told, past the two hours', () => {
+  it('closes for as long as it is told, past the default', () => {
     const three = 3 * 60 * 60 * 1000;
     const state = closeUntil(NEW_SESSION, START, three);
     expect(state.closedUntil).toBe(START + three);
@@ -164,7 +164,7 @@ describe('remainingMs and closedProgress', () => {
     expect(closedProgress(closed, START + CLOSED_MS)).toBe(0);
   });
 
-  it('measures the wedge against the running closing, not against the two hours', () => {
+  it('measures the wedge against the running closing, not against CLOSED_MS', () => {
     const minute = closeUntil(NEW_SESSION, START, MINUTE);
     expect(closedProgress(minute, START)).toBe(1);
     expect(closedProgress(minute, START + MINUTE / 2)).toBeCloseTo(0.5, 5);

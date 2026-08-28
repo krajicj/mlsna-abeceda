@@ -73,7 +73,7 @@ interface KitchenDevHandle {
   finish(): void;
   /** Puts a number in the star counter (the picture only – the save is not touched). */
   stars(count: number): void;
-  /** Closes the kitchen for `minutes` (default the two hours of `CLOSED_MS`) and drops the shutter. */
+  /** Closes the kitchen for `minutes` (default the hour of `CLOSED_MS`) and drops the shutter. */
   close(minutes?: number): void;
   /** Lifts the shutter and starts a new sitting. */
   open(): void;

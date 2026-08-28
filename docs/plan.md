@@ -184,10 +184,12 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 - **Konec sezení vypadá jinak, než sliboval návrh (STEP-14, srpen 2026).** Při plánování se
   rozhodly čtyři věci. **Cedule „Zavřeno" odpadá** – text v herním UI zakazuje pravidlo 1; místo ní
   sjede ze shora **mříž** (kuchyně za ní zůstane vidět) a na ní visí **kuchyňská minutka**
-  s ubývající výsečí, která odpočítává dvě hodiny do otevření. **Zvířátka nemávají** (rozhodnutí
+  s ubývající výsečí, která odpočítává hodinu do otevření (autor ji po STEP-14 zkrátil ze dvou
+  hodin na jednu; je to jedna konstanta `CLOSED_MS`, a platí zároveň pro pauzu, po které začíná
+  nové sezení). **Zvířátka nemávají** (rozhodnutí
   autora): zákazník odejde jako po každé objednávce a teprve pak se zavírá. Zavřenou kuchyni jde
   otevřít **dočasným kódem `1234`** na ikoně zámku vpravo dole – náhražka rodičovského koutku, aby
-  zavřená kuchyně nebyla na dvě hodiny slepá ulička; STEP-19 ji nahradí držením hvězdiček
+  zavřená kuchyně nebyla na celou tu dobu slepá ulička; STEP-19 ji nahradí držením hvězdiček
   a příkladem 4 × 3. A **stav sezení se ukládá** (kolik objednávek, kdy byla poslední, do kdy
   zavřeno), takže ho reload neobejde; „obnova sezení po reloadu“ z roadmapy znamená právě tohle,
   ne obnovu rozehrané objednávky – tou se nic neztrácí, protože save se zapisuje až s dokončenou
