@@ -1921,21 +1921,9 @@
           "loudness": -18
         },
         "shop.ask.decor.cat": {
-          "hash": "3690fa829907effe",
-          "text": "Chceš koupit kočičku na polici za pět hvězdiček?",
-          "bytes": 27630,
-          "loudness": -18
-        },
-        "shop.ask.decor.curtains": {
-          "hash": "408caaf5ebed1d3f",
-          "text": "Chceš koupit záclony za čtyři hvězdičky?",
-          "bytes": 21360,
-          "loudness": -18
-        },
-        "shop.ask.decor.flower": {
-          "hash": "4ad32a389bcefaf0",
-          "text": "Chceš koupit kytku za tři hvězdičky?",
-          "bytes": 22196,
+          "hash": "a125cf59d843dd26",
+          "text": "Chceš koupit kočičku za pět hvězdiček?",
+          "bytes": 22405,
           "loudness": -18
         },
         "shop.ask.decor.radio": {
@@ -1960,18 +1948,6 @@
           "hash": "1f32f29588d4ca7f",
           "text": "Kočička je tvoje!",
           "bytes": 12374,
-          "loudness": -18
-        },
-        "shop.bought.decor.curtains": {
-          "hash": "1333445c10363a4c",
-          "text": "Záclony jsou tvoje!",
-          "bytes": 13837,
-          "loudness": -18
-        },
-        "shop.bought.decor.flower": {
-          "hash": "c88e744417adeaf2",
-          "text": "Kytka je tvoje!",
-          "bytes": 12792,
           "loudness": -18
         },
         "shop.bought.decor.radio": {

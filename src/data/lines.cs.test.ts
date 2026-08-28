@@ -52,10 +52,10 @@ describe('manifest of voice lines', () => {
   it('holds exactly the groups the plan pays for', () => {
     // 254 clips ≈ 4 750 characters (docs/steps/STEP-07, +6 in STEP-09, +2 in STEP-10), +62 for
     // the second item of an order in STEP-12, +5 for the closed kitchen in STEP-14, +49 for the
-    // shop in STEP-15 (30 for the raspberry, 19 for the shelf itself). Adding lines means paying
-    // for them and regenerating – the number is here so that cost is a conscious edit, not a
-    // surprise.
-    expect(LINES).toHaveLength(370);
+    // shop in STEP-15 (30 for the raspberry, 19 for the shelf itself), −4 in STEP-16 with the
+    // flower and the curtains dropped from the catalogue. Adding lines means paying for them and
+    // regenerating – the number is here so that cost is a conscious edit, not a surprise.
+    expect(LINES).toHaveLength(366);
   });
 
   it('has unique ids usable as file names', () => {

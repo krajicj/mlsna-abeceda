@@ -33,7 +33,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-13 | [Slučitelný formát save (v2): migrace, `earned`/`purchases`, slučování](steps/STEP-13-mergeable-save-format.md) | M2 | 11 | done |
 | STEP-14 | [Konec sezení: zavírací mříž, minutka a rodičovský zámek](steps/STEP-14-session-end-and-closing.md) | M2 | 13 | done |
 | STEP-15 | [Obchůdek: katalog, nákup a odemykání (logika)](steps/STEP-15-shop-catalogue-and-unlocks.md) | M3 | 13 | done |
-| STEP-16 | Obchůdek: scéna, košík a výzdoba kuchyně | M3 | 15 | — |
+| STEP-16 | [Obchůdek: scéna, košík a věci do kuchyně](steps/STEP-16-shop-scene-and-decorations.md) | M3 | 15 | done |
 | STEP-17 | Album | M3 | 13 | — |
 | STEP-18 | Překvapení | M3 | 13 | — |
 | STEP-19 | Druhý výrobek: zmrzlinka | M3 | 15, 16 | — |
@@ -215,6 +215,33 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   **Zbytek roadmapy se posunul o jedno číslo** (staré STEP-16 „Album“ je dnes STEP-17 atd.);
   odkazy `STEP-NN` v komentářích kódu srovná implementace STEP-15 (22 míst ve 12 souborech, seznam
   v jeho plánu). Hotové plány v `docs/steps/` se nepřečíslovávají.
+- **Co se u STEP-16 změnilo při implementaci (srpen 2026).** Autor zrušil nábytek na zeď (okno,
+  záclony, kytka) — na jevišti 1024 × 768 pro něj není volná stěna a mrtvá dekorace nic nepřidá.
+  Katalog má nově **čtyři řádky** (maliny, žabka, kočička, rádio), regál si nechává **šest míst**
+  a zaplní se, jak budou věci přibývat. Věci do kuchyně jsou **klepatelné**: kočička leží vpravo
+  dole na podlaze a mňouká, rádio je vestavěné do linky místo posledních dvířek a hraje pár tónů
+  (návrh 7.3a). Hlášky pro kytku a záclony jsou smazané i s klipy, věta o kočičce přegenerovaná
+  (už není „na polici“), přibyl efekt `decor.radio.tune`.
+- **Co se u STEP-16 rozhodlo při plánování (srpen 2026).** Čtyři věci, které mění, co bylo v řádku
+  roadmapy výš:
+  1. **Košík nebude vedle počítadla, ale v něm.** Nad policí na číslice je pruh 84 px a terč chce
+     podle pravidla 3 aspoň 88; police posunout níž nejde (konzolky spodní končí 8 px nad miskou).
+     Autor rozhodl, že **tlačítkem je celá pilulka s hvězdičkami** a košík je ikona uvnitř ní —
+     kuchyně se tím nehne o pixel. Terč je 160×84, tedy **vědomá odchylka od pravidla 3** (42
+     fyzických px na mobilu místo 44); alternativu „pilulka 88 vysoká, police o 16 px níž“ autor
+     odmítl. Odchylka je zapsaná i v plánu kroku a musí zaznít ve výsledku implementace.
+  2. **Kuchyně dostane okno natrvalo** (rozhodnutí autora), i než si dcera cokoli koupí. Záclony
+     se pak věší do něj a kytka stojí na parapetu; varianta „volán přes celou zeď bez okna“
+     odpadla. Kočička musí stát na poličce, protože nahraná věta zní „kočičku **na polici**“, a na
+     police s perníčky a svíčkami nesmí (při čtyřech nabídkách jsou plné na milimetr) — dostane
+     proto vlastní malou poličku pod oknem, na které stojí i rádio.
+  3. **Koupená věc zůstane v regálu s fajfkou** místo ceny a klepnutí zopakuje „…je tvoje!“.
+     **Cena se kreslí plnými a prázdnými hvězdičkami** podle zůstatku (cena 5, zůstatek 3 →
+     ★★★☆☆), takže „kolik chybí“ jde spočítat očima — návrh kap. 7 („prázdné hvězdičky – zase
+     počítání“).
+  4. **Krok jde na dvě zastavení** (A obchůdek a košík, B výzdoba), každé zvlášť ověřené
+     a commitnuté. Nové hlášky ani zvuky nepotřebuje — vygeneroval je STEP-15, takže se
+     **generátor vůbec nepouští**.
 - **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-23 do STEP-04: zatím se
   vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
   kuchyně nešlo posoudit. STEP-23 řeší jen PWA a offline.

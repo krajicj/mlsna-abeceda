@@ -209,20 +209,12 @@ const SHOP_TEXTS: Readonly<Record<ShopItemId, { readonly ask: string; readonly b
       ask: 'Chceš koupit maliny za tři hvězdičky?',
       bought: 'Maliny jsou tvoje!',
     },
-    'decor.flower': {
-      ask: 'Chceš koupit kytku za tři hvězdičky?',
-      bought: 'Kytka je tvoje!',
-    },
-    'decor.curtains': {
-      ask: 'Chceš koupit záclony za čtyři hvězdičky?',
-      bought: 'Záclony jsou tvoje!',
-    },
     'customer.frog': {
       ask: 'Chceš pozvat žabku za pět hvězdiček?',
       bought: 'Žabka přijde na návštěvu!',
     },
     'decor.cat': {
-      ask: 'Chceš koupit kočičku na polici za pět hvězdiček?',
+      ask: 'Chceš koupit kočičku za pět hvězdiček?',
       bought: 'Kočička je tvoje!',
     },
     'decor.radio': {

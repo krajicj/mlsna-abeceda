@@ -12,7 +12,7 @@ import type { SfxPlayer } from '../../audio/sfx';
 import type { VoicePlayer } from '../../audio/voice';
 import { cakeGlaze } from '../../art/cake';
 import { confettiPiece, CONFETTI_COUNT, CONFETTI_SIZE } from '../../art/confetti';
-import { starSlot, STAR_SIZE, type KitchenLayout } from '../../art/layout';
+import { starSlot, STARS_PILL_STAR, type KitchenLayout } from '../../art/layout';
 import { star } from '../../art/star';
 import type { Rect } from '../../art/svg';
 import { plingRate } from '../../data/sfx';
@@ -75,7 +75,8 @@ export function createFinale(options: {
 
   const confettiLayer = layer('finale-confetti');
   const starEl = layer('finale-star');
-  starEl.innerHTML = star(STAR_SIZE);
+  // The size it lands at: the star inside the pill, so the flight ends exactly on the drawing.
+  starEl.innerHTML = star(STARS_PILL_STAR);
   starEl.hidden = true;
   options.root.append(confettiLayer, starEl);
 

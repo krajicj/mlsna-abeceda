@@ -2,6 +2,9 @@
  * The backdrop: counter, its front with the doors, the floor and the two wall shelves. One SVG
  * drawn at 1:1 with the stage, redrawn whenever the stage width changes – that keeps every
  * outline exactly 4 px wide instead of stretching a tiled background.
+ *
+ * The doors of the counter are drawn here as they always were; a bought radio takes one of them
+ * out and stands in the opening, which `scenes/kitchen/decor.ts` draws over this (STEP-16).
  */
 import { STAGE_HEIGHT } from '../stage/layout';
 import {

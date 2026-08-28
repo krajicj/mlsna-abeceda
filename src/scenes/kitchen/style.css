@@ -71,6 +71,38 @@
   display: none;
 }
 
+/* What the child has bought (STEP-16): the cat on the floor and the radio in the counter. They
+   answer a tap (meow, a few notes) but they are not part of any order – the drawings stay deaf and
+   the target sits over them, exactly like the fruit in the bowl. The shutter covers them like the
+   rest of the kitchen. */
+.kitchen-decor,
+.kitchen-decor-piece {
+  position: absolute;
+  pointer-events: none;
+}
+
+.kitchen-decor-target {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* The radio is its own target: the whole door of the counter, 300×104. */
+.kitchen-radio {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.kitchen-cat,
+.kitchen-radio {
+  transform-origin: 50% 100%;
+}
+
+.kitchen-decor-piece[hidden],
+.kitchen-decor-target[hidden] {
+  display: none;
+}
+
 /* Dev only: the 1024 px band every layout must stay readable inside. */
 .kitchen-dev-guide {
   position: absolute;
@@ -276,13 +308,26 @@
   height: 100%;
 }
 
-/* The star counter and the finale: nothing here is ever tapped. */
-.kitchen-stars,
+/* The finale: nothing here is ever tapped. */
 .finale-glaze,
 .finale-confetti,
 .finale-star {
   position: absolute;
   pointer-events: none;
+}
+
+/* The star counter (STEP-16): the element is the hit box – the whole strip between the top of the
+   stage and the digit shelf – and the pill hangs inside it. Deaf while an order runs, exactly like
+   the bell, so a tap cannot leave the kitchen in the middle of one. */
+.kitchen-stars,
+.kitchen-stars-pill {
+  position: absolute;
+  pointer-events: none;
+}
+
+.kitchen-stars.is-ready {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .finale-confetti {

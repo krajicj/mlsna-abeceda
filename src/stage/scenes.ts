@@ -5,7 +5,7 @@ import type { Session } from '../game/session';
 import type { StageSize } from './layout';
 import type { Stage } from './stage';
 
-export type SceneName = 'title' | 'kitchen';
+export type SceneName = 'title' | 'kitchen' | 'shop';
 
 /** What every scene is handed. Owned by main.ts – a scene never builds one of these itself. */
 export interface SceneDeps {

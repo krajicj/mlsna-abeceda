@@ -125,6 +125,14 @@ export const SFX: readonly SoundEffect[] = [
     prompt: 'small wooden shelf rattle, gentle shake, cartoon, clean, no music',
     durationSeconds: 0.8,
   },
+  // The radio bought in the shop (STEP-16). A few notes, not a song: v1 ships without music
+  // (CLAUDE.md), and what the child taps has to answer straight away and then stop.
+  {
+    id: 'decor.radio.tune',
+    prompt:
+      'short cheerful toy music box melody, few notes, warm, cartoon kitchen radio, clean ending',
+    durationSeconds: 2.0,
+  },
 ];
 
 const IDS: ReadonlySet<string> = new Set(SFX.map((effect) => effect.id));

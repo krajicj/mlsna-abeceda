@@ -6,6 +6,7 @@
 import { STAGE_HEIGHT, STAGE_MAX_WIDTH, STAGE_MIN_WIDTH } from '../stage/layout';
 import { CANDLE_HEIGHT, CANDLE_WIDTH } from './candle';
 import { COOKIE_SIZE } from './cookie';
+import { DECOR_CAT_HEIGHT, DECOR_CAT_WIDTH } from './decor';
 import { fruitWidth } from './fruit';
 import type { Rect } from './svg';
 
@@ -47,11 +48,27 @@ export const BUBBLE_TAIL_X = 110;
 /** Height of the tail below the card; the drawing is that much taller than `bubble`. */
 export const BUBBLE_TAIL_HEIGHT = 24;
 
-/** The star counter in the top right corner (návrh kap. 7). Never tapped – an indicator. */
+/**
+ * The star counter in the top right corner (návrh kap. 7). Since STEP-16 it is also the way into
+ * the shop, so the whole pill answers a tap – see `starsHitSlot()`.
+ */
 export const STARS_PILL_WIDTH = 160;
 export const STARS_PILL_HEIGHT = 64;
 export const STARS_PILL_MARGIN = 16;
 export const STAR_SIZE = 40;
+/**
+ * The inside of the pill, pinned here because 160 px hold these three things exactly once: the
+ * star, the number and the basket that leads to the shop. `art/star.ts` draws to these numbers and
+ * `starSlot()` aims the flying star at them, so the two can never drift apart.
+ */
+export const STARS_PILL_STAR = 36;
+export const STARS_PILL_STAR_X = 12;
+export const STARS_PILL_STAR_Y = 14;
+export const STARS_PILL_NUMBER_CX = 78;
+export const STARS_PILL_BASKET_X = 112;
+
+/** Top edge of the digit shelf: where the counter's hit box has to stop (`starsHitSlot()`). */
+export const SHELF_DIGITS_TOP = 84;
 
 export const MAX_CAKE_FRUIT = 5;
 export const CAKE_FRUIT_HEIGHT = 44;
@@ -147,7 +164,7 @@ export function kitchenLayout(stageWidth: number): KitchenLayout {
     customer,
     cake,
     bowl,
-    shelfDigits: { x: width - 462, y: 84, width: 448, height: 128 },
+    shelfDigits: { x: width - 462, y: SHELF_DIGITS_TOP, width: 448, height: 128 },
     shelfLetters: { x: width - 462, y: 252, width: 448, height: 112 },
     bubble: { x: 60, y: 28, width: BUBBLE_WIDTH, height: BUBBLE_HEIGHT },
     bell: bellRect(customer, cake, bowl),
@@ -308,14 +325,28 @@ export function bubbleSpeakerSlot(bubble: Rect): Rect {
   };
 }
 
-/** Where the star flies to: the icon inside the counter. */
+/** Where the star flies to: the icon inside the counter, at the exact place the pill draws it. */
 export function starSlot(stars: Rect): Rect {
   return {
-    x: stars.x + STARS_PILL_MARGIN,
-    y: stars.y + Math.round((stars.height - STAR_SIZE) / 2),
-    width: STAR_SIZE,
-    height: STAR_SIZE,
+    x: stars.x + STARS_PILL_STAR_X,
+    y: stars.y + STARS_PILL_STAR_Y,
+    width: STARS_PILL_STAR,
+    height: STARS_PILL_STAR,
   };
+}
+
+/**
+ * The target of the counter (STEP-16): the whole strip between the top of the stage and the digit
+ * shelf, so the pill is a button without moving a pixel of the kitchen. 160×84 – a conscious
+ * deviation from rule 3 (88 px), written down in `docs/steps/STEP-16-*.md`: the alternative was
+ * pushing the digit shelf 16 px down, and the kitchen is not worth re-arranging for four pixels.
+ *
+ * Deliberately NOT part of `kitchenLayout()`: it ends exactly where the shelf begins, so the 8 px
+ * invariant would fail on a box that steals no tap from anybody (the shelf has its own targets from
+ * `shelfDigits.y` down).
+ */
+export function starsHitSlot(stars: Rect): Rect {
+  return { x: stars.x, y: 0, width: stars.width, height: SHELF_DIGITS_TOP };
 }
 
 /** The box of the lid over the bowl (the rim of the dome sits exactly on the rim of the bowl). */
@@ -479,4 +510,156 @@ export function keypadKeys(panel: Rect): Rect[] {
   });
   const digits = Array.from({ length: 9 }, (_, index) => box(index % 3, Math.floor(index / 3)));
   return [...digits, box(1, KEYPAD_ROWS - 1)];
+}
+
+/**
+ * The shop (STEP-16), a scene of its own – the shelf with six things, their prices and the card
+ * that asks before it takes any stars. Deliberately NOT part of `kitchenLayout()`: nothing here
+ * ever stands in the kitchen, and the two scenes only share the star counter in the corner.
+ */
+export const GOOD_WIDTH = 180;
+export const GOOD_PICTURE_HEIGHT = 140;
+export const GOOD_PRICE_HEIGHT = 32;
+export const GOOD_HEIGHT = GOOD_PICTURE_HEIGHT + GOOD_PRICE_HEIGHT;
+export const GOOD_GAP = 36;
+export const GOOD_COLUMNS = 3; // 3 columns × 2 rows = the six rows of the catalogue
+export const PRICE_STAR = 26;
+export const PRICE_STAR_GAP = 6;
+/** The door back to the kitchen; it stands on the floor on the left (bottom edge = `FLOOR_TOP`). */
+export const SHOP_DOOR: Rect = { x: 32, y: 412, width: 140, height: 280 };
+export const CARD_WIDTH = 440;
+export const CARD_HEIGHT = 420;
+export const ANSWER_SIZE = 120; // the ✓ and the ✗, ≥ 88 (rule 3)
+/** Top edges of the two rows of goods. */
+const SHOP_ROWS = [150, 400];
+/** How far the board sticks out past the row on each side, and how deep its brackets hang. */
+const SHOP_BOARD_OVERHANG = 24;
+const SHOP_BOARD_BRACKET = 28;
+const CARD_PADDING = 24;
+const ANSWER_MARGIN = 60;
+
+export interface ShopLayout {
+  /** The balance, in the same corner as in the kitchen; in the shop nobody taps it. */
+  readonly stars: Rect;
+  readonly door: Rect;
+  /** The two boards, the top one first; each is `SHOP_BOARD_OVERHANG` wider than its row. */
+  readonly boards: readonly Rect[];
+  /**
+   * Six cells (the picture with the price strip under it); the whole cell is the target. The order
+   * is `SHOP_ITEMS` read by rows: 0–2 the top row left to right, 3–5 the bottom one.
+   */
+  readonly goods: readonly Rect[];
+  /** The question card in the middle of the stage. */
+  readonly card: Rect;
+  readonly yes: Rect;
+  readonly no: Rect;
+}
+
+/** Pure: stage width → the boxes of the shop. Clamps the width like `kitchenLayout()`. */
+export function shopLayout(stageWidth: number): ShopLayout {
+  const width = clampStageWidth(stageWidth);
+  const columns = centeredRow(0, width, GOOD_COLUMNS, GOOD_WIDTH, GOOD_GAP);
+  const rowWidth = GOOD_COLUMNS * GOOD_WIDTH + (GOOD_COLUMNS - 1) * GOOD_GAP;
+  const left = columns[0] ?? 0;
+  const card: Rect = {
+    x: Math.round((width - CARD_WIDTH) / 2),
+    y: Math.round((STAGE_HEIGHT - CARD_HEIGHT) / 2),
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+  };
+  const answerY = card.y + CARD_HEIGHT - CARD_PADDING - ANSWER_SIZE;
+  return {
+    stars: {
+      x: width - STARS_PILL_WIDTH - STARS_PILL_MARGIN,
+      y: 10,
+      width: STARS_PILL_WIDTH,
+      height: STARS_PILL_HEIGHT,
+    },
+    door: SHOP_DOOR,
+    boards: SHOP_ROWS.map((top) => ({
+      x: left - SHOP_BOARD_OVERHANG,
+      y: top + GOOD_HEIGHT,
+      width: rowWidth + 2 * SHOP_BOARD_OVERHANG,
+      height: SHELF_BOARD + SHOP_BOARD_BRACKET,
+    })),
+    goods: SHOP_ROWS.flatMap((top) =>
+      columns.map((x) => ({ x, y: top, width: GOOD_WIDTH, height: GOOD_HEIGHT })),
+    ),
+    card,
+    yes: { x: card.x + ANSWER_MARGIN, y: answerY, width: ANSWER_SIZE, height: ANSWER_SIZE },
+    no: {
+      x: card.x + CARD_WIDTH - ANSWER_MARGIN - ANSWER_SIZE,
+      y: answerY,
+      width: ANSWER_SIZE,
+      height: ANSWER_SIZE,
+    },
+  };
+}
+
+/** The top of the cell, where the thing itself is drawn. */
+export function shopGoodPicture(cell: Rect): Rect {
+  return { x: cell.x, y: cell.y, width: cell.width, height: GOOD_PICTURE_HEIGHT };
+}
+
+/**
+ * The centred row of `count` (0…5) price stars in the strip under the picture – the same rule the
+ * shelf slots follow. Five stars are 154 px wide, so even the dearest price fits a 180 px cell.
+ */
+export function shopPriceSlots(cell: Rect, count: number): Rect[] {
+  const n = clampCount(count, 5);
+  const y = cell.y + GOOD_PICTURE_HEIGHT + Math.round((GOOD_PRICE_HEIGHT - PRICE_STAR) / 2);
+  return centeredRow(cell.x, cell.width, n, PRICE_STAR, PRICE_STAR_GAP).map((x) => ({
+    x,
+    y,
+    width: PRICE_STAR,
+    height: PRICE_STAR,
+  }));
+}
+
+/**
+ * The things bought in the shop (STEP-16, návrh 7.3a). Deliberately NOT part of `kitchenLayout()`
+ * – for the same reason `closedLayout()` is outside it: the 8 px invariant guards the boxes of the
+ * game itself, and these two are toys at the edge of the scene. `layout.test.ts` measures their
+ * distance from every kitchen box, from the counting pills and from the candle on the cake
+ * separately, so neither of them can ever get in the way of an order.
+ *
+ * The cat lies on the floor in the bottom right corner – the one part of the stage nothing else
+ * uses – and the radio takes the place of the last door of the counter front.
+ */
+export const CAT_MARGIN_X = 32;
+/** How far the cat stands off the bottom edge of the stage. */
+export const CAT_MARGIN_Y = 8;
+/** The drawing is 68 px tall; the target grows upwards to the 88 px of rule 3. */
+const CAT_TARGET_HEIGHT = 88;
+
+export interface DecorLayout {
+  /** Where the cat is drawn: bottom right, on the floor. */
+  readonly cat: Rect;
+  /** Her target: the same box grown up to 88 px, over the front of the counter (rule 3). */
+  readonly catTarget: Rect;
+  /** The last door of the counter front; the radio stands in the opening and IS the target. */
+  readonly radio: Rect;
+}
+
+/** Pure: stage width → the boxes of the bought things. Clamps the width like `kitchenLayout()`. */
+export function decorLayout(stageWidth: number): DecorLayout {
+  const width = clampStageWidth(stageWidth);
+  const panels = counterPanels(width);
+  const cat: Rect = {
+    x: width - CAT_MARGIN_X - DECOR_CAT_WIDTH,
+    y: STAGE_HEIGHT - CAT_MARGIN_Y - DECOR_CAT_HEIGHT,
+    width: DECOR_CAT_WIDTH,
+    height: DECOR_CAT_HEIGHT,
+  };
+  const radio = panels[panels.length - 1] ?? panels[0]!;
+  return {
+    cat,
+    catTarget: {
+      x: cat.x,
+      y: cat.y + cat.height - CAT_TARGET_HEIGHT,
+      width: cat.width,
+      height: CAT_TARGET_HEIGHT,
+    },
+    radio,
+  };
 }

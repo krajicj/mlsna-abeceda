@@ -7,12 +7,13 @@ import {
   ownedDecorations,
   shopEntryOf,
   shopOffer,
+  shopPriceStars,
   unlockedCustomers,
   unlockedFruits,
 } from './shop';
 import { starBalance, type StarsState } from './stars';
 
-const DECORATIONS: readonly string[] = ['flower', 'curtains', 'cat', 'radio'];
+const DECORATIONS: readonly string[] = ['cat', 'radio'];
 /** Whatever is not bought is derived from what is: the record only ever holds purchases. */
 function stars(earned: number, purchases: Record<string, number> = {}): StarsState {
   return { earned, purchases };
@@ -93,9 +94,9 @@ describe('shopOffer', () => {
 
   it('counts the balance, not the stars earned', () => {
     // 7 earned − 3 paid for the flower = 4 left, so the frog at five is still one star away.
-    const spent = stars(7, { 'decor.flower': 3 });
+    const spent = stars(7, { 'fruit.raspberry': 3 });
     expect(shopEntryOf(spent, 'customer.frog')?.missing).toBe(1);
-    expect(shopEntryOf(spent, 'decor.curtains')?.state).toBe('affordable');
+    expect(shopEntryOf(spent, 'decor.cat')?.state).toBe('short');
   });
 
   it('says nothing about a thing it does not sell', () => {
@@ -124,7 +125,8 @@ describe('buyShopItem', () => {
   });
 
   it('lets the child spend everything she has, one thing after another', () => {
-    let record = stars(25);
+    // Exactly what the whole catalogue costs, so the last purchase leaves her at nought.
+    let record = stars(SHOP_ITEMS.reduce((sum, item) => sum + item.price, 0));
     for (const item of SHOP_ITEMS) {
       const after = buyShopItem(record, item.id);
       expect(after, item.id).not.toBeNull();
@@ -159,8 +161,8 @@ describe('what a purchase unlocks', () => {
   });
 
   it('keeps the decorations in the order of the catalogue, whatever order they were bought in', () => {
-    const bought = stars(20, { 'decor.radio': 5, 'decor.flower': 3, 'decor.cat': 5 });
-    expect(ownedDecorations(bought)).toEqual(['flower', 'cat', 'radio']);
+    const bought = stars(20, { 'decor.radio': 5, 'decor.cat': 5 });
+    expect(ownedDecorations(bought)).toEqual(['cat', 'radio']);
   });
 
   it('does not let a decoration into the kitchen or an animal onto the cake', () => {
@@ -177,5 +179,52 @@ describe('what a purchase unlocks', () => {
     expect(unlockedFruits(strange)).toEqual(STARTER_FRUITS);
     expect(unlockedCustomers(strange)).toEqual(STARTER_CUSTOMERS);
     expect(ownedDecorations(strange)).toEqual([]);
+  });
+});
+
+describe('shopPriceStars', () => {
+  /** The entry the shelf would draw for `id` at this balance – null never happens for a real id. */
+  function entry(earned: number, id: string, purchases: Record<string, number> = {}) {
+    const found = shopEntryOf(stars(earned, purchases), id);
+    if (!found) throw new Error(`no entry for ${id}`);
+    return found;
+  }
+
+  it('gives a bought thing no price at all – a tick goes where the stars were', () => {
+    expect(shopPriceStars(entry(9, 'decor.cat', { 'decor.cat': 5 }))).toEqual({
+      filled: 0,
+      empty: 0,
+    });
+  });
+
+  it('fills every star of a price the child can pay', () => {
+    expect(shopPriceStars(entry(9, 'customer.frog'))).toEqual({ filled: 5, empty: 0 });
+    expect(shopPriceStars(entry(3, 'fruit.raspberry'))).toEqual({ filled: 3, empty: 0 });
+  });
+
+  it('leaves exactly the missing stars empty', () => {
+    // Four stars and a frog for five: ★★★★☆, and "chybí ti jedna hvězdička".
+    expect(shopPriceStars(entry(4, 'customer.frog'))).toEqual({ filled: 4, empty: 1 });
+    expect(shopPriceStars(entry(0, 'customer.frog'))).toEqual({ filled: 0, empty: 5 });
+  });
+
+  it('matches the worked example from the step plan', () => {
+    const purchases = { 'fruit.raspberry': 3 };
+    // earned 7, three of them spent on the raspberry: the balance is four.
+    expect(starBalance(stars(7, purchases))).toBe(4);
+    expect(shopPriceStars(entry(7, 'fruit.raspberry', purchases))).toEqual({ filled: 0, empty: 0 });
+    expect(shopPriceStars(entry(7, 'customer.frog', purchases))).toEqual({ filled: 4, empty: 1 });
+    expect(shopPriceStars(entry(7, 'decor.cat', purchases))).toEqual({ filled: 4, empty: 1 });
+  });
+
+  it('always draws the whole price, whatever the balance', () => {
+    for (const item of SHOP_ITEMS) {
+      for (const earned of [0, 1, item.price - 1, item.price, item.price + 1]) {
+        const price = shopPriceStars(entry(earned, item.id));
+        expect(price.filled + price.empty, `${item.id} at ${earned}`).toBe(item.price);
+        expect(price.empty, `${item.id} at ${earned}`).toBe(entry(earned, item.id).missing);
+        expect(price.filled).toBeGreaterThanOrEqual(0);
+      }
+    }
   });
 });

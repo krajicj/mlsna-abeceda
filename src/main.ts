@@ -23,6 +23,7 @@ import {
 import { EMPTY_SETTINGS, normalizeSettings, type Settings } from './game/settings';
 import { SAVE_BACKUP_KEY, SAVE_KEY } from './game/version';
 import { kitchenScene } from './scenes/kitchen';
+import { shopScene } from './scenes/shop';
 import { titleScene } from './scenes/title';
 import { createOrientationGuard } from './stage/orientation';
 import { createSceneManager } from './stage/scenes';
@@ -64,7 +65,7 @@ if (app) {
   sfx.preload();
   const scenes = createSceneManager(
     { stage, audio, voice, sfx, session },
-    { title: titleScene, kitchen: kitchenScene },
+    { title: titleScene, kitchen: kitchenScene, shop: shopScene },
   );
   const orientation = createOrientationGuard(app, { voice });
   scenes.go('title');
@@ -129,9 +130,10 @@ if (app) {
         },
       },
       /**
-       * The shop has no scene until STEP-16, so this is the only way to buy anything (STEP-15).
-       * `grant()` writes straight into storage, so – exactly like `__save.merge()` – the running
-       * session keeps its own copy and the new stars can only be spent after a reload.
+       * The shelf of the shop is a scene of its own since STEP-16; this is what the manual checks
+       * use to get there without playing ten orders first. `grant()` writes straight into storage,
+       * so – exactly like `__save.merge()` – the running session keeps its own copy and the new
+       * stars can only be spent after a reload.
        */
       __shop: {
         offer: (): { id: string; price: number; state: string; missing: number }[] =>

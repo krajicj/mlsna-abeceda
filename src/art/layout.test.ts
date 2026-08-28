@@ -49,6 +49,22 @@ import {
   STARS_PILL_WIDTH,
   STAR_SIZE,
   LOCK_SIZE,
+  ANSWER_SIZE,
+  CARD_HEIGHT,
+  CARD_WIDTH,
+  FLOOR_TOP,
+  GOOD_COLUMNS,
+  GOOD_PICTURE_HEIGHT,
+  GOOD_PRICE_HEIGHT,
+  GOOD_WIDTH,
+  PRICE_STAR,
+  PRICE_STAR_GAP,
+  STARS_PILL_STAR,
+  decorLayout,
+  shopGoodPicture,
+  shopLayout,
+  shopPriceSlots,
+  starsHitSlot,
   bowlFruitSpots,
   bubbleSlots,
   bubbleSpeakerSlot,
@@ -68,6 +84,7 @@ import {
   shelfSlots,
   starSlot,
 } from './layout';
+import { SHOP_ITEMS } from '../data/shop';
 import { CANDLE_HEIGHT, CANDLE_WIDTH } from './candle';
 import { COOKIE_SIZE } from './cookie';
 import { fruitWidth } from './fruit';
@@ -268,7 +285,8 @@ describe('starSlot', () => {
   const stars = kitchenLayout(1024).stars;
 
   it('matches the worked example from the step plan', () => {
-    expect(starSlot(stars)).toEqual({ x: 864, y: 22, width: 40, height: 40 });
+    // The star of the pill since STEP-16: 36 px at (12, 14) inside the counter.
+    expect(starSlot(stars)).toEqual({ x: 860, y: 24, width: 36, height: 36 });
   });
 
   it('lands inside the counter', () => {
@@ -277,9 +295,239 @@ describe('starSlot', () => {
     expect(slot.y).toBeGreaterThanOrEqual(stars.y);
     expect(slot.x + slot.width).toBeLessThanOrEqual(stars.x + stars.width);
     expect(slot.y + slot.height).toBeLessThanOrEqual(stars.y + stars.height);
-    expect(slot.width).toBe(STAR_SIZE);
+    expect(slot.width).toBe(STARS_PILL_STAR);
     expect(stars.width).toBe(STARS_PILL_WIDTH);
     expect(stars.height).toBe(STARS_PILL_HEIGHT);
+  });
+});
+
+describe('starsHitSlot (STEP-16)', () => {
+  it.each(WIDTHS)('runs from the top of the stage to the digit shelf at %i px', (width) => {
+    const { stars, shelfDigits } = kitchenLayout(width);
+    const hit = starsHitSlot(stars);
+    expect(hit.y).toBe(0);
+    expect(hit.y + hit.height).toBe(shelfDigits.y);
+    expect(hit.x).toBe(stars.x);
+    expect(hit.width).toBe(stars.width);
+  });
+
+  it('is taller than the pill it makes tappable', () => {
+    const { stars } = kitchenLayout(1024);
+    const hit = starsHitSlot(stars);
+    expect(hit.height).toBeGreaterThan(stars.height);
+    // A conscious deviation from rule 3 (see STEP-16): the kitchen was not re-arranged for 4 px.
+    expect(hit.height).toBe(84);
+    expect(hit.width).toBeGreaterThanOrEqual(MIN_TARGET);
+  });
+
+  it('keeps the whole pill inside the target', () => {
+    for (const width of WIDTHS) {
+      const { stars } = kitchenLayout(width);
+      const hit = starsHitSlot(stars);
+      expect(stars.y).toBeGreaterThanOrEqual(hit.y);
+      expect(stars.y + stars.height).toBeLessThanOrEqual(hit.y + hit.height);
+      expect(inside(hit, width)).toBe(true);
+    }
+  });
+});
+
+describe('decorLayout (STEP-16)', () => {
+  it.each(WIDTHS)('keeps the cat and the radio inside the %i px stage', (width) => {
+    for (const box of Object.values(decorLayout(width))) {
+      expect(inside(box, width)).toBe(true);
+    }
+  });
+
+  it.each(WIDTHS)('leaves at least 8 px between them and every kitchen box at %i px', (width) => {
+    // Neither toy may get in the way of the game: not the cake, the bowl, a shelf, the bubble,
+    // the bell nor the counter of stars.
+    const decor = Object.entries(decorLayout(width));
+    const kitchen = Object.entries(kitchenLayout(width));
+    const tight = decor.flatMap(([name, box]) =>
+      kitchen
+        .filter(([, other]) => separation(box, other) < 8)
+        .map(([other]) => `${name}/${other}`),
+    );
+    expect(tight).toEqual([]);
+  });
+
+  it.each(WIDTHS)('stays clear of the counting pills and the candle at %i px', (width) => {
+    // The pills above the cake and the candle standing on it are NOT in `kitchenLayout()` – they
+    // are computed per order – so they need their own check. This is the one that caught a cat
+    // sitting exactly where the child counts.
+    const { cake } = kitchenLayout(width);
+    const transient = [
+      ...Array.from({ length: MAX_PILLS }, (_, index) => pillSlots(cake, index + 1)).flat(),
+      cakeCandleSlot(cake),
+      cakeCookieSlot(cake),
+    ];
+    for (const [name, box] of Object.entries(decorLayout(width))) {
+      for (const other of transient) {
+        expect(separation(box, other), `${name} at ${width}`).toBeGreaterThanOrEqual(8);
+      }
+    }
+  });
+
+  it.each(WIDTHS)('lays the cat on the floor in the bottom right corner at %i px', (width) => {
+    const { cat, catTarget } = decorLayout(width);
+    expect(cat.y).toBeGreaterThanOrEqual(FLOOR_TOP);
+    expect(cat.x + cat.width).toBeLessThanOrEqual(width);
+    expect(cat.x).toBeGreaterThan(width / 2);
+    // The drawing is 68 px tall, so the target grows upwards over the front of the counter.
+    expect(Math.min(catTarget.width, catTarget.height)).toBeGreaterThanOrEqual(MIN_TARGET);
+    expect(catTarget.x).toBe(cat.x);
+    expect(catTarget.y + catTarget.height).toBe(cat.y + cat.height);
+    expect(catTarget.y).toBeLessThanOrEqual(cat.y);
+  });
+
+  it.each(WIDTHS)('puts the radio in the last door of the counter at %i px', (width) => {
+    const { radio } = decorLayout(width);
+    const panels = counterPanels(width);
+    expect(radio).toEqual(panels[panels.length - 1]);
+    expect(Math.min(radio.width, radio.height)).toBeGreaterThanOrEqual(MIN_TARGET);
+  });
+
+  it('takes any width the console throws at it, like kitchenLayout', () => {
+    expect(decorLayout(200)).toEqual(decorLayout(1024));
+    expect(decorLayout(4000)).toEqual(decorLayout(1366));
+    expect(decorLayout(Number.NaN)).toEqual(decorLayout(1024));
+  });
+});
+
+describe('shopLayout (STEP-16)', () => {
+  it.each(WIDTHS)('keeps every box inside the %i px stage', (width) => {
+    const layout = shopLayout(width);
+    for (const box of [layout.stars, layout.door, layout.card, layout.yes, layout.no]) {
+      expect(inside(box, width)).toBe(true);
+    }
+    for (const box of [...layout.boards, ...layout.goods]) {
+      expect(inside(box, width)).toBe(true);
+    }
+  });
+
+  it.each(WIDTHS)('keeps six places in three columns at %i px', (width) => {
+    const goods = shopLayout(width).goods;
+    // Six places whatever the catalogue holds today (návrh 7.3): the shelf fills up as things are
+    // added instead of changing shape under the child's hands.
+    expect(goods).toHaveLength(6);
+    expect(SHOP_ITEMS.length).toBeLessThanOrEqual(goods.length);
+    // 0–2 the top row left to right, 3–5 the bottom one – the order of the catalogue.
+    const [a, b, c, d] = goods;
+    expect(a!.y).toBe(b!.y);
+    expect(b!.y).toBe(c!.y);
+    expect(a!.x).toBeLessThan(b!.x);
+    expect(b!.x).toBeLessThan(c!.x);
+    expect(d!.y).toBeGreaterThan(a!.y);
+    expect(d!.x).toBe(a!.x);
+    expect(new Set(goods.map((cell) => cell.x)).size).toBe(GOOD_COLUMNS);
+  });
+
+  it.each(WIDTHS)('makes every target big enough for a thumb at %i px', (width) => {
+    const layout = shopLayout(width);
+    for (const box of [...layout.goods, layout.yes, layout.no, layout.door]) {
+      expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(MIN_TARGET);
+    }
+    expect(ANSWER_SIZE).toBeGreaterThanOrEqual(MIN_TARGET);
+  });
+
+  it.each(WIDTHS)('leaves at least 8 px between any two things on the shelf at %i px', (width) => {
+    const goods = shopLayout(width).goods;
+    const tight = goods.flatMap((a, index) =>
+      goods
+        .slice(index + 1)
+        .filter((b) => separation(a, b) < 8)
+        .map((b) => `${a.x},${a.y}/${b.x},${b.y}`),
+    );
+    expect(tight).toEqual([]);
+  });
+
+  it.each(WIDTHS)('hangs a board under each row, wider than the row itself, at %i px', (width) => {
+    const layout = shopLayout(width);
+    expect(layout.boards).toHaveLength(2);
+    for (const [index, board] of layout.boards.entries()) {
+      const row = layout.goods.slice(index * GOOD_COLUMNS, (index + 1) * GOOD_COLUMNS);
+      const first = row[0]!;
+      const last = row[GOOD_COLUMNS - 1]!;
+      expect(board.y).toBe(first.y + first.height);
+      expect(board.x).toBeLessThan(first.x);
+      expect(board.x + board.width).toBeGreaterThan(last.x + last.width);
+    }
+  });
+
+  it.each(WIDTHS)('centres the card and the two answers inside it at %i px', (width) => {
+    const { card, yes, no, goods } = shopLayout(width);
+    expect(card.x + card.width / 2).toBe(width / 2);
+    expect(card.width).toBe(CARD_WIDTH);
+    expect(card.height).toBe(CARD_HEIGHT);
+    for (const answer of [yes, no]) {
+      expect(answer.x).toBeGreaterThanOrEqual(card.x);
+      expect(answer.x + answer.width).toBeLessThanOrEqual(card.x + card.width);
+      expect(answer.y + answer.height).toBeLessThanOrEqual(card.y + card.height);
+    }
+    expect(yes.x + yes.width).toBeLessThan(no.x); // no thumb hits both
+    expect(separation(yes, no)).toBeGreaterThanOrEqual(8);
+    // The card covers the middle of the shelf on purpose: it is the question, not a hint.
+    expect(goods.length).toBe(6);
+  });
+
+  it.each(WIDTHS)('stands the door on the floor, clear of the shelf, at %i px', (width) => {
+    const { door, goods } = shopLayout(width);
+    expect(door.y + door.height).toBe(FLOOR_TOP);
+    for (const cell of goods) expect(separation(door, cell)).toBeGreaterThanOrEqual(8);
+  });
+
+  it('takes any width the console throws at it, like kitchenLayout', () => {
+    expect(shopLayout(200)).toEqual(shopLayout(1024));
+    expect(shopLayout(4000)).toEqual(shopLayout(1366));
+    expect(shopLayout(Number.NaN)).toEqual(shopLayout(1024));
+  });
+});
+
+describe('shopGoodPicture and shopPriceSlots (STEP-16)', () => {
+  const cell = shopLayout(1024).goods[0]!;
+
+  it('gives the picture the top of the cell and the price the strip under it', () => {
+    const picture = shopGoodPicture(cell);
+    expect(picture).toEqual({
+      x: cell.x,
+      y: cell.y,
+      width: GOOD_WIDTH,
+      height: GOOD_PICTURE_HEIGHT,
+    });
+    expect(cell.height - picture.height).toBe(GOOD_PRICE_HEIGHT);
+  });
+
+  it('is empty for a count of zero or less', () => {
+    expect(shopPriceSlots(cell, 0)).toEqual([]);
+    expect(shopPriceSlots(cell, -2)).toEqual([]);
+  });
+
+  it.each([1, 2, 3, 4, 5])('fits a price of %i stars into the strip, centred', (count) => {
+    const slots = shopPriceSlots(cell, count);
+    expect(slots).toHaveLength(count);
+    for (const slot of slots) {
+      expect(slot.width).toBe(PRICE_STAR);
+      expect(slot.height).toBe(PRICE_STAR);
+      expect(slot.x).toBeGreaterThanOrEqual(cell.x);
+      expect(slot.x + slot.width).toBeLessThanOrEqual(cell.x + cell.width);
+      expect(slot.y).toBeGreaterThanOrEqual(cell.y + GOOD_PICTURE_HEIGHT);
+      expect(slot.y + slot.height).toBeLessThanOrEqual(cell.y + cell.height);
+    }
+    const left = slots[0]!.x - cell.x;
+    const right = cell.x + cell.width - (slots[count - 1]!.x + PRICE_STAR);
+    expect(Math.abs(left - right)).toBeLessThanOrEqual(1);
+  });
+
+  it('leaves the gap the constants promise between two stars', () => {
+    const slots = shopPriceSlots(cell, 5);
+    for (let index = 1; index < slots.length; index += 1) {
+      expect(slots[index]!.x - (slots[index - 1]!.x + PRICE_STAR)).toBe(PRICE_STAR_GAP);
+    }
+  });
+
+  it('never draws more than the five stars anything in the catalogue costs', () => {
+    expect(shopPriceSlots(cell, 9)).toHaveLength(5);
+    expect(Math.max(...SHOP_ITEMS.map((item) => item.price))).toBeLessThanOrEqual(5);
   });
 });
 

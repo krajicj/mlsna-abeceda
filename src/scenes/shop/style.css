@@ -1,0 +1,86 @@
+/* The shop (STEP-16). Same wall as the kitchen; every position comes from src/art/layout.ts. */
+.scene-shop {
+  background: var(--wall);
+  background-image: radial-gradient(var(--wall-dot) 3px, transparent 3.5px);
+  background-size: 48px 48px;
+}
+
+.scene-shop svg {
+  display: block; /* no inline baseline gap under the art */
+}
+
+.shop-backdrop,
+.shop-board,
+.shop-good,
+.shop-good-art,
+.shop-good-price,
+.shop-door,
+.shop-stars,
+.shop-card-panel,
+.shop-card-art,
+.shop-card-price,
+.shop-answer {
+  position: absolute;
+}
+
+/* Pictures, never targets: the shelf boards, the balance and the backdrop. */
+.shop-backdrop,
+.shop-board,
+.shop-stars,
+.shop-good-art,
+.shop-good-price,
+.shop-card-panel,
+.shop-card-art,
+.shop-card-price {
+  pointer-events: none;
+}
+
+/* The whole cell answers a tap – 180×172, far over the 88 px of rule 3. */
+.shop-good {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* The picture is drawn at its own width (a raspberry is 108 px, the frog fills the cell), so the
+   cell centres whatever it gets instead of stretching it. */
+.shop-good-art,
+.shop-good-price,
+.shop-card-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shop-price-star {
+  position: absolute;
+}
+
+/* 140×280 – the way back to the kitchen is open the whole time (rule 2). */
+.shop-door {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* The card is a modal layer: it dims the shelf, and a tap beside it closes it without buying. */
+.shop-card {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+}
+
+.shop-card[hidden] {
+  display: none;
+}
+
+.shop-card-back {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+  background: rgb(59 42 26 / 35%);
+}
+
+/* 120×120 each, with 80 px between them: no thumb hits both. */
+.shop-answer {
+  pointer-events: auto;
+  cursor: pointer;
+}

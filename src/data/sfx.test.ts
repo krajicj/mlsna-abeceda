@@ -18,8 +18,9 @@ describe('manifest of sound effects', () => {
   it('holds exactly the effects the plan pays for', () => {
     // Every entry is a paid request to ElevenLabs; the number is here so adding one is a conscious
     // edit and not a surprise on the bill (the same guard as the voice manifest). +4 in STEP-15:
-    // the frog has a voice of her own and the shop has two sounds (used by the shelf in STEP-16).
-    expect(SFX).toHaveLength(19);
+    // the frog has a voice of her own and the shop has two sounds (used by the shelf in STEP-16);
+    // +1 in STEP-16 for the radio that plays when the child taps it.
+    expect(SFX).toHaveLength(20);
   });
 
   it('has unique ids usable as file names', () => {

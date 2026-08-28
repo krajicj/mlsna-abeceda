@@ -199,11 +199,11 @@ describe('merging real purchases (STEP-15)', () => {
     const onTablet: StarsState = { earned: 9, purchases: { 'fruit.raspberry': 3 } };
     const onPhone: StarsState = {
       earned: 6,
-      purchases: { 'fruit.raspberry': 2, 'decor.flower': 3 },
+      purchases: { 'fruit.raspberry': 2, 'decor.cat': 5 },
     };
     const merged = mergeStars(onTablet, onPhone);
-    expect(merged.purchases).toEqual({ 'fruit.raspberry': 3, 'decor.flower': 3 });
+    expect(merged.purchases).toEqual({ 'fruit.raspberry': 3, 'decor.cat': 5 });
     expect(unlockedFruits(merged)).toContain('raspberry');
-    expect(ownedDecorations(merged)).toEqual(['flower']);
+    expect(ownedDecorations(merged)).toEqual(['cat']);
   });
 });

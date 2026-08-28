@@ -118,3 +118,24 @@ export function centeredText(options: {
     ` fill="${options.fill ?? INK}">${escapeText(options.content)}</text>`
   );
 }
+
+/**
+ * A finished drawing of its own natural size, drawn into `box` instead: an outer `<svg>` with the
+ * natural view box and `preserveAspectRatio="xMidYMid meet"`, so the picture shrinks, stays centred
+ * and keeps its proportions. The one way in this game to draw finished markup smaller – the shelf of
+ * the shop needs the frog (260×320) in a 180×140 cell, and neither the animals nor the decorations
+ * take a size (they are written to a fixed box, like `candle.ts` and `cookie.ts`).
+ *
+ * The result therefore holds a nested `<svg>`, which is valid SVG; the fruit does not go through
+ * here at all, because `fruit(kind, height)` has taken a size all along.
+ */
+export function fitted(
+  art: string,
+  natural: { readonly width: number; readonly height: number },
+  box: Rect,
+): string {
+  return (
+    `<svg viewBox="0 0 ${natural.width} ${natural.height}" width="${box.width}"` +
+    ` height="${box.height}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${art}</svg>`
+  );
+}

@@ -98,3 +98,24 @@ export function unlockedCustomers(stars: StarsState): readonly CustomerId[] {
 export function ownedDecorations(stars: StarsState): readonly DecorationId[] {
   return [...new Set(purchasedDecorations(stars))];
 }
+
+export interface ShopPrice {
+  /** How many of the price stars the balance covers – those are drawn full. */
+  readonly filled: number;
+  /** How many are missing – those are drawn empty. Equal to `ShopEntry.missing`. */
+  readonly empty: number;
+}
+
+/**
+ * The price as the shelf draws it: N stars, of which as many are full as the child can pay for
+ * (návrh kap. 7 – "prázdné hvězdičky, zase počítání"). How many are missing is then something she
+ * can count with her eyes, and it is the same number the narrator says out loud.
+ *
+ * A thing already bought has no price at all: `{ filled: 0, empty: 0 }`, and the shelf puts a tick
+ * where the stars would be. Pure arithmetic and no drawing, so the rule lives in `src/game/`.
+ */
+export function shopPriceStars(entry: ShopEntry): ShopPrice {
+  if (entry.state === 'owned') return { filled: 0, empty: 0 };
+  const empty = Math.min(Math.max(entry.missing, 0), entry.item.price);
+  return { filled: entry.item.price - empty, empty };
+}

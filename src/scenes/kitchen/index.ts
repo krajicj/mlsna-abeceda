@@ -29,6 +29,7 @@ import {
   orderSpeech,
   repeatSpeech,
 } from '../../game/speech';
+import { ownedDecorations } from '../../game/shop';
 import { starBalance } from '../../game/stars';
 import type { Scene } from '../../stage/scenes';
 import { createBellHandle } from './bell';
@@ -36,6 +37,7 @@ import { createBubble } from './bubble';
 import { createClosing } from './closing';
 import { createChoiceItem, type ChoiceItemHandle } from './choice-item';
 import { createCustomer } from './customer';
+import { createDecor } from './decor';
 import { createCountItem } from './count-item';
 import { createFinale } from './finale';
 import { layer, place } from './dom';
@@ -111,7 +113,16 @@ export const kitchenScene: Scene = (ctx) => {
   const bowlEl = prop('kitchen-bowl', fruitBowl());
   const digitShelf = layer('kitchen-shelf');
   const letterShelf = layer('kitchen-shelf');
-  el.append(backdrop, cakeEl, bowlEl, digitShelf, letterShelf);
+  el.append(backdrop);
+  // Right after the backdrop: the cat on the floor and the radio in the counter are behind
+  // everything the child plays with (STEP-16). The layer reads the save itself and never listens
+  // for a purchase – buying happens in a scene of its own, so the kitchen is built anew anyway.
+  const decor = createDecor({
+    root: el,
+    sfx: ctx.sfx,
+    owned: () => ownedDecorations(ctx.session.save.stars),
+  });
+  el.append(cakeEl, bowlEl, digitShelf, letterShelf);
   // Owns its own element and appends it here, so it can walk in and out without the scene helping.
   const customer = createCustomer({ root: el, sfx: ctx.sfx });
   // Built before the items and the finale on purpose: the bell stays on the counter all the time
@@ -192,7 +203,9 @@ export const kitchenScene: Scene = (ctx) => {
       idle.poke();
     },
   });
-  const stars = createStars({ root: el });
+  // The counter is the way into the shop (STEP-16): tapping it leaves the kitchen, which is safe
+  // only because the basket wakes up with the bell – with an empty counter and no order to lose.
+  const stars = createStars({ root: el, onShop: () => ctx.go('shop') });
   const finale = createFinale({
     root: el,
     cake: cakeEl,
@@ -215,7 +228,10 @@ export const kitchenScene: Scene = (ctx) => {
     sfx: ctx.sfx,
     state: () => ctx.session.save.session,
     onCode: () => ctx.session.reopen(),
-    onOpen: () => bell.show(),
+    onOpen: () => {
+      bell.show();
+      stars.shop(true);
+    },
   });
 
   // The context is unlocked by now (the title screen saw to that), so this is where the bytes
@@ -342,14 +358,20 @@ export const kitchenScene: Scene = (ctx) => {
     // The tenth order of the sitting closes the kitchen (STEP-14) – but only once the customer has
     // walked out, so the shutter never comes down over an animal standing at the counter.
     customer.leave(() => {
-      if (isClosed(ctx.session.save.session, Date.now())) closing.close();
-      else bell.show();
+      if (isClosed(ctx.session.save.session, Date.now())) {
+        closing.close();
+        stars.shop(false); // behind the shutter nothing is bought either
+      } else {
+        bell.show();
+        stars.shop(true);
+      }
     });
   }
 
   /** The child rang: the bell gets out of the way and the next customer walks in. */
   function ringBell(): void {
     bell.hide();
+    stars.shop(false);
     customer.arrive(ctx.session.customer, () => startOrder(ctx.session.order));
   }
 
@@ -393,6 +415,7 @@ export const kitchenScene: Scene = (ctx) => {
   finale.layout(layout);
   customer.layout(layout);
   bell.layout(layout);
+  decor.layout(0);
   closing.layout(0);
   // The kitchen opens EMPTY: no customer, no bubble, no order, only the bell (návrh kap. 4 – "the
   // bell rings, a customer comes"). The first thing the child does in the game is decide to start
@@ -403,8 +426,13 @@ export const kitchenScene: Scene = (ctx) => {
   ctx.voice.preload(closingPreload());
   // A sitting that ended before the page was reloaded is still over: the shutter is simply already
   // down, without the rattle (STEP-14).
-  if (isClosed(ctx.session.save.session, Date.now())) closing.close({ animate: false });
-  else bell.show();
+  if (isClosed(ctx.session.save.session, Date.now())) {
+    closing.close({ animate: false });
+    stars.shop(false);
+  } else {
+    bell.show();
+    stars.shop(true);
+  }
 
   /** DEV only: the offer of the order when it fits, otherwise what stands on the shelf. */
   function devChoices(type: ChoiceItem['type']): string[] {
@@ -444,6 +472,7 @@ export const kitchenScene: Scene = (ctx) => {
       idle.stop();
       finale.reset();
       bell.hide();
+      stars.shop(false);
       finishing = false;
       done.clear();
       countItem.clear();
@@ -461,6 +490,7 @@ export const kitchenScene: Scene = (ctx) => {
     close(minutes) {
       ctx.session.close(minutes === undefined ? undefined : minutes * 60_000);
       closing.close();
+      stars.shop(false);
     },
     open() {
       ctx.session.reopen();
@@ -491,6 +521,7 @@ export const kitchenScene: Scene = (ctx) => {
       finale.layout(layout);
       customer.layout(layout);
       bell.layout(layout);
+      decor.layout(size.width);
       closing.layout(size.width);
     },
     destroy() {
@@ -501,6 +532,7 @@ export const kitchenScene: Scene = (ctx) => {
       finale.destroy();
       customer.destroy();
       bell.destroy();
+      decor.destroy();
       closing.destroy();
       countItem.destroy();
       for (const item of choiceItems) item.destroy();

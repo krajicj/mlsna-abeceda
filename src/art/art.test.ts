@@ -21,8 +21,31 @@ import { codeDots, keyCap, padlock } from './lock';
 import { shutter } from './shutter';
 import { countPill } from './pill';
 import { star, starsPill } from './star';
+import { basket, BASKET_SIZE } from './basket';
+import {
+  radioNiche,
+  radioSet,
+  sleepingCat,
+  DECOR_CAT_HEIGHT,
+  DECOR_CAT_WIDTH,
+  RADIO_HEIGHT,
+  RADIO_WIDTH,
+} from './decor';
+import {
+  boughtTick,
+  confirmCard,
+  noButton,
+  priceStar,
+  shopBackdrop,
+  shopBoard,
+  shopDoor,
+  shopGoodArt,
+  yesButton,
+} from './shop';
+import { decorLayout, shopGoodPicture, shopLayout, ANSWER_SIZE, PRICE_STAR } from './layout';
+import { SHOP_ITEMS } from '../data/shop';
 import { fruit, fruitWidth } from './fruit';
-import { INK, PALETTE } from './svg';
+import { fitted, INK, PALETTE } from './svg';
 
 /** Every animal, the ones bought in the shop included – art nobody tests is art nobody drew. */
 const ALL_CUSTOMERS = Object.keys(CUSTOMERS) as CustomerId[];
@@ -63,6 +86,23 @@ const MODULES: Record<string, string> = {
   padlock: padlock(),
   keyCap: keyCap('7'),
   codeDots: codeDots(2, 4),
+  // The shop and the decorations (STEP-16).
+  basket: basket(),
+  basketAsleep: basket(BASKET_SIZE, { dim: true }),
+  starsPillShop: starsPill(3, { basket: 'ready' }),
+  starsPillAsleep: starsPill(12, { basket: 'asleep' }),
+  priceStarFull: priceStar(PRICE_STAR, true),
+  priceStarEmpty: priceStar(PRICE_STAR, false),
+  boughtTick: boughtTick(40),
+  yesButton: yesButton(),
+  noButton: noButton(),
+  shopDoor: shopDoor({ x: 32, y: 412, width: 140, height: 280 }),
+  confirmCard: confirmCard({ x: 0, y: 0, width: 440, height: 420 }),
+  shopBoard: shopBoard({ x: 0, y: 0, width: 660, height: 44 }),
+  shopBackdrop: shopBackdrop(1024),
+  sleepingCat: sleepingCat(),
+  radioSet: radioSet(),
+  radioNiche: radioNiche(decorLayout(1024).radio),
 };
 
 /** Minimal well-formedness check: every tag closes, in the right order, exactly once. */
@@ -128,6 +168,28 @@ describe('art modules', () => {
     ['keyCap', MODULES['keyCap'], '0 0 96 96', 96, 96],
     // Four dots 20 px across with 12 px between them.
     ['codeDots', MODULES['codeDots'], '0 0 116 48', 116, 48],
+    // The shop (STEP-16): every drawing of a decoration is exactly its exported natural size, so
+    // `decorLayout()` and the cells of the shelf can be built from those constants.
+    ['basket', MODULES['basket'], `0 0 ${BASKET_SIZE} ${BASKET_SIZE}`, BASKET_SIZE, BASKET_SIZE],
+    ['starsPillShop', MODULES['starsPillShop'], '0 0 160 64', 160, 64],
+    ['yesButton', MODULES['yesButton'], '0 0 120 120', ANSWER_SIZE, ANSWER_SIZE],
+    ['noButton', MODULES['noButton'], '0 0 120 120', ANSWER_SIZE, ANSWER_SIZE],
+    ['shopDoor', MODULES['shopDoor'], '0 0 140 280', 140, 280],
+    ['shopBackdrop', MODULES['shopBackdrop'], '0 0 1024 768', 1024, 768],
+    [
+      'sleepingCat',
+      MODULES['sleepingCat'],
+      `0 0 ${DECOR_CAT_WIDTH} ${DECOR_CAT_HEIGHT}`,
+      DECOR_CAT_WIDTH,
+      DECOR_CAT_HEIGHT,
+    ],
+    [
+      'radioSet',
+      MODULES['radioSet'],
+      `0 0 ${RADIO_WIDTH} ${RADIO_HEIGHT}`,
+      RADIO_WIDTH,
+      RADIO_HEIGHT,
+    ],
   ])('%s has the size the layout expects', (_name, markup, viewBox, width, height) => {
     expect(attribute(markup!, 'viewBox')).toBe(viewBox);
     expect(attribute(markup!, 'width')).toBe(String(width));
@@ -257,6 +319,17 @@ describe('art modules', () => {
     expect(hintRing(96)).not.toContain('fill-opacity');
   });
 
+  it('fills the door of the counter with the radio, at the size of the door', () => {
+    // The bought radio takes one door of the counter out and stands in the opening (návrh 7.3a),
+    // so its drawing is exactly the size of that door – and the whole door is then the target.
+    const panel = decorLayout(1024).radio;
+    const markup = radioNiche(panel);
+    expect(attribute(markup, 'width')).toBe(String(panel.width));
+    expect(attribute(markup, 'height')).toBe(String(panel.height));
+    expect(markup).toContain(PALETTE.brass); // the dial of the radio inside the opening
+    expect(Math.min(panel.width, panel.height)).toBeGreaterThanOrEqual(88); // rule 3
+  });
+
   it('redraws the backdrop for the stage width it is given', () => {
     expect(attribute(kitchenBackdrop(1366), 'viewBox')).toBe('0 0 1366 768');
     expect(attribute(kitchenBackdrop(800), 'viewBox')).toBe('0 0 1024 768');
@@ -291,6 +364,71 @@ describe('art modules', () => {
     expect(starsPill(12)).toContain('>12</text>');
     expect(starsPill(-3)).toContain('>0</text>');
     expect(star()).toContain(PALETTE.star);
+  });
+
+  it('fills the price star only when the child can pay for it', () => {
+    expect(priceStar(PRICE_STAR, true)).toContain(PALETTE.star);
+    expect(priceStar(PRICE_STAR, false)).toContain(PALETTE.white);
+    expect(priceStar(PRICE_STAR, false)).not.toContain(PALETTE.star);
+  });
+
+  it('wakes the basket up and puts it to sleep without moving anything in the pill', () => {
+    const asleep = starsPill(3, { basket: 'asleep' });
+    const ready = starsPill(3, { basket: 'ready' });
+    const none = starsPill(3);
+    // The number is on the same place in all three, so switching the state never shifts it.
+    expect(asleep).toContain('>3</text>');
+    expect(ready).toContain('>3</text>');
+    expect(none).toContain('>3</text>');
+    expect(asleep).toContain('opacity="0.35"');
+    expect(ready).not.toContain('opacity="0.35"');
+    // The shop draws the pill without a basket: it must not promise a way into itself.
+    expect(none).not.toContain('translate(112');
+    expect(ready).toContain('translate(112');
+    // A three-digit balance gets a smaller number rather than a wider pill.
+    expect(starsPill(128, { basket: 'ready' })).toContain('font-size="24"');
+    expect(ready).toContain('font-size="30"');
+  });
+
+  it('draws finished art smaller without stretching or cropping it', () => {
+    const box = { x: 0, y: 0, width: 180, height: 140 };
+    const markup = fitted(frog(), { width: CUSTOMER_WIDTH, height: CUSTOMER_HEIGHT }, box);
+    expect(attribute(markup, 'viewBox')).toBe(`0 0 ${CUSTOMER_WIDTH} ${CUSTOMER_HEIGHT}`);
+    expect(attribute(markup, 'width')).toBe('180');
+    expect(attribute(markup, 'height')).toBe('140');
+    expect(markup).toContain('preserveAspectRatio="xMidYMid meet"');
+    // The drawing itself is handed on untouched – nothing rewrites another module's markup.
+    expect(markup).toContain(frog());
+    expect(unbalancedTags(markup)).toEqual([]);
+  });
+
+  it.each(SHOP_ITEMS.map((item) => [item.id, item] as const))(
+    'draws %s on the shelf at the size of the cell',
+    (_id, item) => {
+      const box = shopGoodPicture(shopLayout(1024).goods[0]!);
+      const markup = shopGoodArt(item, box);
+      expect(markup.trimStart().startsWith('<svg')).toBe(true);
+      expect(unbalancedTags(markup)).toEqual([]);
+      const width = Number(attribute(markup, 'width'));
+      const height = Number(attribute(markup, 'height'));
+      expect(width).toBeGreaterThan(0);
+      expect(width).toBeLessThanOrEqual(box.width);
+      expect(height).toBeLessThanOrEqual(box.height);
+      // It fills the cell in one direction: a picture that only half fills it was not fitted at all.
+      expect(Math.max(width / box.width, height / box.height)).toBeCloseTo(1, 5);
+    },
+  );
+
+  it('shrinks the frog into the cell instead of cropping her', () => {
+    const box = shopGoodPicture(shopLayout(1024).goods[0]!);
+    const markup = shopGoodArt(
+      SHOP_ITEMS.find((item) => item.id === 'customer.frog')!,
+      box,
+    );
+    expect(attribute(markup, 'viewBox')).toBe(`0 0 ${CUSTOMER_WIDTH} ${CUSTOMER_HEIGHT}`);
+    expect(attribute(markup, 'width')).toBe(String(box.width));
+    expect(attribute(markup, 'height')).toBe(String(box.height));
+    expect(markup).toContain('preserveAspectRatio="xMidYMid meet"');
   });
 
   it('gives every confetti piece a shape and a colour of its own', () => {

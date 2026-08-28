@@ -75,6 +75,14 @@
       "bytes": 8613,
       "loudness": -22
     },
+    "decor.radio.tune": {
+      "hash": "944dfd8739d0423f",
+      "prompt": "short cheerful toy music box melody, few notes, warm, cartoon kitchen radio, clean ending",
+      "durationSeconds": 2,
+      "promptInfluence": 0.3,
+      "bytes": 16554,
+      "loudness": -22
+    },
     "done": {
       "hash": "a3c4f3d9915710c0",
       "prompt": "warm friendly two-note kitchen oven timer ping, cheerful, clean",

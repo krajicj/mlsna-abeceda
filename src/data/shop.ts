@@ -16,20 +16,19 @@ import type { CustomerId } from './customers';
 
 export type ShopItemKind = 'fruit' | 'customer' | 'decoration';
 
-/** Things that stand in the kitchen and do nothing – they are only nice to look at (STEP-16). */
-export type DecorationId = 'flower' | 'curtains' | 'cat' | 'radio';
+/**
+ * Things bought for the kitchen. They are not furniture: each of them ANSWERS A TAP (návrh 7.3a) –
+ * the cat meows, the radio plays a few notes. Wall decorations (a window, curtains, a flower) were
+ * dropped in STEP-16: a 1024×768 stage has no free wall that would not clash with the order bubble,
+ * the counting pills or the shelves, and something that only sits there adds nothing anyway.
+ */
+export type DecorationId = 'cat' | 'radio';
 
 /**
  * Every id in the catalogue, as a closed union: the table of sentences in `lines.cs.ts` is keyed
  * by it, so a new item without a "chceš koupit" sentence does not compile.
  */
-export type ShopItemId =
-  | 'fruit.raspberry'
-  | 'decor.flower'
-  | 'decor.curtains'
-  | 'customer.frog'
-  | 'decor.cat'
-  | 'decor.radio';
+export type ShopItemId = 'fruit.raspberry' | 'customer.frog' | 'decor.cat' | 'decor.radio';
 
 /** The part every row has, whatever it sells. */
 interface ShopItemBase {
@@ -56,13 +55,14 @@ export type ShopItem =
  * The shelf offers them in this order – the cheapest first, so the first thing the child can afford
  * is the first thing she sees. Nothing here costs more than five stars: "chybí ti N hvězdiček" is
  * five whole sentences and Czech has no sixth one (rule 7).
+ *
+ * The shelf itself has six places and keeps them even while the catalogue is shorter (návrh 7.3):
+ * it fills up as things are added, instead of the shop changing shape under the child's hands.
  */
 export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: 'fruit.raspberry', kind: 'fruit', price: 3, label: 'maliny', unlocks: 'raspberry' },
-  { id: 'decor.flower', kind: 'decoration', price: 3, label: 'kytka', unlocks: 'flower' },
-  { id: 'decor.curtains', kind: 'decoration', price: 4, label: 'záclony', unlocks: 'curtains' },
   { id: 'customer.frog', kind: 'customer', price: 5, label: 'žabka', unlocks: 'frog' },
-  { id: 'decor.cat', kind: 'decoration', price: 5, label: 'kočička na polici', unlocks: 'cat' },
+  { id: 'decor.cat', kind: 'decoration', price: 5, label: 'kočička', unlocks: 'cat' },
   { id: 'decor.radio', kind: 'decoration', price: 5, label: 'rádio', unlocks: 'radio' },
 ];
 

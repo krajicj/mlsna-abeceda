@@ -287,10 +287,20 @@ medvídek–zajíček–kočička. Pytlík dá obojí: rovný podíl i pestré p
    hvězdička letí do počítadla. Fotka do alba (blesk, cvak). Žádný bonus za „bez chyby“.
 3. **Obchůdek (za hvězdičky):** nové ovoce (3 ★), nový zákazník (5 ★), nový výrobek –
    zmrzlinový stroj, pánev na palačinky, mixér (8 ★), polevy/barvy (2 ★), svíčky a ozdoby (2 ★),
-   věci do kuchyně – záclony, kytka, kočka na polici, rádio (3–5 ★).
+   věci do kuchyně (5 ★).
    Koupě: klepnutí → věc poskočí, vypravěč: „Chceš koupit banány za tři hvězdičky?“ + velké
    ✓ / ✗. Když nestačí hvězdičky, věc zachrastí a vypravěč řekne, kolik chybí (prázdné
    hvězdičky – zase počítání).
+   Regál má **šest míst ve dvou řadách** a zůstává stejně velký, i když je katalog kratší –
+   police se postupně zaplní, jak budou věci přibývat.
+3a. **Věci do kuchyně jsou živé** (rozhodnutí autora, srpen 2026). Nábytek a textil na zeď se
+   zrušil (okno, záclony, kytka): na jevišti 1024 × 768 pro ně není volná stěna, která by se
+   nepotkala s bublinou, pilulkami nad dortem nebo policemi, a mrtvá dekorace stejně nic
+   nepřidá. Co se koupí, na to se dá **klepnout a ono to odpoví**:
+   - **Kočička** leží vpravo dole na podlaze; klepnutí → protáhne se a **zamňouká**.
+   - **Rádio** je vestavěné do linky **místo jedněch dvířek**; klepnutí → **zahraje pár tónů**.
+   Zvířátko za pultem ani objednávka se tím nepřeruší: jsou to hračky na okraji scény, nedají
+   se pokazit a nikam nevedou (pravidlo 2).
 4. **Překvapení (bez podmínky):** zhruba každá 6.–10. objednávka – zákazník přinese kytku,
    za oknem duha, do kuchyně vletí motýl, který se nechá chytit. Náhodné, ne moc časté.
 
