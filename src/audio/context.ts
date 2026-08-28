@@ -6,6 +6,22 @@ function resolveAudioContext(): AudioContextConstructor | null {
   return scope.AudioContext ?? scope.webkitAudioContext ?? null;
 }
 
+/**
+ * WebKit runs Web Audio in the "ambient" audio session: on iOS and iPadOS it is then silenced by
+ * the mute switch and follows the ringer volume, not the media volume – which is why an iPad with
+ * a muted ringer stays silent while the same page speaks on a desktop. Safari 16.4+ lets us ask
+ * for the "playback" session instead; everywhere else the property simply does not exist.
+ */
+function preferPlaybackSession(): void {
+  const scope = navigator as Navigator & { audioSession?: { type: string } };
+  if (!scope.audioSession) return;
+  try {
+    scope.audioSession.type = 'playback';
+  } catch {
+    // read-only or an unknown value: the ambient session is still better than an exception
+  }
+}
+
 export interface AudioEngine {
   /**
    * Live read of `context?.state === 'running'` – not a latch: it goes false again while the
@@ -46,11 +62,27 @@ export function createAudioEngine(): AudioEngine {
   }
   document.addEventListener('visibilitychange', onVisibilityChange);
 
+  /**
+   * The tap screen is the intended unlock (rule 6), but it gets exactly one try: on an iPad the
+   * fullscreen transition shares that gesture, and a resume() that does not make it leaves the
+   * game silent for the rest of the run. So every later tap tries again until the context runs –
+   * idempotent, and a no-op in the normal case.
+   */
+  function onGesture(): void {
+    if (context?.state === 'running') return;
+    void unlock();
+  }
+  // Both events: `click` is the gesture Safari honours most reliably (STEP-02), `pointerdown` is
+  // the one a tap that never becomes a click still produces.
+  document.addEventListener('pointerdown', onGesture, { capture: true, passive: true });
+  document.addEventListener('click', onGesture, { capture: true });
+
   async function unlock(): Promise<boolean> {
     try {
       if (!context) {
         const Ctor = resolveAudioContext();
         if (!Ctor) return false; // no Web Audio: the game stays silent, never blocked
+        preferPlaybackSession(); // before the context exists – it inherits the session category
         context = new Ctor();
         master = context.createGain();
         master.gain.value = volume;
@@ -84,6 +116,8 @@ export function createAudioEngine(): AudioEngine {
     },
     destroy() {
       document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener('pointerdown', onGesture, { capture: true });
+      document.removeEventListener('click', onGesture, { capture: true });
       void context?.close().catch(() => undefined);
       context = null;
       master = null;

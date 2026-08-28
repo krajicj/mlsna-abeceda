@@ -369,6 +369,16 @@ Když `unlock()` doběhne až po vypršení limitu, `AudioContext` tím nezanik�
 zůstane platný a použitelný (`audio.unlocked` se prostě přepne o chvíli později), jen se
 přeskočí cinknutí. Další `unlock()` (návrat na úvod dočasnou dlaždicí) je idempotentní.
 
+> **Oprava (28. 8. 2026, po testu na iPadu.)** Na iPadu nehrálo nic, na iPhonu a PC ano. Tři
+> změny: (1) `requestFullscreenOnTouch()` se volá až po `ctx.audio.unlock()` – iPad je jediné
+> zařízení s hrubým pointerem *a* `Element.requestFullscreen`, takže přechod do fullscreenu tam
+> jako jediný soupeřil o stejné gesto dřív, než vůbec vznikl `AudioContext`; (2) `unlock()`
+> nastaví `navigator.audioSession.type = 'playback'` (Safari 16.4+), jinak WebKit pouští Web
+> Audio v kategorii „ambient“, kterou na iOS ztiší vypínač zvuku a která se řídí hlasitostí
+> zvonění, ne médií; (3) o odemčení se nepokouší jen úvodní klepnutí – dokud kontext neběží,
+> zkusí to `AudioEngine` znovu při každém dalším `pointerdown`/`click`, aby jeden neúspěch
+> neznamenal ticho až do reloadu.
+
 ### CSS kontrakt pro další kroky
 
 ```css

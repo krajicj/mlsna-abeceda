@@ -50,11 +50,12 @@ export const titleScene: Scene = (ctx) => {
   async function onClick(): Promise<void> {
     if (started) return; // a double tap must not run the sequence twice
     started = true;
+    // Both want this one gesture, so the audio asks first: on an iPad (the only device with both a
+    // coarse pointer and Element.requestFullscreen) the fullscreen transition used to run before
+    // the context was even created, and the game stayed silent for the whole run.
+    const unlocking = ctx.audio.unlock();
     requestFullscreenOnTouch();
-    const unlocked = await Promise.race([
-      ctx.audio.unlock(),
-      delay(UNLOCK_TIMEOUT_MS).then(() => false),
-    ]);
+    const unlocked = await Promise.race([unlocking, delay(UNLOCK_TIMEOUT_MS).then(() => false)]);
     if (unlocked) playStartChime(ctx.audio);
     ctx.go('kitchen'); // always – even when the audio stayed locked
   }
