@@ -1,13 +1,15 @@
 /**
  * Kitchen geometry in logical stage pixels (height is always 768, width 1024–1366). Pure and
  * DOM-free on purpose: the scene positions its boxes from here, and STEP-05/06 read the same
- * numbers to animate a strawberry from the bowl onto the cake or to fill the shelves.
+ * numbers to animate a strawberry from the bowl onto the product or to fill the shelves.
  */
 import { STAGE_HEIGHT, STAGE_MAX_WIDTH, STAGE_MIN_WIDTH } from '../stage/layout';
 import { CANDLE_HEIGHT, CANDLE_WIDTH } from './candle';
 import { COOKIE_SIZE } from './cookie';
 import { DECOR_CAT_HEIGHT, DECOR_CAT_WIDTH } from './decor';
 import { fruitWidth } from './fruit';
+import { FLAG_HEIGHT, FLAG_WIDTH, ICECREAM_HEIGHT, WAFER_SIZE } from './icecream';
+import type { ProductId } from '../data/products';
 import type { Rect } from './svg';
 
 export const SHELF_ITEM_WIDTH = 96; // ≥ 88 (CLAUDE.md, rule 3)
@@ -20,11 +22,11 @@ export const FRUIT_SLOT = 96; // strawberry hit box, ≥ 88
 export const FRUIT_GAP = 16;
 export const MAX_FRUIT_SLOTS = 3; // more would not fit a 320 px bowl without overlapping
 
-/** The counter above the cake: indicators, never touched, so they may be smaller than 88. */
+/** The counter above the product: indicators, never touched, so they may be smaller than 88. */
 export const PILL_SIZE = 40;
 export const PILL_GAP = 6;
 export const MAX_PILLS = 5;
-/** The pills sit above the cake: y = cake.y − PILL_OFFSET_Y. */
+/** The pills sit above the product: y = product.y − PILL_OFFSET_Y. */
 export const PILL_OFFSET_Y = 84;
 
 /**
@@ -70,19 +72,81 @@ export const STARS_PILL_BASKET_X = 112;
 /** Top edge of the digit shelf: where the counter's hit box has to stop (`starsHitSlot()`). */
 export const SHELF_DIGITS_TOP = 84;
 
-export const MAX_CAKE_FRUIT = 5;
-export const CAKE_FRUIT_HEIGHT = 44;
-export const CAKE_FRUIT_PITCH = 40;
-/** Centre of the top of the cake inside its 220×146 box (read off cake.ts). */
-export const CAKE_TOP_CENTER_X = 110;
-/** Local y where something standing on the top of the cake touches down (the candle). */
-export const CAKE_TOP_ITEM_BOTTOM = 24;
-/** Local y of the centre of a cookie leaning against the front of the cake (the icing band). */
-export const CAKE_COOKIE_CENTER_Y = 92;
-/** Bottom edges of the two rows of fruit, measured from the top of the cake box. */
-const CAKE_FRUIT_FRONT_BOTTOM = 22;
-const CAKE_FRUIT_BACK_BOTTOM = 10;
-const CAKE_FRUIT_FRONT_MAX = 3;
+/** Five is what one row and a half hold; a second full row is STEP-25 (`MAX_COUNT`). */
+export const MAX_COUNT_PIECES = 5;
+
+/**
+ * Where the parts of ONE product sit inside its 220×146 box – the numbers `cake.ts` and
+ * `icecream.ts` were drawn to. Every coordinate is local to the box, so the geometry says nothing
+ * about where on the counter the product stands.
+ *
+ * Whatever is counted goes in a front row of three with the rest tucked into its gaps, so all five
+ * pieces stay countable – which is what Č1 rests on (návrh 5.1).
+ */
+/** Where the counted pieces go on a product that takes any. Local to its 220×146 box. */
+export interface ProductCountGeometry {
+  readonly pitch: number;
+  readonly height: number;
+  /** Width of one piece at `height`; the drawing is never stretched. */
+  readonly width: number;
+  /** Bottom edges of the two rows, measured from the top of the box. */
+  readonly frontBottom: number;
+  readonly backBottom: number;
+  readonly frontMax: number;
+}
+
+export interface ProductGeometry {
+  /** Centre of the top of the product, where everything is lined up from. */
+  readonly topCenterX: number;
+  /**
+   * null for a product that arrives finished and takes no counted pieces – the ice cream (návrh
+   * kap. 4). The generator will not put a counting item on such a product, and `Product.counts`
+   * is what says so; this is the drawing side of the same fact.
+   */
+  readonly count: ProductCountGeometry | null;
+  /** Local y where whatever stands on top touches down: the candle, the flag. */
+  readonly topItemBottom: number;
+  /** Local y of the centre of what leans against the front: the cookie, the wafer. */
+  readonly frontItemCenterY: number;
+  /** The piece that carries the letter, at the size it stands on the shelf. */
+  readonly letterSize: { readonly width: number; readonly height: number };
+  /** The same for the digit. */
+  readonly digitSize: { readonly width: number; readonly height: number };
+}
+
+export const PRODUCT_GEOMETRY: Readonly<Record<ProductId, ProductGeometry>> = {
+  cake: {
+    topCenterX: 110,
+    count: {
+      pitch: 40,
+      height: 44,
+      width: fruitWidth(44),
+      frontBottom: 22,
+      backBottom: 10,
+      frontMax: 3,
+    },
+    topItemBottom: 24,
+    frontItemCenterY: 92,
+    letterSize: { width: COOKIE_SIZE, height: COOKIE_SIZE },
+    digitSize: { width: CANDLE_WIDTH, height: CANDLE_HEIGHT },
+  },
+  icecream: {
+    topCenterX: 110,
+    count: null,
+    // Both carriers sit on the centre line, separated vertically the way the cake keeps its candle
+    // above and its cookie below. The flag is planted in the top scoop; the wafer leans low on the
+    // cone, where it hides some of the waffle but none of the scoops – those are what say "ice
+    // cream" at a glance.
+    topItemBottom: 30,
+    frontItemCenterY: 96,
+    letterSize: { width: WAFER_SIZE, height: WAFER_SIZE },
+    digitSize: { width: FLAG_WIDTH, height: FLAG_HEIGHT },
+  },
+};
+
+/** The box every product is drawn in; both of them are the same size (cake.ts, icecream.ts). */
+export const PRODUCT_WIDTH = 220;
+export const PRODUCT_HEIGHT = ICECREAM_HEIGHT;
 
 /** The rim line of the bowl; everything below it is the bowl itself (see bowl.ts). */
 export const BOWL_RIM_Y = 56;
@@ -108,7 +172,8 @@ export const FLOOR_TOP = 692;
 export interface KitchenLayout {
   /** Whoever is at the counter right now; every animal is drawn on the same box. */
   readonly customer: Rect;
-  readonly cake: Rect;
+  /** Whatever is being made right now; every product is drawn on the same box (STEP-17). */
+  readonly product: Rect;
   readonly bowl: Rect;
   /** The whole shelf including the board; the slots sit on top of the board. */
   readonly shelfDigits: Rect;
@@ -118,24 +183,24 @@ export interface KitchenLayout {
   /** The star counter, held against the right edge, above the digit shelf. */
   readonly stars: Rect;
   /**
-   * The bell on the worktop. Left of the cake wherever the stage is wide enough for it (from about
-   * 1272 px, so a phone or a wide tablet in landscape); on a 4:3 screen there is nothing but 12 px
-   * between the customer and the cake, so it falls back to the right of the bowl.
+   * The bell on the worktop. Left of the product wherever the stage is wide enough for it (from
+   * about 1272 px, so a phone or a wide tablet in landscape); on a 4:3 screen there is nothing but
+   * 12 px between the customer and the product, so it falls back to the right of the bowl.
    */
   readonly bell: Rect;
 }
 
 /**
- * Where the bell stands. It belongs next to the cake on the left, within easy reach of the hand
- * that is about to work in the middle of the counter – but on a 4:3 stage the customer and the cake
- * are only 12 px apart, and the row of counting pills above the cake already sits exactly 8 px from
- * the letter shelf, so nothing can be shifted to make room. There it goes to the right of the bowl
- * instead. Either way it stands on the same line of the worktop as the bowl: bottom edges match, so
- * the two read as standing on the counter rather than floating over it.
+ * Where the bell stands. It belongs next to the product on the left, within easy reach of the hand
+ * that is about to work in the middle of the counter – but on a 4:3 stage the customer and the
+ * product are only 12 px apart, and the row of counting pills above it already sits exactly 8 px
+ * from the letter shelf, so nothing can be shifted to make room. There it goes to the right of the
+ * bowl instead. Either way it stands on the same line of the worktop as the bowl: bottom edges
+ * match, so the two read as standing on the counter rather than floating over it.
  */
-function bellRect(customer: Rect, cake: Rect, bowl: Rect): Rect {
+function bellRect(customer: Rect, product: Rect, bowl: Rect): Rect {
   const y = bowl.y + bowl.height - BELL_SIZE;
-  const left = cake.x - BELL_MARGIN - BELL_SIZE;
+  const left = product.x - BELL_MARGIN - BELL_SIZE;
   const fitsLeft = left - (customer.x + customer.width) >= BELL_LEFT_CLEARANCE;
   const x = fitsLeft ? left : bowl.x + bowl.width + BELL_MARGIN;
   return { x, y, width: BELL_SIZE, height: BELL_SIZE };
@@ -157,17 +222,22 @@ function centeredRow(left: number, available: number, count: number, size: numbe
 /** Pure: stage width → the boxes of the scene. Clamps the width to [1024, 1366]. */
 export function kitchenLayout(stageWidth: number): KitchenLayout {
   const width = clampStageWidth(stageWidth);
-  const cake: Rect = { x: Math.round(width / 2) - 180, y: 384, width: 220, height: 146 };
-  const bowl: Rect = { x: cake.x + 248, y: 400, width: 320, height: 140 };
+  const product: Rect = {
+    x: Math.round(width / 2) - 180,
+    y: 384,
+    width: PRODUCT_WIDTH,
+    height: PRODUCT_HEIGHT,
+  };
+  const bowl: Rect = { x: product.x + 248, y: 400, width: 320, height: 140 };
   const customer: Rect = { x: 60, y: 200, width: 260, height: 320 };
   return {
     customer,
-    cake,
+    product,
     bowl,
     shelfDigits: { x: width - 462, y: SHELF_DIGITS_TOP, width: 448, height: 128 },
     shelfLetters: { x: width - 462, y: 252, width: 448, height: 112 },
     bubble: { x: 60, y: 28, width: BUBBLE_WIDTH, height: BUBBLE_HEIGHT },
-    bell: bellRect(customer, cake, bowl),
+    bell: bellRect(customer, product, bowl),
     // 10 px above the digit shelf: the layout test guards 8 px between any two boxes, so moving
     // the counter (or making it taller) means checking that gap again.
     stars: {
@@ -209,26 +279,32 @@ export function shelfHitSlots(shelf: Rect, count: number): Rect[] {
 }
 
 /**
- * Where the picked piece lands on the cake. Both slots take their size from the art modules
- * (candle.ts, cookie.ts), so a piece is exactly as big on the cake as it was on the shelf and the
- * flight never has to rescale it. No import cycle: neither module imports this one.
+ * Where the picked piece lands on the product: the candle STANDS on the cake and the flag on the
+ * scoops, so both are placed by their bottom edge. Every size comes from the art module that draws
+ * the piece (candle.ts, cookie.ts, icecream.ts), so a piece is exactly as big on the product as it
+ * was on the shelf and the flight never has to rescale it. No import cycle: none of those modules
+ * imports this one.
  */
-export function cakeCandleSlot(cake: Rect): Rect {
+export function productDigitSlot(box: Rect, product: ProductId): Rect {
+  const geometry = PRODUCT_GEOMETRY[product];
+  const { width, height } = geometry.digitSize;
   return {
-    x: Math.round(cake.x + CAKE_TOP_CENTER_X - CANDLE_WIDTH / 2),
-    y: Math.round(cake.y + CAKE_TOP_ITEM_BOTTOM - CANDLE_HEIGHT),
-    width: CANDLE_WIDTH,
-    height: CANDLE_HEIGHT,
+    x: Math.round(box.x + geometry.topCenterX - width / 2),
+    y: Math.round(box.y + geometry.topItemBottom - height),
+    width,
+    height,
   };
 }
 
-/** The cookie leans against the front of the cake, centred on the icing – the letter stays big. */
-export function cakeCookieSlot(cake: Rect): Rect {
+/** The cookie and the wafer LEAN against the front, centred – the letter stays big. */
+export function productLetterSlot(box: Rect, product: ProductId): Rect {
+  const geometry = PRODUCT_GEOMETRY[product];
+  const { width, height } = geometry.letterSize;
   return {
-    x: Math.round(cake.x + CAKE_TOP_CENTER_X - COOKIE_SIZE / 2),
-    y: Math.round(cake.y + CAKE_COOKIE_CENTER_Y - COOKIE_SIZE / 2),
-    width: COOKIE_SIZE,
-    height: COOKIE_SIZE,
+    x: Math.round(box.x + geometry.topCenterX - width / 2),
+    y: Math.round(box.y + geometry.frontItemCenterY - height / 2),
+    width,
+    height,
   };
 }
 
@@ -247,8 +323,8 @@ export function fruitSlots(bowl: Rect, count: number = MAX_FRUIT_SLOTS): Rect[] 
   }));
 }
 
-/** A slot is always `fruitWidth(CAKE_FRUIT_HEIGHT)` wide, i.e. 34 px – fruit is never stretched. */
-export interface CakeSlot extends Rect {
+/** A slot is always `PRODUCT_GEOMETRY[product].countWidth` wide – a piece is never stretched. */
+export interface CountSlot extends Rect {
   /** Back row – drawn under the front one (z-index 0 × 1). */
   readonly back: boolean;
 }
@@ -259,40 +335,44 @@ function clampCount(count: number, max: number): number {
 }
 
 /**
- * Where the fruit lands on the cake, in the order it arrives: the first three into the front row,
- * the rest (at most two) into the back one. The front row has a pitch of CAKE_FRUIT_PITCH and is
- * centred on the top of the cake; every back piece sits in a gap of the front row, so it peeks out
- * between two front ones and the child can still count all of them.
+ * Where a counted piece lands on the product, in the order it arrives: the first three into the
+ * front row, the rest (at most two) into the back one. The front row is centred on the top of the
+ * product; every back piece sits in a gap of the front row, so it peeks out between two front ones
+ * and the child can still count all of them. Fruit on the cake, scoops on the ice cream – the same
+ * arrangement with the numbers of `PRODUCT_GEOMETRY`.
  */
-export function cakeFruitSlots(cake: Rect, count: number): CakeSlot[] {
-  const n = clampCount(count, MAX_CAKE_FRUIT);
-  const width = fruitWidth(CAKE_FRUIT_HEIGHT);
-  const center = cake.x + CAKE_TOP_CENTER_X;
-  const frontCount = Math.min(n, CAKE_FRUIT_FRONT_MAX);
+export function productCountSlots(box: Rect, product: ProductId, count: number): CountSlot[] {
+  const geometry = PRODUCT_GEOMETRY[product].count;
+  // Nothing is ever counted onto a finished product, so it has no slots to give.
+  if (geometry === null) return [];
+  const n = clampCount(count, MAX_COUNT_PIECES);
+  const width = geometry.width;
+  const center = box.x + PRODUCT_GEOMETRY[product].topCenterX;
+  const frontCount = Math.min(n, geometry.frontMax);
   const frontCenters = Array.from(
     { length: frontCount },
-    (_, index) => center + (index - (frontCount - 1) / 2) * CAKE_FRUIT_PITCH,
+    (_, index) => center + (index - (frontCount - 1) / 2) * geometry.pitch,
   );
   const backCenters = frontCenters
     .slice(1)
     .map((x, index) => (x + (frontCenters[index] ?? x)) / 2)
     .slice(0, n - frontCount);
-  const slot = (cx: number, back: boolean): CakeSlot => ({
+  const slot = (cx: number, back: boolean): CountSlot => ({
     x: Math.round(cx - width / 2),
-    y: cake.y + (back ? CAKE_FRUIT_BACK_BOTTOM : CAKE_FRUIT_FRONT_BOTTOM) - CAKE_FRUIT_HEIGHT,
+    y: box.y + (back ? geometry.backBottom : geometry.frontBottom) - geometry.height,
     width,
-    height: CAKE_FRUIT_HEIGHT,
+    height: geometry.height,
     back,
   });
   return [...frontCenters.map((cx) => slot(cx, false)), ...backCenters.map((cx) => slot(cx, true))];
 }
 
-/** The row of pills above the cake, centred on it; `count` is clamped to 0…MAX_PILLS. */
-export function pillSlots(cake: Rect, count: number): Rect[] {
+/** The row of pills above the product, centred on it; `count` is clamped to 0…MAX_PILLS. */
+export function pillSlots(box: Rect, count: number): Rect[] {
   const n = clampCount(count, MAX_PILLS);
-  return centeredRow(cake.x, cake.width, n, PILL_SIZE, PILL_GAP).map((x) => ({
+  return centeredRow(box.x, box.width, n, PILL_SIZE, PILL_GAP).map((x) => ({
     x,
-    y: cake.y - PILL_OFFSET_Y,
+    y: box.y - PILL_OFFSET_Y,
     width: PILL_SIZE,
     height: PILL_SIZE,
   }));

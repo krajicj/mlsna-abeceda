@@ -1,7 +1,7 @@
 /**
  * One item where the child picks from a shelf (docs/navrh-hry.md ch. 5.4, 5.5): the offer from the
  * order stands on it – cookies below, candles above – the child taps a piece and the right one flies
- * onto the cake. The state lives in `game/choice.ts`, the geometry in `art/layout.ts`. A wrong tap
+ * onto the product. The state lives in `game/choice.ts`, the geometry in `art/layout.ts`. A wrong tap
  * only shakes the piece; after the second one the right answer lights up, so the child can never get
  * stuck (rule 2). A shelf that is not in play stays full but inert: a tap there is not a mistake.
  *
@@ -13,18 +13,18 @@
  */
 import type { SfxPlayer } from '../../audio/sfx';
 import type { VoicePlayer } from '../../audio/voice';
-import { candle } from '../../art/candle';
-import { cookie } from '../../art/cookie';
 import { hintRing } from '../../art/hint';
 import {
   SHELF_ITEM_WIDTH,
-  cakeCandleSlot,
-  cakeCookieSlot,
+  productDigitSlot,
+  productLetterSlot,
   shelfHitSlots,
   shelfSlots,
   type KitchenLayout,
 } from '../../art/layout';
+import { productDigitArt, productLetterArt } from '../../art/product';
 import type { Rect } from '../../art/svg';
+import { STARTER_PRODUCT, type ProductId } from '../../data/products';
 import { plingRate } from '../../data/sfx';
 import {
   choiceTarget,
@@ -49,16 +49,19 @@ const HOP_MS = 420;
 const BOB_MS = 1150;
 
 export interface ChoiceItemHandle {
-  /** Starts the item: the offer goes on this shelf in place of the decoration. */
-  start(item: ChoiceItem): void;
-  /** The order does not ask for this shelf: it goes back to being decoration, with no targets. */
-  clear(): void;
+  /** Starts the item: the offer of `product` goes on this shelf in place of the decoration. */
+  start(item: ChoiceItem, product: ProductId): void;
+  /**
+   * The order does not ask for this shelf: it goes back to being decoration, with no targets. The
+   * decoration is drawn for `product` too – an inert shelf still belongs to what is on the counter.
+   */
+  clear(product: ProductId): void;
   /** Called after every stage resize; re-places everything from the new layout. */
   layout(layout: KitchenLayout): void;
   state(): ChoiceState | null;
   /** How the item went, or `null` while none is running or one is unfinished. */
   outcome(): ItemOutcome | null;
-  /** What flies to the customer with the cake – the cookie or the candle that landed on it. */
+  /** What flies to the customer – the cookie, the candle, the wafer or the flag on the product. */
   plate(): readonly HTMLElement[];
   /** 15 s of silence: the offer bobs. Wordless – the scene says the sentence. */
   nudge(): void;
@@ -85,7 +88,7 @@ export function createChoiceItem(options: {
   readonly voice: VoicePlayer;
   /** Every tap on the offer, right or wrong. The scene resets the idle watcher of the order. */
   readonly onActivity: () => void;
-  /** The piece is on the cake; the praise and the finale are the scene's call. */
+  /** The piece is on the product; the praise and the finale are the scene's call. */
   readonly onDone: () => void;
 }): ChoiceItemHandle {
   const digits = options.kind === 'digit';
@@ -102,6 +105,8 @@ export function createChoiceItem(options: {
   let current: KitchenLayout | null = null;
   let state: ChoiceState | null = null;
   let targets: HTMLDivElement[] = [];
+  /** What the offer belongs to: a candle for a cake, a flag for an ice cream (STEP-17). */
+  let product: ProductId = STARTER_PRODUCT;
 
   function shelfRect(): Rect | null {
     if (!current) return null;
@@ -109,13 +114,15 @@ export function createChoiceItem(options: {
   }
 
   function art(value: string): string {
-    return digits ? candle(value) : cookie(value);
+    return digits ? productDigitArt(product, value) : productLetterArt(product, value);
   }
 
-  /** Where the picked piece lands: the candle stands on top, the cookie leans on the front. */
-  function cakeSlot(): Rect | null {
+  /** Where the picked piece lands: the digit stands on top, the letter leans on the front. */
+  function productSlot(): Rect | null {
     if (!current) return null;
-    return digits ? cakeCandleSlot(current.cake) : cakeCookieSlot(current.cake);
+    return digits
+      ? productDigitSlot(current.product, product)
+      : productLetterSlot(current.product, product);
   }
 
   function drawShelf(values: readonly string[]): void {
@@ -175,7 +182,7 @@ export function createChoiceItem(options: {
   }
 
   function placeLanded(): void {
-    const slot = cakeSlot();
+    const slot = productSlot();
     if (!slot) return;
     for (const piece of landedLayer.children) place(piece as HTMLElement, slot);
   }
@@ -189,7 +196,7 @@ export function createChoiceItem(options: {
   }
 
   function land(): void {
-    const slot = cakeSlot();
+    const slot = productSlot();
     if (!slot || !state) return;
     const piece = layer('choice-landed-piece');
     piece.innerHTML = art(state.target);
@@ -198,7 +205,7 @@ export function createChoiceItem(options: {
   }
 
   function fly(index: number, onLanded: () => void): void {
-    const slot = cakeSlot();
+    const slot = productSlot();
     const from = slotOf(index);
     if (!slot || !from || !state) {
       onLanded();
@@ -208,8 +215,8 @@ export function createChoiceItem(options: {
     flyer.innerHTML = art(state.target);
     place(flyer, slot);
     flightLayer.append(flyer);
-    // The shelf slot and the cake slot are the same size (both come from the art module), so the
-    // flight only has to travel – nothing is scaled and the piece never changes size mid-air.
+    // The shelf slot and the slot on the product are the same size (both come from the art
+    // module), so the flight only travels – nothing is scaled and no piece changes size mid-air.
     const dx = from.x - slot.x;
     const dy = from.y - slot.y;
     const animation = motion.animate(
@@ -238,7 +245,7 @@ export function createChoiceItem(options: {
       flyer.remove();
     });
     // A hidden document freezes Web Animations and `finish` may never arrive; without this the
-    // piece would hang in the air and never reach the cake (see stage/scenes.ts).
+    // piece would hang in the air and never reach the product (see stage/scenes.ts).
     motion.after(FLIGHT_MS + 120, arrive);
   }
 
@@ -334,16 +341,18 @@ export function createChoiceItem(options: {
   }
 
   return {
-    start(item) {
+    start(item, nextProduct) {
       reset();
+      product = nextProduct;
       state = createChoice(choiceTarget(item), choiceValues(item));
       drawShelf(state.choices);
       buildTargets(state.choices.length);
       placeAll();
     },
-    clear() {
+    clear(nextProduct) {
       reset();
       state = null;
+      product = nextProduct;
       drawShelf(options.decoration());
       placeAll();
     },

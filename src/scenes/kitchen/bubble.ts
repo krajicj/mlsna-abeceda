@@ -17,8 +17,7 @@ import {
   orderCheck,
   speakerIcon,
 } from '../../art/bubble';
-import { candle } from '../../art/candle';
-import { cookie } from '../../art/cookie';
+import { productDigitArt, productLetterArt } from '../../art/product';
 import {
   BUBBLE_ITEM_HEIGHT,
   BUBBLE_SPEAKER,
@@ -26,6 +25,7 @@ import {
   bubbleSpeakerSlot,
   type KitchenLayout,
 } from '../../art/layout';
+import { STARTER_PRODUCT, type ProductId } from '../../data/products';
 import type { Order, OrderItem } from '../../game/orders';
 import { layer, place } from './dom';
 
@@ -35,21 +35,21 @@ const CHECK_SIZE = 44;
 export interface BubbleHandle {
   /** Draws an order; `null` hides the card (an order with nothing playable in it). */
   show(order: Order | null): void;
-  /** Ticks off item `index` – it is on the cake now. */
+  /** Ticks off item `index` – it is on the product now. */
   tick(index: number): void;
   layout(layout: KitchenLayout): void;
   destroy(): void;
 }
 
-function itemArt(item: OrderItem): string {
+function itemArt(item: OrderItem, product: ProductId): string {
   switch (item.type) {
-    // How many is not a secret – the counter above the cake shows it as empty circles anyway.
+    // How many is not a secret – the counter above the product shows it as empty circles anyway.
     case 'count':
-      return bubbleFruit(item.fruit, item.amount);
+      return bubbleFruit(item.fruit, item.amount); // fruit whatever is being made (návrh kap. 4)
     case 'digit':
-      return candle(); // a candle, not "the candle with a 3"
+      return productDigitArt(product); // a candle, not "the candle with a 3"
     case 'letter':
-      return cookie(); // a gingerbread cookie, not "the one with a K"
+      return productLetterArt(product); // a gingerbread cookie, not "the one with a K"
   }
 }
 
@@ -104,9 +104,11 @@ export function createBubble(options: {
   return {
     show(order) {
       const list = order?.items ?? [];
+      // The product comes with the order, so the card can never show a cookie over an ice cream.
+      const product = order?.product ?? STARTER_PRODUCT;
       items = list.map((item) => {
         const el = layer('bubble-item');
-        el.innerHTML = itemArt(item);
+        el.innerHTML = itemArt(item, product);
         return el;
       });
       checks = list.map(() => {

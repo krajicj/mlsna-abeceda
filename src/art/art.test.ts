@@ -14,6 +14,18 @@ import { candle } from './candle';
 import { kitchenTimer } from './clock';
 import { cookie } from './cookie';
 import { hintRing } from './hint';
+import {
+  flag,
+  iceCreamBase,
+  iceCreamTopping,
+  wafer,
+  FLAG_HEIGHT,
+  FLAG_WIDTH,
+  ICECREAM_HEIGHT,
+  ICECREAM_WIDTH,
+  WAFER_SIZE,
+} from './icecream';
+import { productBase, productDigitArt, productLetterArt } from './product';
 import { kitchenBackdrop } from './kitchen';
 import { confettiPiece, CONFETTI_COUNT, CONFETTI_SIZE } from './confetti';
 import { bowlLid } from './lid';
@@ -43,6 +55,7 @@ import {
   yesButton,
 } from './shop';
 import { decorLayout, shopGoodPicture, shopLayout, ANSWER_SIZE, PRICE_STAR } from './layout';
+import { PRODUCTS } from '../data/products';
 import { SHOP_ITEMS } from '../data/shop';
 import { fruit, fruitWidth } from './fruit';
 import { fitted, INK, PALETTE } from './svg';
@@ -103,6 +116,13 @@ const MODULES: Record<string, string> = {
   sleepingCat: sleepingCat(),
   radioSet: radioSet(),
   radioNiche: radioNiche(decorLayout(1024).radio),
+  // The ice cream (STEP-17).
+  iceCreamBase: iceCreamBase(),
+  iceCreamTopping: iceCreamTopping(),
+  wafer: wafer('K'),
+  blankWafer: wafer(),
+  flag: flag('3'),
+  blankFlag: flag(),
 };
 
 /** Minimal well-formedness check: every tag closes, in the right order, exactly once. */
@@ -158,6 +178,24 @@ describe('art modules', () => {
     // The glaze is laid on the very same box as the cake, so the two must match exactly.
     ['cakeGlaze', MODULES['cakeGlaze'], '-7 44 274 182', 220, 146],
     ['orderBubble', MODULES['orderBubble'], '0 0 480 148', 480, 148],
+    // The ice cream stands on the same box as the cake, so the counter never has to move.
+    [
+      'iceCreamBase',
+      MODULES['iceCreamBase'],
+      `0 0 ${ICECREAM_WIDTH} ${ICECREAM_HEIGHT}`,
+      ICECREAM_WIDTH,
+      ICECREAM_HEIGHT,
+    ],
+    // The sauce is laid on the very same box as the cone, exactly as the glaze is on the cake.
+    [
+      'iceCreamTopping',
+      MODULES['iceCreamTopping'],
+      `0 0 ${ICECREAM_WIDTH} ${ICECREAM_HEIGHT}`,
+      ICECREAM_WIDTH,
+      ICECREAM_HEIGHT,
+    ],
+    ['wafer', MODULES['wafer'], `0 0 ${WAFER_SIZE} ${WAFER_SIZE}`, WAFER_SIZE, WAFER_SIZE],
+    ['flag', MODULES['flag'], `0 0 ${FLAG_WIDTH} ${FLAG_HEIGHT}`, FLAG_WIDTH, FLAG_HEIGHT],
     ['bubbleFruit', MODULES['bubbleFruit'], '0 0 116 88', 116, 88],
     ['star', MODULES['star'], '0 0 40 40', 40, 40],
     ['starsPill', MODULES['starsPill'], '0 0 160 64', 160, 64],
@@ -441,5 +479,57 @@ describe('art modules', () => {
     expect(confettiPiece(1)).toContain('<circle');
     expect(confettiPiece(2)).toContain('<path');
     expect(CONFETTI_SIZE).toBeGreaterThan(0);
+  });
+});
+
+describe('the drawings of the ice cream (STEP-17)', () => {
+  it('carries the letter and the digit only when it has one', () => {
+    // The order bubble shows the blank one: "a wafer", not "the wafer with a K" (návrh 5.4).
+    expect(wafer('K')).toContain('>K<');
+    expect(wafer()).not.toContain('<text');
+    expect(flag('3')).toContain('>3<');
+    expect(flag()).not.toContain('<text');
+  });
+
+  it('arrives finished, with its scoops already on it', () => {
+    // Nothing is ever counted onto it, so the scoops are part of the picture (návrh kap. 4).
+    const markup = iceCreamBase();
+    for (const fill of [PALETTE.spongeLight, PALETTE.strawberry, PALETTE.frosting]) {
+      expect(markup).toContain(fill);
+    }
+    expect(markup).toContain(PALETTE.dough); // the cone
+    expect(markup).toContain(INK); // the 4 px outline of rule 8
+  });
+
+  it('keeps the wafer and the cookie apart at a glance', () => {
+    // A rounded square against a circle: the two never stand on the same shelf, but the child
+    // meets both, and two identical brown discs would be one picture too few.
+    expect(wafer()).toContain('<rect');
+    expect(cookie()).not.toContain('<rect');
+  });
+});
+
+describe('the art dispatcher (STEP-17)', () => {
+  it('has a picture for every product in the catalogue', () => {
+    for (const product of PRODUCTS) {
+      for (const markup of [
+        productBase(product.id),
+        productLetterArt(product.id, 'K'),
+        productDigitArt(product.id, '3'),
+      ]) {
+        expect(markup.trimStart().startsWith('<svg'), product.id).toBe(true);
+        expect(unbalancedTags(markup), product.id).toEqual([]);
+      }
+    }
+  });
+
+  it('sends each product to its own art', () => {
+    expect(productBase('cake')).toBe(cakeBase());
+    expect(productBase('icecream')).toBe(iceCreamBase());
+    expect(productLetterArt('icecream', 'K')).toBe(wafer('K'));
+    expect(productDigitArt('icecream', '3')).toBe(flag('3'));
+    // The cake is untouched: exactly the markup the game has been drawing all along.
+    expect(productLetterArt('cake', 'K')).toBe(cookie('K'));
+    expect(productDigitArt('cake', '3')).toBe(candle('3'));
   });
 });

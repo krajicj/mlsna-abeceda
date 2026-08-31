@@ -17,8 +17,9 @@ import {
 } from './progress';
 import type { Rng } from './rng';
 import { readSave, writeSave, type SaveData, type StorageLike } from './save';
-import { buyShopItem, unlockedCustomers, unlockedFruits } from './shop';
+import { buyShopItem, unlockedCustomers, unlockedFruits, unlockedProducts } from './shop';
 import type { FruitKind } from '../data/curriculum';
+import type { ProductId } from '../data/products';
 import type { CustomerId } from '../data/customers';
 
 export interface Session {
@@ -35,7 +36,7 @@ export interface Session {
   complete(results: readonly ItemResult[]): Order;
   /**
    * Closes the kitchen for `ms` (default `CLOSED_MS`, clamped to `[0, MAX_CLOSED_MS]`) and writes
-   * the save. The minute limit of the parent corner (STEP-20) will reach in here.
+   * the save. The minute limit of the parent corner (STEP-22) will reach in here.
    */
   close(ms?: number): void;
   /** A new sitting with the kitchen open; writes the save. Nothing learnt is touched. */
@@ -64,6 +65,8 @@ export function createSession(
    */
   const last: Record<TrackName, string | null> = { numbers: null, letters: null };
   let lastFruit: FruitKind | null = null;
+  /** What was made last; the generator avoids it while there is more than one thing to make. */
+  let lastProduct: ProductId | null = null;
   /**
    * The element `completeOrder` has just introduced, waiting for the first order of its track that
    * can actually use it (návrh 5.4). Kept in the save since v2, so a reload does not lose the nudge;
@@ -75,6 +78,7 @@ export function createSession(
   };
 
   function remember(order: Order): void {
+    lastProduct = order.product;
     for (const item of order.items) {
       last[trackOf(item)] = elementOf(item);
       if (item.type === 'count') lastFruit = item.fruit;
@@ -90,6 +94,10 @@ export function createSession(
       avoid: [last.numbers, last.letters].filter((element): element is string => element !== null),
       avoidFruit: lastFruit,
       fruits: unlockedFruits(save.stars),
+      // Read at every order, not once: the ice cream bought in the shop can be asked for by the
+      // very next customer, without a reload (the same rule the fruit follows).
+      products: unlockedProducts(save.stars),
+      avoidProduct: lastProduct,
       introduced: { numbers: pending.numbers, letters: pending.letters },
       rng,
     });

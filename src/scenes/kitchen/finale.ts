@@ -1,21 +1,23 @@
 /**
- * The end of one order (docs/navrh-hry.md ch. 4, 7, 13 point 2): glaze runs over the cake, the oven
- * pings, confetti flies, the customer takes the cake and eats it, and a star flies into the counter.
+ * The end of one order (docs/navrh-hry.md ch. 4, 7, 13 point 2): the glaze runs over the cake (or
+ * the sauce over the ice cream), the oven pings, confetti flies, the customer takes the thing and
+ * eats it, and a star flies into the counter.
  *
  * The sequence is driven by timers, never by animation events. `motion.animate()` returns null under
  * `prefers-reduced-motion` and in a browser without the Web Animations API, and a hidden tab freezes
  * the ones that do run – if the chain hung off `finish` events, the child would be left standing in
- * front of a finished cake with no way on (rule 2). The movement is decoration; the clock is what
+ * front of a finished order with no way on (rule 2). The movement is decoration; the clock is what
  * actually gets the loop round.
  */
 import type { SfxPlayer } from '../../audio/sfx';
 import type { VoicePlayer } from '../../audio/voice';
-import { cakeGlaze } from '../../art/cake';
 import { confettiPiece, CONFETTI_COUNT, CONFETTI_SIZE } from '../../art/confetti';
 import { starSlot, STARS_PILL_STAR, type KitchenLayout } from '../../art/layout';
+import { productTopping } from '../../art/product';
 import { star } from '../../art/star';
 import type { Rect } from '../../art/svg';
 import { plingRate } from '../../data/sfx';
+import type { ProductId } from '../../data/products';
 import type { CustomerHandle } from './customer';
 import type { LinePicker } from '../../game/speech';
 import { createMotion, layer, place } from './dom';
@@ -34,7 +36,7 @@ const CONFETTI_MS = 900;
 const EATEN_SCALE = 0.55;
 
 export interface FinaleHandle {
-  /** The order is done: glaze, confetti, the customer eats, the star flies. */
+  /** The order is done: the topping, confetti, the customer eats, the star flies. */
   run(): void;
   layout(layout: KitchenLayout): void;
   /** Stops a sequence in progress and puts the counter back the way it was (scene exit, DEV). */
@@ -53,25 +55,28 @@ function centerOf(rect: Rect): { readonly x: number; readonly y: number } {
 
 export function createFinale(options: {
   readonly root: HTMLElement;
-  readonly cake: HTMLElement;
+  /** The element the product is drawn in; the glaze is laid over whatever stands there. */
+  readonly product: HTMLElement;
+  /** What is being made right now – read at `run()`, because it changes with every order. */
+  readonly productId: () => ProductId;
   readonly customer: CustomerHandle;
   readonly sfx: SfxPlayer;
   readonly voice: VoicePlayer;
   readonly finish: LinePicker;
   readonly star: LinePicker;
   readonly stars: StarsHandle;
-  /** Everything that leaves with the cake: the fruit, the cookie, the candle. */
+  /** Everything that leaves with the product: the fruit or scoops, the cookie, the candle. */
   readonly plate: () => readonly HTMLElement[];
   /** The star has landed: write the progress and say how many stars there are now. */
   readonly onStar: () => number;
   /** The kitchen may clear the counter and bring the next order. */
   readonly onDone: () => void;
 }): FinaleHandle {
-  // Under the fruit and the cookie: the glaze runs over the cake, it does not cover what is on it.
+  // Under the fruit and the cookie: the glaze runs over the product, it does not cover what is on
+  // it. The drawing itself is set at `run()`, because the product changes with every order.
   const glazeEl = layer('finale-glaze');
-  glazeEl.innerHTML = cakeGlaze();
   glazeEl.hidden = true;
-  options.cake.insertAdjacentElement('afterend', glazeEl);
+  options.product.insertAdjacentElement('afterend', glazeEl);
 
   const confettiLayer = layer('finale-confetti');
   const starEl = layer('finale-star');
@@ -87,16 +92,18 @@ export function createFinale(options: {
   /**
    * The flight animations, kept here on purpose: they hold their last frame (`fill: 'forwards'`)
    * and `createMotion()` forgets an animation the moment it finishes, so `cancelAll()` would leave
-   * the cake sitting invisible in the customer's mouth for the next order.
+   * the product sitting invisible in the customer's mouth for the next order.
    */
   let flight: Animation[] = [];
   let running = false;
 
   function placeGlaze(): void {
-    if (current) place(glazeEl, current.cake);
+    if (current) place(glazeEl, current.product);
   }
 
   function showGlaze(): void {
+    // Every product draws its topping in its own box, so only the markup changes with the order.
+    glazeEl.innerHTML = productTopping(options.productId());
     glazeEl.hidden = false;
     placeGlaze();
     motion.animate(glazeEl, [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }], {
@@ -106,8 +113,8 @@ export function createFinale(options: {
   }
 
   function throwConfetti(): void {
-    const cake = current?.cake ?? boxOf(options.cake);
-    const from = { x: centerOf(cake).x, y: cake.y - 20 };
+    const box = current?.product ?? boxOf(options.product);
+    const from = { x: centerOf(box).x, y: box.y - 20 };
     const pieces = Array.from({ length: CONFETTI_COUNT }, (_, index) => {
       const el = layer('finale-confetti-piece');
       el.innerHTML = confettiPiece(index);
@@ -145,13 +152,12 @@ export function createFinale(options: {
     motion.after(CONFETTI_MS + 120, () => confettiLayer.replaceChildren());
   }
 
-  /** The cake and everything on it travel to the mouth as one group and shrink on the way. */
+  /** The product and everything on it travel to the mouth as one group and shrink on the way. */
   function eat(): void {
     flight = [];
-    const cakeBox = boxOf(options.cake);
-    const from = centerOf(cakeBox);
+    const from = centerOf(boxOf(options.product));
     const to = options.customer.mouth();
-    flown = [options.cake, glazeEl, ...options.plate()];
+    flown = [options.product, glazeEl, ...options.plate()];
     for (const el of flown) {
       const own = centerOf(boxOf(el));
       const dx = to.x + (own.x - from.x) * EATEN_SCALE - own.x;
@@ -169,7 +175,7 @@ export function createFinale(options: {
         ],
         { duration: FLIGHT_MS, easing: 'cubic-bezier(0.3, 0, 0.3, 1)', fill: 'forwards' },
       );
-      // No animation (reduced motion, no WAAPI): the cake simply is not there any more.
+      // No animation (reduced motion, no WAAPI): the product simply is not there any more.
       if (animation) flight.push(animation);
       else el.style.opacity = '0';
     }

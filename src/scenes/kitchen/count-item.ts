@@ -1,8 +1,12 @@
 /**
  * The counting item in the kitchen (docs/navrh-hry.md ch. 5.5): the child taps the fruit in the
- * bowl, a piece flies onto the cake and one more circle above it fills in. The state lives in
- * `game/counting.ts`, the geometry in `art/layout.ts`; this module only turns them into elements,
- * animations and cues. Nothing here can block the child – an extra tap only wobbles the lid.
+ * bowl, a piece flies onto the product and one more circle above it fills in. What flies is always
+ * the fruit that was tapped: a product that cannot take fruit (the finished ice cream) is never
+ * given a counting item at all, so this module never has to draw anything else (návrh kap. 4).
+ *
+ * The state lives in `game/counting.ts`, the geometry in `art/layout.ts`; this module only turns
+ * them into elements, animations and cues. Nothing here can block the child – an extra tap only
+ * wobbles the lid.
  *
  * It says only what answers one tap of the child ("Tři.", "Už máme tři jahody, to stačí!"). What
  * belongs to the ORDER – placing it, the nudge after 15 s, the hint after 40 s, the praise – is
@@ -16,18 +20,19 @@ import { fruit } from '../../art/fruit';
 import { hintRing } from '../../art/hint';
 import {
   bowlFruitSpots,
-  CAKE_FRUIT_HEIGHT,
-  cakeFruitSlots,
   FRUIT_SLOT,
   lidRect,
   pillSlots,
+  PRODUCT_GEOMETRY,
+  productCountSlots,
   type BowlSpot,
-  type CakeSlot,
+  type CountSlot,
   type KitchenLayout,
 } from '../../art/layout';
 import { bowlLid } from '../../art/lid';
 import { countPill } from '../../art/pill';
 import type { FruitKind } from '../../data/curriculum';
+import { STARTER_PRODUCT, type ProductId } from '../../data/products';
 import { plingRate } from '../../data/sfx';
 import { addFruit, createCounting, type CountingState } from '../../game/counting';
 import type { ItemOutcome } from '../../game/progress';
@@ -36,7 +41,7 @@ import { createMotion, layer, place, prefersReducedMotion } from './dom';
 import { createPacer, type Pacer } from './pacing';
 
 const FLIGHT_MS = 420;
-/** A breath between the last piece landing and the lid, so the child sees the cake finished. */
+/** A breath between the last piece landing and the lid, so the child sees the product done. */
 const LID_DELAY_MS = 250;
 const BLINK_MS = 960;
 const BOUNCE_MS = 260;
@@ -45,8 +50,8 @@ const POP_MS = 260;
 const DONE_DELAY_MS = 900;
 
 export interface CountItemHandle {
-  /** Starts the item over: `amount` pieces of `kind`, empty cake, open bowl. */
-  start(amount: number, kind: FruitKind): void;
+  /** Starts the item over: `amount` pieces of `kind` on `product`, bare product, open bowl. */
+  start(amount: number, kind: FruitKind, product: ProductId): void;
   /** No counting item in this order: the kitchen goes back to being a picture. */
   clear(): void;
   /** Called after every stage resize; re-places everything from the new layout. */
@@ -58,9 +63,9 @@ export interface CountItemHandle {
    * is still a recount and still counts.
    */
   outcome(): ItemOutcome | null;
-  /** What flies to the customer with the cake – the fruit that landed on it. */
+  /** What flies to the customer with the product – the pieces that landed on it. */
   plate(): readonly HTMLElement[];
-  /** 15 s of silence: the circles over the cake blink. Wordless – the scene says the sentence. */
+  /** 15 s of silence: the circles over the product blink. Wordless – the scene says the sentence. */
   nudge(): void;
   /** 40 s of silence: a ring over the bowl and a `pling`; the item remembers it as 'hinted'. */
   hint(): void;
@@ -81,10 +86,10 @@ export function createCountItem(options: {
    * The scene resets the idle watcher of the whole order with it; the item keeps none of its own.
    */
   readonly onActivity: () => void;
-  /** The cake is finished and "to stačí" is out; the praise and the finale are the scene's call. */
+  /** The product is done and "to stačí" is out; the praise and the finale are the scene's call. */
   readonly onDone: () => void;
 }): CountItemHandle {
-  const cakeFruitLayer = layer('count-fruit');
+  const countLayer = layer('count-fruit');
   const pillLayer = layer('count-pills');
   const targetEl = layer('count-target');
   const lidEl = layer('count-lid');
@@ -94,7 +99,7 @@ export function createCountItem(options: {
   hintEl.innerHTML = hintRing(FRUIT_SLOT);
   lidEl.hidden = true;
   hintEl.hidden = true;
-  options.root.append(cakeFruitLayer, pillLayer, targetEl, lidEl, hintEl, flightLayer);
+  options.root.append(countLayer, pillLayer, targetEl, lidEl, hintEl, flightLayer);
 
   /**
    * The whole bowl is one target (návrh 4: "klepnutí na věc", 5.5: "klepne na misku"). Every piece
@@ -110,6 +115,8 @@ export function createCountItem(options: {
   let current: KitchenLayout | null = null;
   let state: CountingState | null = null;
   let kind: FruitKind = 'strawberry';
+  /** What the pieces are landing on: it decides both the picture and where each one goes. */
+  let product: ProductId = STARTER_PRODUCT;
   let landed: HTMLDivElement[] = [];
   let pills: HTMLDivElement[] = [];
   /**
@@ -171,18 +178,23 @@ export function createCountItem(options: {
       });
     }
     place(lidEl, lidRect(current.bowl));
-    pillSlots(current.cake, pills.length).forEach((slot, index) => {
+    pillSlots(current.product, pills.length).forEach((slot, index) => {
       const pill = pills[index];
       if (pill) place(pill, slot);
     });
-    cakeSlots().forEach((slot, index) => {
+    countSlots().forEach((slot, index) => {
       const piece = landed[index];
       if (piece) place(piece, slot);
     });
   }
 
-  function cakeSlots(): CakeSlot[] {
-    return current && state ? cakeFruitSlots(current.cake, state.target) : [];
+  function countSlots(): CountSlot[] {
+    return current && state ? productCountSlots(current.product, product, state.target) : [];
+  }
+
+  /** How tall one piece is on this product; the flight scales the bowl piece down to it. */
+  function pieceHeight(): number {
+    return PRODUCT_GEOMETRY[product].count?.height ?? 0;
   }
 
   function spots(): BowlSpot[] {
@@ -210,14 +222,14 @@ export function createCountItem(options: {
   }
 
   function land(index: number): void {
-    const slot = cakeSlots()[index];
+    const slot = countSlots()[index];
     if (!slot) return;
     const piece = layer('count-fruit-piece');
-    piece.innerHTML = fruit(kind, CAKE_FRUIT_HEIGHT);
+    piece.innerHTML = fruit(kind, pieceHeight());
     piece.style.zIndex = slot.back ? '0' : '1';
     place(piece, slot);
     landed[index] = piece;
-    cakeFruitLayer.append(piece);
+    countLayer.append(piece);
     renderPill(index);
     const pill = pills[index];
     if (pill) {
@@ -233,15 +245,15 @@ export function createCountItem(options: {
   }
 
   function fly(from: BowlSpot, index: number, onLanded: () => void): void {
-    const slot = cakeSlots()[index];
+    const slot = countSlots()[index];
     if (!slot) return;
     const flyer = layer('count-flyer');
-    flyer.innerHTML = fruit(kind, CAKE_FRUIT_HEIGHT);
+    flyer.innerHTML = fruit(kind, pieceHeight());
     place(flyer, slot);
     flightLayer.append(flyer);
     const dx = from.cx - (slot.x + slot.width / 2);
     const dy = from.cy - (slot.y + slot.height / 2);
-    const scale = from.height / CAKE_FRUIT_HEIGHT;
+    const scale = from.height / pieceHeight();
     const animation = motion.animate(
       flyer,
       [
@@ -404,17 +416,18 @@ export function createCountItem(options: {
     hinted = false;
     landed = [];
     options.bowl.classList.remove('is-covered');
-    cakeFruitLayer.replaceChildren();
+    countLayer.replaceChildren();
     flightLayer.replaceChildren();
     lidEl.hidden = true;
     hideHint();
   }
 
   return {
-    start(amount, nextKind) {
+    start(amount, nextKind, nextProduct) {
       reset();
       state = createCounting(amount);
       kind = nextKind;
+      product = nextProduct;
       options.bowl.innerHTML = fruitBowl({ kind });
       drawPills();
       placeAll();
@@ -423,6 +436,7 @@ export function createCountItem(options: {
       reset();
       state = null;
       kind = 'strawberry';
+      product = STARTER_PRODUCT;
       options.bowl.innerHTML = fruitBowl();
       drawPills();
       placeAll();
@@ -447,7 +461,7 @@ export function createCountItem(options: {
     },
     destroy() {
       reset();
-      for (const el of [cakeFruitLayer, pillLayer, targetEl, lidEl, hintEl, flightLayer]) {
+      for (const el of [countLayer, pillLayer, targetEl, lidEl, hintEl, flightLayer]) {
         el.remove();
       }
     },

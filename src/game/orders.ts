@@ -11,6 +11,7 @@ import {
   type FruitKind,
   type Letter,
 } from '../data/curriculum';
+import { productOf, STARTER_PRODUCT, type ProductId } from '../data/products';
 import { MAX_COUNT } from './counting';
 import { choiceCount, letterWord } from './curriculum';
 import { isMastered, weightOf, type TrackState } from './mastery';
@@ -29,10 +30,12 @@ export type OrderItem =
 
 export interface Order {
   readonly index: number;
+  /** What is being made (STEP-17). Everything the order is SAID with follows from it. */
+  readonly product: ProductId;
   readonly items: readonly OrderItem[];
 }
 
-/** Návrh 5.3: the first ten orders hold one item, then two. Three arrive with Č3/P3 (STEP-24/26). */
+/** Návrh 5.3: the first ten orders hold one item, then two. Three arrive with Č3/P3 (STEP-25/27). */
 export const SINGLE_ITEM_ORDERS = 10;
 export const MAX_ORDER_ITEMS = 2;
 
@@ -66,6 +69,13 @@ export interface OrderInput {
    * raspberry the child has to buy, so nobody can be asked for fruit that is not in the kitchen.
    */
   readonly fruits?: readonly FruitKind[];
+  /**
+   * What the kitchen can make – `unlockedProducts()` of the shop (STEP-17). Missing or empty means
+   * the cake alone: a save from before the shop, and the default the game had all along.
+   */
+  readonly products?: readonly ProductId[];
+  /** What the last order was; the same thing twice running is dull while there is a choice. */
+  readonly avoidProduct?: ProductId | null;
   /**
    * The element each track has just introduced. It becomes the target of that track's next order
    * (návrh 5.4); an element the item cannot use (an eight for counting) is simply not taken.
@@ -133,8 +143,8 @@ function buildChoices(
 }
 
 function countItem(rng: Rng, input: OrderInput, avoid: readonly string[]): OrderItem {
-  // Only five pieces of fruit fit on the cake (MAX_CAKE_FRUIT), so a bigger number waits for a
-  // candle order – the second row on the cake is STEP-24.
+  // Only five pieces fit on the product (MAX_COUNT_PIECES), so a bigger number waits for a
+  // digit order – the second row is STEP-25.
   const element = pickTarget(
     rng,
     input.tracks.numbers,
@@ -194,7 +204,36 @@ export function generateOrder(input: OrderInput): Order {
     orderLength(input.index) === 1
       ? [input.index % 2 !== 0 ? numbersItem(rng, input, avoid) : letterItem(rng, input, avoid)]
       : shuffle(rng, [numbersItem(rng, input, avoid), letterItem(rng, input, avoid)]);
-  return { index: input.index, items };
+  return { index: input.index, product: pickProduct(rng, input, items), items };
+}
+
+/**
+ * Can this order be made as this product? Only counting asks anything of it: the ice cream arrives
+ * finished and has nowhere to put counted pieces (návrh kap. 4), so a counting order is always a
+ * cake. The numbers track alternates counting and digits, which leaves the ice cream about every
+ * other order – and a shorter one than the cake, so the pace changes with it.
+ */
+function canMake(product: ProductId, items: readonly OrderItem[]): boolean {
+  if (productOf(product)?.counts === true) return true;
+  return !items.some((item) => item.type === 'count');
+}
+
+/**
+ * What is being made. Drawn LAST and only when there is anything to draw from: the order of the
+ * draws from `rng` is what a seeded session replays by, so a save with nothing but the cake has to
+ * play out exactly as it did before this existed. The no-repeat rule gives way rather than let the
+ * draw run out (návrh 5.3 – the same shape as `avoidFruit`); so does the no-repeat rule when what
+ * is left cannot carry the order.
+ */
+function pickProduct(rng: Rng, input: OrderInput, items: readonly OrderItem[]): ProductId {
+  const owned = input.products?.length ? input.products : [STARTER_PRODUCT];
+  const products = owned.filter((product) => canMake(product, items));
+  // The cake counts and is always owned, so this only bites on a save from a newer build.
+  if (products.length === 0) return STARTER_PRODUCT;
+  const pool = products.filter((product) => product !== input.avoidProduct);
+  const choices = pool.length > 0 ? pool : products;
+  // One product = no draw at all.
+  return (choices.length === 1 ? choices[0] : pick(rng, choices)) ?? STARTER_PRODUCT;
 }
 
 /** The keys an order used – what the caller passes as `avoid` next time round the same track. */

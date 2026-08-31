@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FRUITS, STARTER_FRUITS } from '../data/curriculum';
 import { CUSTOMERS, STARTER_CUSTOMERS } from '../data/customers';
+import { PRODUCTS, STARTER_PRODUCT } from '../data/products';
 import { SHOP_ITEMS, shopItem } from '../data/shop';
 import {
   buyShopItem,
@@ -10,6 +11,7 @@ import {
   shopPriceStars,
   unlockedCustomers,
   unlockedFruits,
+  unlockedProducts,
 } from './shop';
 import { starBalance, type StarsState } from './stars';
 
@@ -226,5 +228,43 @@ describe('shopPriceStars', () => {
         expect(price.filled).toBeGreaterThanOrEqual(0);
       }
     }
+  });
+});
+
+describe('unlockedProducts (STEP-17)', () => {
+  it('is the cake alone before anything is bought', () => {
+    expect(unlockedProducts(stars(0))).toEqual(['cake']);
+    expect(unlockedProducts(stars(20))).toEqual(['cake']); // stars are not a purchase
+  });
+
+  it('adds the ice cream once it is bought', () => {
+    expect(unlockedProducts(stars(0, { 'product.icecream': 5 }))).toEqual(['cake', 'icecream']);
+  });
+
+  it('skips a key that is in no catalogue and still returns the cake (rule 2)', () => {
+    const strange = stars(0, { 'product.spaceship': 5, nonsense: 1 });
+    expect(unlockedProducts(strange)).toEqual(['cake']);
+  });
+
+  it('never returns the same product twice', () => {
+    const bought = unlockedProducts(stars(0, { 'product.icecream': 5 }));
+    expect(new Set(bought).size).toBe(bought.length);
+    expect(bought).toContain(STARTER_PRODUCT);
+  });
+
+  it('can only ever return products that are in the catalogue', () => {
+    const known = new Set(PRODUCTS.map((product) => product.id));
+    for (const id of unlockedProducts(stars(0, { 'product.icecream': 5 }))) {
+      expect(known.has(id), id).toBe(true);
+    }
+  });
+
+  it('sells the ice cream for five stars, and only once', () => {
+    expect(shopItem('product.icecream')?.price).toBe(5);
+    const bought = buyShopItem(stars(5), 'product.icecream');
+    expect(bought).not.toBeNull();
+    expect(starBalance(bought!)).toBe(0);
+    expect(buyShopItem(bought!, 'product.icecream')).toBeNull();
+    expect(buyShopItem(stars(4), 'product.icecream')).toBeNull();
   });
 });

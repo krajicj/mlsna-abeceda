@@ -4,7 +4,7 @@
  * counts the hour down, and that is the whole message – no text anywhere (rule 1). The child
  * cannot lose anything by it (rule 2): nothing is taken away, the kitchen simply opens again.
  *
- * The padlock in the corner is a stand-in for the parent corner (STEP-20): the code `PARENT_CODE`
+ * The padlock in the corner is a stand-in for the parent corner (STEP-22): the code `PARENT_CODE`
  * starts a new sitting and lifts the shutter at once, so a closed kitchen is not a dead end for the
  * grown-up either.
  *

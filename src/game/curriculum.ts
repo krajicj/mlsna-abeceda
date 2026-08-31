@@ -19,7 +19,7 @@ export type Level = 1 | 2 | 3 | 4 | 5;
 export const LEVEL1_LETTERS = 4;
 /** A brand new game starts with two letters, not the whole P1 pool (návrh 5.4). */
 export const LEVEL1_INITIAL_LETTERS = 2;
-/** The highest stage the kitchen can really play today; STEP-24 ("kolik je") raises it. */
+/** The highest stage the kitchen can really play today; STEP-25 ("kolik je") raises it. */
 export const MAX_NUMBER_LEVEL: Level = 2;
 /** The highest stage the kitchen can really play today; STEP-27 (the word pattern) raises it. */
 export const MAX_LETTER_LEVEL: Level = 2;

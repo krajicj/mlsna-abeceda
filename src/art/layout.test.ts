@@ -17,10 +17,6 @@ import {
   BUBBLE_PADDING,
   BUBBLE_SPEAKER,
   BUBBLE_WIDTH,
-  CAKE_COOKIE_CENTER_Y,
-  CAKE_FRUIT_HEIGHT,
-  CAKE_TOP_CENTER_X,
-  CAKE_TOP_ITEM_BOTTOM,
   CLOCK_SIZE,
   CODE_LENGTH,
   COUNTER_EDGE_TOP,
@@ -35,7 +31,8 @@ import {
   KEY_SIZE,
   LID_HEIGHT,
   LID_RIM_Y,
-  MAX_CAKE_FRUIT,
+  MAX_COUNT_PIECES,
+  PRODUCT_GEOMETRY,
   MAX_CHOICES,
   MAX_FRUIT_SLOTS,
   MAX_PILLS,
@@ -68,9 +65,9 @@ import {
   bowlFruitSpots,
   bubbleSlots,
   bubbleSpeakerSlot,
-  cakeCandleSlot,
-  cakeCookieSlot,
-  cakeFruitSlots,
+  productCountSlots,
+  productDigitSlot,
+  productLetterSlot,
   closedLayout,
   codeSlot,
   counterPanels,
@@ -89,6 +86,9 @@ import { CANDLE_HEIGHT, CANDLE_WIDTH } from './candle';
 import { COOKIE_SIZE } from './cookie';
 import { fruitWidth } from './fruit';
 import type { Rect } from './svg';
+
+const CAKE = PRODUCT_GEOMETRY.cake;
+const ICECREAM = PRODUCT_GEOMETRY.icecream;
 
 const WIDTHS = [1024, 1200, 1366];
 /** Smallest touch target the game allows (CLAUDE.md, rule 3). */
@@ -137,9 +137,9 @@ describe('kitchenLayout', () => {
     expect(bell.y + bell.height).toBe(bowl.y + bowl.height);
   });
 
-  it.each(WIDTHS)('puts the bell left of the cake wherever it fits at %i px', (width) => {
-    const { bell, cake, bowl, customer } = kitchenLayout(width);
-    const left = cake.x - BELL_MARGIN - BELL_SIZE;
+  it.each(WIDTHS)('puts the bell left of the product wherever it fits at %i px', (width) => {
+    const { bell, product, bowl, customer } = kitchenLayout(width);
+    const left = product.x - BELL_MARGIN - BELL_SIZE;
     if (left - (customer.x + customer.width) >= BELL_LEFT_CLEARANCE) {
       expect(bell.x).toBe(left);
     } else {
@@ -159,9 +159,9 @@ describe('kitchenLayout', () => {
     expect(kitchenLayout(1024).customer).toEqual({ x: 60, y: 200, width: 260, height: 320 });
   });
 
-  it.each(WIDTHS)('centres the cake horizontally at %i px', (width) => {
-    const { cake } = kitchenLayout(width);
-    expect(Math.abs(cake.x + cake.width / 2 - (width / 2 - 70))).toBeLessThanOrEqual(20);
+  it.each(WIDTHS)('centres the product horizontally at %i px', (width) => {
+    const { product } = kitchenLayout(width);
+    expect(Math.abs(product.x + product.width / 2 - (width / 2 - 70))).toBeLessThanOrEqual(20);
   });
 
   it.each(WIDTHS)('stands the bowl on the worktop at %i px', (width) => {
@@ -185,7 +185,7 @@ describe('kitchenLayout', () => {
   });
 
   it('matches the worked example from the step plan', () => {
-    expect(kitchenLayout(1024).cake).toEqual({ x: 332, y: 384, width: 220, height: 146 });
+    expect(kitchenLayout(1024).product).toEqual({ x: 332, y: 384, width: 220, height: 146 });
     expect(kitchenLayout(1024).shelfLetters).toEqual({ x: 562, y: 252, width: 448, height: 112 });
     expect(kitchenLayout(1024).bubble).toEqual({ x: 60, y: 28, width: 480, height: 124 });
     expect(kitchenLayout(1024).stars).toEqual({ x: 848, y: 10, width: 160, height: 64 });
@@ -351,15 +351,15 @@ describe('decorLayout (STEP-16)', () => {
     expect(tight).toEqual([]);
   });
 
-  it.each(WIDTHS)('stays clear of the counting pills and the candle at %i px', (width) => {
-    // The pills above the cake and the candle standing on it are NOT in `kitchenLayout()` – they
+  it.each(WIDTHS)('stays clear of the counting pills and the digit carrier at %i px', (width) => {
+    // The pills above the product and the candle standing on it are NOT in `kitchenLayout()` – they
     // are computed per order – so they need their own check. This is the one that caught a cat
     // sitting exactly where the child counts.
-    const { cake } = kitchenLayout(width);
+    const { product } = kitchenLayout(width);
     const transient = [
-      ...Array.from({ length: MAX_PILLS }, (_, index) => pillSlots(cake, index + 1)).flat(),
-      cakeCandleSlot(cake),
-      cakeCookieSlot(cake),
+      ...Array.from({ length: MAX_PILLS }, (_, index) => pillSlots(product, index + 1)).flat(),
+      productDigitSlot(product, 'cake'),
+      productLetterSlot(product, 'cake'),
     ];
     for (const [name, box] of Object.entries(decorLayout(width))) {
       for (const other of transient) {
@@ -627,11 +627,11 @@ describe('shelfHitSlots', () => {
   });
 });
 
-describe('cakeCandleSlot and cakeCookieSlot', () => {
+describe('productDigitSlot and productLetterSlot', () => {
   it.each(WIDTHS)('takes the size straight from the art at %i px', (width) => {
-    const { cake, shelfDigits, shelfLetters } = kitchenLayout(width);
-    const candleSlot = cakeCandleSlot(cake);
-    const cookieSlot = cakeCookieSlot(cake);
+    const { product, shelfDigits, shelfLetters } = kitchenLayout(width);
+    const candleSlot = productDigitSlot(product, 'cake');
+    const cookieSlot = productLetterSlot(product, 'cake');
     expect(candleSlot.width).toBe(CANDLE_WIDTH);
     expect(candleSlot.height).toBe(CANDLE_HEIGHT);
     expect(cookieSlot.width).toBe(COOKIE_SIZE);
@@ -644,30 +644,33 @@ describe('cakeCandleSlot and cakeCookieSlot', () => {
   });
 
   it.each(WIDTHS)('centres both on the top of the cake at %i px', (width) => {
-    const { cake } = kitchenLayout(width);
-    const centre = cake.x + CAKE_TOP_CENTER_X;
-    for (const slot of [cakeCandleSlot(cake), cakeCookieSlot(cake)]) {
+    const { product } = kitchenLayout(width);
+    const centre = product.x + CAKE.topCenterX;
+    for (const slot of [productDigitSlot(product, 'cake'), productLetterSlot(product, 'cake')]) {
       expect(slot.x + slot.width / 2).toBe(centre);
-      expect(slot.x).toBeGreaterThanOrEqual(cake.x);
-      expect(slot.x + slot.width).toBeLessThanOrEqual(cake.x + cake.width);
+      expect(slot.x).toBeGreaterThanOrEqual(product.x);
+      expect(slot.x + slot.width).toBeLessThanOrEqual(product.x + product.width);
       expect(inside(slot, width)).toBe(true);
     }
   });
 
   it.each(WIDTHS)('stands the candle on the cake and leans the cookie on it at %i px', (width) => {
-    const { cake, bowl } = kitchenLayout(width);
-    const candleSlot = cakeCandleSlot(cake);
-    const cookieSlot = cakeCookieSlot(cake);
-    expect(candleSlot.y + candleSlot.height).toBe(cake.y + CAKE_TOP_ITEM_BOTTOM);
-    expect(cookieSlot.y + cookieSlot.height / 2).toBe(cake.y + CAKE_COOKIE_CENTER_Y);
-    expect(cookieSlot.y + cookieSlot.height).toBeLessThanOrEqual(cake.y + cake.height);
+    const { product, bowl } = kitchenLayout(width);
+    const candleSlot = productDigitSlot(product, 'cake');
+    const cookieSlot = productLetterSlot(product, 'cake');
+    expect(candleSlot.y + candleSlot.height).toBe(product.y + CAKE.topItemBottom);
+    expect(cookieSlot.y + cookieSlot.height / 2).toBe(product.y + CAKE.frontItemCenterY);
+    // The cake carries both in the middle; only the ice cream had to move them apart.
+    expect(candleSlot.x + candleSlot.width / 2).toBe(product.x + CAKE.topCenterX);
+    expect(cookieSlot.x + cookieSlot.width / 2).toBe(product.x + CAKE.topCenterX);
+    expect(cookieSlot.y + cookieSlot.height).toBeLessThanOrEqual(product.y + product.height);
     for (const slot of [candleSlot, cookieSlot]) expect(separation(slot, bowl)).toBeGreaterThan(0);
   });
 
   it('matches the worked example from the step plan', () => {
-    const { cake } = kitchenLayout(1024);
-    expect(cakeCandleSlot(cake)).toEqual({ x: 394, y: 296, width: 96, height: 112 });
-    expect(cakeCookieSlot(cake)).toEqual({ x: 394, y: 428, width: 96, height: 96 });
+    const { product } = kitchenLayout(1024);
+    expect(productDigitSlot(product, 'cake')).toEqual({ x: 394, y: 296, width: 96, height: 112 });
+    expect(productLetterSlot(product, 'cake')).toEqual({ x: 394, y: 428, width: 96, height: 96 });
   });
 });
 
@@ -812,15 +815,15 @@ describe('floorColumns', () => {
 
 describe('pillSlots', () => {
   it.each(WIDTHS)('centres the row over the cake at %i px', (width) => {
-    const { cake } = kitchenLayout(width);
+    const { product } = kitchenLayout(width);
     for (let count = 1; count <= MAX_PILLS; count += 1) {
-      const slots = pillSlots(cake, count);
+      const slots = pillSlots(product, count);
       expect(slots).toHaveLength(count);
       const first = slots[0]!;
       const last = slots[slots.length - 1]!;
-      expect(first.x - cake.x).toBe(cake.x + cake.width - (last.x + last.width));
+      expect(first.x - product.x).toBe(product.x + product.width - (last.x + last.width));
       for (const slot of slots) {
-        expect(slot.y).toBe(cake.y - PILL_OFFSET_Y);
+        expect(slot.y).toBe(product.y - PILL_OFFSET_Y);
         expect(slot.width).toBe(PILL_SIZE);
         expect(slot.height).toBe(PILL_SIZE);
       }
@@ -833,8 +836,8 @@ describe('pillSlots', () => {
   it.each(WIDTHS)(
     'leaves 8 px between the full row, the customer and the shelf at %i px',
     (width) => {
-      const { customer, cake, shelfLetters } = kitchenLayout(width);
-      const slots = pillSlots(cake, MAX_PILLS);
+      const { customer, product, shelfLetters } = kitchenLayout(width);
+      const slots = pillSlots(product, MAX_PILLS);
       const first = slots[0]!;
       const last = slots[slots.length - 1]!;
       expect(first.x - (customer.x + customer.width)).toBeGreaterThanOrEqual(8);
@@ -844,18 +847,18 @@ describe('pillSlots', () => {
   );
 
   it('clamps the count', () => {
-    const { cake } = kitchenLayout(1024);
-    expect(pillSlots(cake, 0)).toEqual([]);
-    expect(pillSlots(cake, -2)).toEqual([]);
-    expect(pillSlots(cake, Number.NaN)).toEqual([]);
-    expect(pillSlots(cake, 9)).toHaveLength(MAX_PILLS);
+    const { product } = kitchenLayout(1024);
+    expect(pillSlots(product, 0)).toEqual([]);
+    expect(pillSlots(product, -2)).toEqual([]);
+    expect(pillSlots(product, Number.NaN)).toEqual([]);
+    expect(pillSlots(product, 9)).toHaveLength(MAX_PILLS);
   });
 
   it('matches the worked example from the step plan', () => {
-    expect(pillSlots(kitchenLayout(1024).cake, 5).map((slot) => slot.x)).toEqual([
+    expect(pillSlots(kitchenLayout(1024).product, 5).map((slot) => slot.x)).toEqual([
       330, 376, 422, 468, 514,
     ]);
-    expect(pillSlots(kitchenLayout(1024).cake, 5)[0]).toEqual({
+    expect(pillSlots(kitchenLayout(1024).product, 5)[0]).toEqual({
       x: 330,
       y: 300,
       width: 40,
@@ -864,22 +867,22 @@ describe('pillSlots', () => {
   });
 });
 
-describe('cakeFruitSlots', () => {
+describe('productCountSlots', () => {
   it.each(WIDTHS)('fills the front row first, then the back one at %i px', (width) => {
-    const { cake } = kitchenLayout(width);
-    for (let count = 1; count <= MAX_CAKE_FRUIT; count += 1) {
-      const slots = cakeFruitSlots(cake, count);
+    const { product } = kitchenLayout(width);
+    for (let count = 1; count <= MAX_COUNT_PIECES; count += 1) {
+      const slots = productCountSlots(product, 'cake', count);
       expect(slots).toHaveLength(count);
       expect(slots.map((slot) => slot.back)).toEqual(
         Array.from({ length: count }, (_, index) => index >= 3),
       );
       for (const slot of slots) {
-        expect(slot.width).toBe(fruitWidth(CAKE_FRUIT_HEIGHT));
-        expect(slot.height).toBe(CAKE_FRUIT_HEIGHT);
-        expect(slot.x).toBeGreaterThanOrEqual(cake.x);
-        expect(slot.x + slot.width).toBeLessThanOrEqual(cake.x + cake.width);
-        expect(slot.y).toBeGreaterThan(cake.y - CAKE_FRUIT_HEIGHT);
-        expect(slot.y + slot.height).toBeLessThan(cake.y + cake.height);
+        expect(slot.width).toBe(fruitWidth(CAKE.count!.height));
+        expect(slot.height).toBe(CAKE.count!.height);
+        expect(slot.x).toBeGreaterThanOrEqual(product.x);
+        expect(slot.x + slot.width).toBeLessThanOrEqual(product.x + product.width);
+        expect(slot.y).toBeGreaterThan(product.y - CAKE.count!.height);
+        expect(slot.y + slot.height).toBeLessThan(product.y + product.height);
       }
       const back = slots.filter((slot) => slot.back);
       const front = slots.filter((slot) => !slot.back);
@@ -893,34 +896,34 @@ describe('cakeFruitSlots', () => {
   });
 
   it.each(WIDTHS)('keeps the fruit away from the bowl and the pills at %i px', (width) => {
-    const { bowl, cake } = kitchenLayout(width);
-    const pills = pillSlots(cake, MAX_PILLS);
+    const { bowl, product } = kitchenLayout(width);
+    const pills = pillSlots(product, MAX_PILLS);
     const pillBottom = pills[0]!.y + pills[0]!.height;
-    for (const slot of cakeFruitSlots(cake, MAX_CAKE_FRUIT)) {
+    for (const slot of productCountSlots(product, 'cake', MAX_COUNT_PIECES)) {
       expect(slot.x + slot.width).toBeLessThan(bowl.x);
       expect(slot.y).toBeGreaterThan(pillBottom);
     }
   });
 
   it('centres both rows on the top of the cake', () => {
-    const { cake } = kitchenLayout(1024);
+    const { product } = kitchenLayout(1024);
     const center = (slots: Rect[]) =>
       (slots[0]!.x + slots[slots.length - 1]!.x + slots[0]!.width) / 2;
-    const slots = cakeFruitSlots(cake, MAX_CAKE_FRUIT);
+    const slots = productCountSlots(product, 'cake', MAX_COUNT_PIECES);
     expect(center(slots.filter((slot) => !slot.back))).toBe(442);
     expect(center(slots.filter((slot) => slot.back))).toBe(442);
   });
 
   it('clamps the count', () => {
-    const { cake } = kitchenLayout(1024);
-    expect(cakeFruitSlots(cake, 0)).toEqual([]);
-    expect(cakeFruitSlots(cake, -1)).toEqual([]);
-    expect(cakeFruitSlots(cake, Number.NaN)).toEqual([]);
-    expect(cakeFruitSlots(cake, 9)).toHaveLength(MAX_CAKE_FRUIT);
+    const { product } = kitchenLayout(1024);
+    expect(productCountSlots(product, 'cake', 0)).toEqual([]);
+    expect(productCountSlots(product, 'cake', -1)).toEqual([]);
+    expect(productCountSlots(product, 'cake', Number.NaN)).toEqual([]);
+    expect(productCountSlots(product, 'cake', 9)).toHaveLength(MAX_COUNT_PIECES);
   });
 
   it('matches the worked example from the step plan', () => {
-    const slots = cakeFruitSlots(kitchenLayout(1024).cake, 5);
+    const slots = productCountSlots(kitchenLayout(1024).product, 'cake', 5);
     expect(slots).toEqual([
       { x: 385, y: 362, width: 34, height: 44, back: false },
       { x: 425, y: 362, width: 34, height: 44, back: false },
@@ -991,5 +994,46 @@ describe('bowlFruitSpots', () => {
     expect(bowlFruitSpots(bowl, 1)).toHaveLength(1);
     expect(bowlFruitSpots(bowl, 2)).toHaveLength(3);
     expect(bowlFruitSpots(bowl, 0)).toEqual([]);
+  });
+});
+
+describe('the ice cream arrives finished (STEP-17)', () => {
+  it('has no slots to count into, whatever is asked of it', () => {
+    // `Product.counts` says the same thing on the data side; the generator never sends a counting
+    // item its way, and if one ever arrived it would land nowhere rather than on top of the cone.
+    const { product } = kitchenLayout(1024);
+    expect(PRODUCT_GEOMETRY.icecream.count).toBeNull();
+    for (const count of [0, 1, 3, 5, 9]) {
+      expect(productCountSlots(product, 'icecream', count)).toEqual([]);
+    }
+  });
+
+  it.each(WIDTHS)('never crosses the flag with the wafer at %i px', (width) => {
+    const { product, bowl } = kitchenLayout(width);
+    for (const id of ['cake', 'icecream'] as const) {
+      const digit = productDigitSlot(product, id);
+      const letter = productLetterSlot(product, id);
+      expect(separation(digit, letter), id).toBeGreaterThan(0);
+      expect(separation(digit, bowl), id).toBeGreaterThan(0);
+      expect(separation(letter, bowl), id).toBeGreaterThan(0);
+      // Both are drawn at the size they stand on the shelf, so no flight ever rescales one.
+      expect(digit.width).toBe(PRODUCT_GEOMETRY[id].digitSize.width);
+      expect(letter.height).toBe(PRODUCT_GEOMETRY[id].letterSize.height);
+    }
+  });
+
+  it('plants the flag in the scoops and leans the wafer on the cone below them', () => {
+    const { product } = kitchenLayout(1024);
+    const flag = productDigitSlot(product, 'icecream');
+    const waferSlot = productLetterSlot(product, 'icecream');
+    expect(flag.y + flag.height).toBe(product.y + ICECREAM.topItemBottom);
+    expect(waferSlot.y + waferSlot.height / 2).toBe(product.y + ICECREAM.frontItemCenterY);
+    // The flag is above the wafer, never beside it, and both are on the centre line.
+    expect(flag.y + flag.height).toBeLessThan(waferSlot.y);
+    expect(flag.x + flag.width / 2).toBe(product.x + ICECREAM.topCenterX);
+    expect(waferSlot.x + waferSlot.width / 2).toBe(product.x + ICECREAM.topCenterX);
+    // The wafer stays low enough to leave the scoops – what says "ice cream" – in the clear.
+    expect(waferSlot.y).toBeGreaterThan(product.y + 40);
+    expect(waferSlot.y + waferSlot.height).toBeLessThanOrEqual(product.y + product.height + 8);
   });
 });

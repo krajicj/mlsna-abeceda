@@ -10,6 +10,7 @@
 import { SHOP_ITEMS, shopItem, type DecorationId, type ShopItem } from '../data/shop';
 import { STARTER_FRUITS, type FruitKind } from '../data/curriculum';
 import { STARTER_CUSTOMERS, type CustomerId } from '../data/customers';
+import { STARTER_PRODUCT, type ProductId } from '../data/products';
 import { starBalance, withPurchase, type StarsState } from './stars';
 
 export type ShopItemState = 'owned' | 'affordable' | 'short';
@@ -56,7 +57,7 @@ export function buyShopItem(stars: StarsState, id: string): StarsState | null {
 
 /**
  * What has been bought, one kind per function and each in the order of the catalogue. Written out
- * three times on purpose: comparing `kind` against a literal is what narrows `unlocks` to the right
+ * four times on purpose: comparing `kind` against a literal is what narrows `unlocks` to the right
  * type, so none of this needs a cast. Keys that are in no catalogue (a typo, a record from a newer
  * build) are simply skipped – a strange save must never stop the child from playing (rule 2).
  */
@@ -84,6 +85,14 @@ function purchasedDecorations(stars: StarsState): DecorationId[] {
   return bought;
 }
 
+function purchasedProducts(stars: StarsState): ProductId[] {
+  const bought: ProductId[] = [];
+  for (const item of SHOP_ITEMS) {
+    if (item.kind === 'product' && owns(stars, item.id)) bought.push(item.unlocks);
+  }
+  return bought;
+}
+
 /** What the order generator may ask for: the starting three plus whatever fruit has been bought. */
 export function unlockedFruits(stars: StarsState): readonly FruitKind[] {
   return [...new Set([...STARTER_FRUITS, ...purchasedFruits(stars)])];
@@ -92,6 +101,14 @@ export function unlockedFruits(stars: StarsState): readonly FruitKind[] {
 /** Who may come to the counter: the starting three plus whatever animal has been invited. */
 export function unlockedCustomers(stars: StarsState): readonly CustomerId[] {
   return [...new Set([...STARTER_CUSTOMERS, ...purchasedCustomers(stars)])];
+}
+
+/**
+ * What the kitchen can make (STEP-17): the cake it starts with plus every product bought. The
+ * generator picks from this, so a product that is not here can never be ordered.
+ */
+export function unlockedProducts(stars: StarsState): readonly ProductId[] {
+  return [...new Set([STARTER_PRODUCT, ...purchasedProducts(stars)])];
 }
 
 /** What stands in the kitchen. No starting set – the kitchen begins bare (STEP-16 draws these). */

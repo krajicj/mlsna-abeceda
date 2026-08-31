@@ -17,16 +17,19 @@ import type { Order } from './orders';
 
 const LETTER_ORDER: Order = {
   index: 2,
+  product: 'cake',
   items: [{ type: 'letter', letter: 'K', word: 'kočka', choices: ['A', 'K', 'M'] }],
 };
 
 const DIGIT_ORDER: Order = {
   index: 3,
+  product: 'cake',
   items: [{ type: 'digit', value: 3, choices: [1, 3, 4] }],
 };
 
 const COUNT_ORDER: Order = {
   index: 1,
+  product: 'cake',
   items: [{ type: 'count', fruit: 'blueberry', amount: 3 }],
 };
 
@@ -158,7 +161,11 @@ describe('choiceItemOf', () => {
   });
 
   it('finds the one of the asked-for kind when the order holds both (STEP-12)', () => {
-    const both = { index: 11, items: [...DIGIT_ORDER.items, ...LETTER_ORDER.items] };
+    const both = {
+      index: 11,
+      product: 'cake' as const,
+      items: [...DIGIT_ORDER.items, ...LETTER_ORDER.items],
+    };
     expect(choiceItemOf(both, 'digit')).toEqual(DIGIT_ORDER.items[0]);
     expect(choiceItemOf(both, 'letter')).toEqual(LETTER_ORDER.items[0]);
     expect(choiceItemOf(both)).toEqual(DIGIT_ORDER.items[0]); // no kind asked → the first one
@@ -168,7 +175,7 @@ describe('choiceItemOf', () => {
 
   it('is null for an order with counting only and for an empty one', () => {
     expect(choiceItemOf(COUNT_ORDER)).toBeNull();
-    expect(choiceItemOf({ index: 1, items: [] })).toBeNull();
+    expect(choiceItemOf({ index: 1, product: 'cake', items: [] })).toBeNull();
   });
 });
 

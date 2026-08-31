@@ -100,7 +100,7 @@ describe('session.complete', () => {
     const session = createSession(storage, { rng: createRng(11) });
     const item = session.order.items[0]!;
     session.complete([itemResult(item, 'first-try')]);
-    const element = countItemOf({ index: 1, items: [item] })?.amount;
+    const element = countItemOf({ index: 1, product: 'cake', items: [item] })?.amount;
     expect(session.save.tracks.numbers.scores[String(element)]).toBe(1);
   });
 
@@ -531,5 +531,45 @@ describe('session.buy', () => {
     createSession(storage).buy('customer.frog');
     const next = createSession(storage);
     expect(next.save.stars.purchases).toEqual({ 'customer.frog': 5 });
+  });
+});
+
+describe('which product the session asks for (STEP-17)', () => {
+  it('makes the cake until the ice cream is bought', () => {
+    const session = createSession(memoryStorage(), { rng: createRng(5) });
+    expect(session.order.product).toBe('cake');
+    for (let round = 0; round < 6; round += 1) {
+      const item = session.order.items[0]!;
+      expect(session.complete([itemResult(item, 'first-try')]).product).toBe('cake');
+    }
+  });
+
+  it('lets the very next order use what was just bought, without a reload', () => {
+    const session = createSession(
+      memoryStorage({ ...createSave(), stars: { earned: 9, purchases: {} } }),
+      { rng: createRng(3) },
+    );
+    expect(session.buy('product.icecream')).toBe(true);
+    const seen = new Set<string>();
+    for (let round = 0; round < 8; round += 1) {
+      const item = session.order.items[0]!;
+      seen.add(session.complete([itemResult(item, 'first-try')]).product);
+    }
+    expect(seen.has('icecream')).toBe(true);
+  });
+
+  it('does not ask for the same product twice running', () => {
+    const session = createSession(
+      memoryStorage({ ...createSave(), stars: { earned: 9, purchases: {} } }),
+      { rng: createRng(8) },
+    );
+    session.buy('product.icecream');
+    let previous = session.order.product;
+    for (let round = 0; round < 10; round += 1) {
+      const item = session.order.items[0]!;
+      const next = session.complete([itemResult(item, 'first-try')]);
+      expect(next.product).not.toBe(previous);
+      previous = next.product;
+    }
   });
 });

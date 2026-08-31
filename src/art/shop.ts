@@ -19,6 +19,7 @@ import {
 } from './decor';
 import { customerArt, CUSTOMER_HEIGHT, CUSTOMER_WIDTH } from './customers';
 import { fruit } from './fruit';
+import { productBase } from './product';
 import {
   ANSWER_SIZE,
   clampStageWidth,
@@ -27,6 +28,8 @@ import {
   FLOOR_TILE_WIDTH,
   FLOOR_TOP,
   floorColumns,
+  PRODUCT_HEIGHT,
+  PRODUCT_WIDTH,
   SHELF_BOARD,
 } from './layout';
 import { STAR_PATH } from './star';
@@ -195,5 +198,12 @@ export function shopGoodArt(item: ShopItem, box: Rect): string {
         case 'radio':
           return fitted(radioSet(), { width: RADIO_WIDTH, height: RADIO_HEIGHT }, box);
       }
+    // The thing itself, empty – the ice cream on the shelf is the cone the kitchen will fill.
+    case 'product':
+      return fitted(
+        productBase(item.unlocks),
+        { width: PRODUCT_WIDTH, height: PRODUCT_HEIGHT },
+        box,
+      );
   }
 }

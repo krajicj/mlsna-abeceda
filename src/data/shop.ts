@@ -13,8 +13,9 @@
  */
 import type { FruitKind } from './curriculum';
 import type { CustomerId } from './customers';
+import type { ProductId } from './products';
 
-export type ShopItemKind = 'fruit' | 'customer' | 'decoration';
+export type ShopItemKind = 'fruit' | 'customer' | 'decoration' | 'product';
 
 /**
  * Things bought for the kitchen. They are not furniture: each of them ANSWERS A TAP (návrh 7.3a) –
@@ -28,7 +29,8 @@ export type DecorationId = 'cat' | 'radio';
  * Every id in the catalogue, as a closed union: the table of sentences in `lines.cs.ts` is keyed
  * by it, so a new item without a "chceš koupit" sentence does not compile.
  */
-export type ShopItemId = 'fruit.raspberry' | 'customer.frog' | 'decor.cat' | 'decor.radio';
+export type ShopItemId =
+  'fruit.raspberry' | 'customer.frog' | 'decor.cat' | 'decor.radio' | 'product.icecream';
 
 /** The part every row has, whatever it sells. */
 interface ShopItemBase {
@@ -42,14 +44,15 @@ interface ShopItemBase {
 
 /**
  * A discriminated union, exactly like `OrderItem` in `game/orders.ts`: `kind` decides what may
- * stand in `unlocks`. A flat union of the three id types would let a `kind: 'fruit'` row unlock a
+ * stand in `unlocks`. A flat union of the four id types would let a `kind: 'fruit'` row unlock a
  * flower – and 'cat' is a legal value of two different kinds at once (the cat on the shelf and the
  * cat that comes to the counter).
  */
 export type ShopItem =
   | (ShopItemBase & { readonly kind: 'fruit'; readonly unlocks: FruitKind })
   | (ShopItemBase & { readonly kind: 'customer'; readonly unlocks: CustomerId })
-  | (ShopItemBase & { readonly kind: 'decoration'; readonly unlocks: DecorationId });
+  | (ShopItemBase & { readonly kind: 'decoration'; readonly unlocks: DecorationId })
+  | (ShopItemBase & { readonly kind: 'product'; readonly unlocks: ProductId });
 
 /**
  * The shelf offers them in this order – the cheapest first, so the first thing the child can afford
@@ -64,6 +67,7 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: 'customer.frog', kind: 'customer', price: 5, label: 'žabka', unlocks: 'frog' },
   { id: 'decor.cat', kind: 'decoration', price: 5, label: 'kočička', unlocks: 'cat' },
   { id: 'decor.radio', kind: 'decoration', price: 5, label: 'rádio', unlocks: 'radio' },
+  { id: 'product.icecream', kind: 'product', price: 5, label: 'zmrzlinka', unlocks: 'icecream' },
 ];
 
 const BY_ID: ReadonlyMap<string, ShopItem> = new Map(SHOP_ITEMS.map((item) => [item.id, item]));

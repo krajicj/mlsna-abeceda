@@ -53,9 +53,12 @@ describe('manifest of voice lines', () => {
     // 254 clips ≈ 4 750 characters (docs/steps/STEP-07, +6 in STEP-09, +2 in STEP-10), +62 for
     // the second item of an order in STEP-12, +5 for the closed kitchen in STEP-14, +49 for the
     // shop in STEP-15 (30 for the raspberry, 19 for the shelf itself), −4 in STEP-16 with the
-    // flower and the curtains dropped from the catalogue. Adding lines means paying for them and
-    // regenerating – the number is here so that cost is a conscious edit, not a surprise.
-    expect(LINES).toHaveLength(366);
+    // flower and the curtains dropped from the catalogue, +67 for the ice cream in STEP-17 (64 for
+    // its own order sentences, 2 for the shop, 1 for "Zmrzlinka je hotová!"; the 30 scoop
+    // sentences were generated and then dropped when the ice cream stopped being counted onto).
+    // Adding lines means paying for them and regenerating – the number is here so that cost is a
+    // conscious edit, not a surprise.
+    expect(LINES).toHaveLength(433);
   });
 
   it('has unique ids usable as file names', () => {
@@ -173,14 +176,54 @@ describe('manifest of voice lines', () => {
   });
 
   it('closes an order and hands over the star (STEP-09)', () => {
-    expect(finishLines()).toEqual(['finish.1', 'finish.2', 'finish.3']);
+    expect(finishLines('cake')).toEqual(['finish.1', 'finish.2', 'finish.3']);
     expect(starLines()).toEqual(['star.1', 'star.2']);
     expect(textOf('finish.1')).toBe('Hotovo!');
     expect(textOf('finish.2')).toBe('A je to!');
     expect(textOf('finish.3')).toBe('Dortík je hotový!');
     expect(textOf('star.1')).toBe('Máš hvězdičku!');
     expect(textOf('star.2')).toBe('Hvězdička je tvoje!');
-    for (const id of [...finishLines(), ...starLines()]) expect(hasLine(id), id).toBe(true);
+    for (const id of [...finishLines('cake'), ...starLines()]) expect(hasLine(id), id).toBe(true);
+  });
+
+  it('never calls another product a dortík (STEP-17)', () => {
+    // The two neutral ones fit anything; the one that names the thing belongs to that thing only.
+    expect(finishLines('icecream')).toEqual(['finish.1', 'finish.2', 'finish.4']);
+    expect(textOf('finish.4')).toBe('Zmrzlinka je hotová!');
+    // Without a product only the neutral ones come back: silence about WHAT is finished is always
+    // true, and a caller that forgets its product cannot make the narrator say something false.
+    expect(finishLines()).toEqual(['finish.1', 'finish.2']);
+  });
+
+  it('counts fruit whatever is being made (STEP-17)', () => {
+    // Every counted thing is fruit and every fruit is feminine, so one row of numerals does it.
+    expect(textOf('order.count.2.strawberry')).toBe('Prosím dvě jahody.');
+    expect(textOf('order.count.1.cherry')).toBe('Prosím jednu třešeň.');
+    expect(textOf('order.count.5.blueberry')).toBe('Prosím pět borůvek.');
+    expect(textOf('count.enough.2.raspberry')).toBe('Už máme dvě maliny, to stačí!');
+    // The ice cream takes no counted pieces at all, so it has no counting sentences either.
+    expect(hasLine('order.count.2.scoop')).toBe(false);
+    expect(hasLine('count.enough.2.scoop')).toBe(false);
+  });
+
+  it('names what carries the letter and the digit on each product (STEP-17)', () => {
+    expect(textOf('order.letter.k')).toBe('Prosím perníček s písmenkem ká.');
+    expect(textOf('order.letter.k.icecream')).toBe('Prosím oplatku s písmenkem ká.');
+    expect(textOf('order.next.letter.k.icecream')).toBe('A ještě oplatku s písmenkem ká.');
+    expect(textOf('order.digit.5')).toBe('Prosím svíčku s číslem pět.');
+    expect(textOf('order.digit.5.icecream')).toBe('Prosím vlaječku s číslem pět.');
+    expect(textOf('order.next.digit.5.icecream')).toBe('A ještě vlaječku s číslem pět.');
+  });
+
+  it('keeps the cake on bare ids, whatever the helpers are asked (STEP-17)', () => {
+    // Renaming one of these would throw away a clip that is generated and committed.
+    expect(orderLetterLine('K', 'cake')).toBe('order.letter.k');
+    expect(orderDigitLine(5, 'cake')).toBe('order.digit.5');
+    expect(orderCountLine(3, 'strawberry')).toBe('order.count.3.strawberry');
+    expect(countEnoughLine(3, 'strawberry')).toBe('count.enough.3.strawberry');
+    expect(orderNextLetterLine('K', 'cake')).toBe('order.next.letter.k');
+    expect(orderNextDigitLine(5, 'cake')).toBe('order.next.digit.5');
+    expect(orderNextCountLine(3, 'strawberry')).toBe('order.next.count.3.strawberry');
   });
 
   it('nudges towards the bell while the counter is empty (STEP-10)', () => {

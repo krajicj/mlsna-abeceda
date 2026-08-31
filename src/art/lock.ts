@@ -1,6 +1,6 @@
 /**
  * The padlock in the corner of a closed kitchen and the keypad behind it (STEP-14, návrh kap. 9).
- * A stand-in for the parent corner (STEP-20): the code is what opens the kitchen before the timer
+ * A stand-in for the parent corner (STEP-22): the code is what opens the kitchen before the timer
  * runs out. The keys are the one place in the game where a digit is UI and not learning content –
  * the parent corner is the standing exception to rule 1.
  */

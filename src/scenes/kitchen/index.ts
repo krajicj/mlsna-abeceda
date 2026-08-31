@@ -1,9 +1,10 @@
 import { fruitBowl } from '../../art/bowl';
-import { cakeBase } from '../../art/cake';
 import { kitchenBackdrop } from '../../art/kitchen';
 import { kitchenLayout, type KitchenLayout } from '../../art/layout';
+import { productBase } from '../../art/product';
 import { isLetter, type FruitKind, type Letter } from '../../data/curriculum';
 import type { CustomerId } from '../../data/customers';
+import { PRODUCTS, type ProductId } from '../../data/products';
 import {
   choiceItemOf,
   choiceValues,
@@ -28,6 +29,7 @@ import {
   orderPreload,
   orderSpeech,
   repeatSpeech,
+  type LinePicker,
 } from '../../game/speech';
 import { ownedDecorations } from '../../game/shop';
 import { starBalance } from '../../game/stars';
@@ -65,6 +67,8 @@ interface KitchenDevHandle {
   digit(value: number, choices?: readonly number[]): void;
   /** Replays the counting item with any amount and kind, whatever the order says. */
   count(amount: number, kind?: FruitKind): void;
+  /** Replays the current order on another product, whatever the shop says has been bought. */
+  product(id: ProductId): void;
   /** An order without a playable item: the kitchen goes static. */
   clear(): void;
   /** Rings the bell from the console: the next customer walks in and brings an order. */
@@ -94,7 +98,7 @@ function prop(className: string, art: string): HTMLDivElement {
 /**
  * The kitchen: the counter starts empty with the bell on it. The child rings, a customer walks in
  * from the left with an order in a bubble over its head, and fills it – counting from the bowl
- * (STEP-05) and/or a choice from the shelf (STEP-06). The finale hands the cake over, the customer
+ * (STEP-05) and/or a choice from the shelf (STEP-06). The finale hands the product over, the customer
  * eats it and leaves, and the bell comes back: nothing moves on until the child rings again
  * (STEP-10).
  *
@@ -109,7 +113,8 @@ export const kitchenScene: Scene = (ctx) => {
 
   const backdrop = document.createElement('div');
   backdrop.className = 'kitchen-backdrop';
-  const cakeEl = prop('kitchen-cake', cakeBase());
+  // Redrawn with every order (`startOrder`): the class stays, the picture is the product's.
+  const productEl = prop('kitchen-product', productBase(ctx.session.order.product));
   const bowlEl = prop('kitchen-bowl', fruitBowl());
   const digitShelf = layer('kitchen-shelf');
   const letterShelf = layer('kitchen-shelf');
@@ -122,11 +127,11 @@ export const kitchenScene: Scene = (ctx) => {
     sfx: ctx.sfx,
     owned: () => ownedDecorations(ctx.session.save.stars),
   });
-  el.append(cakeEl, bowlEl, digitShelf, letterShelf);
+  el.append(productEl, bowlEl, digitShelf, letterShelf);
   // Owns its own element and appends it here, so it can walk in and out without the scene helping.
   const customer = createCustomer({ root: el, sfx: ctx.sfx });
   // Built before the items and the finale on purpose: the bell stays on the counter all the time
-  // now, so the fruit and the cake have to fly IN FRONT of it, not behind it.
+  // now, so the fruit and the product have to fly IN FRONT of it, not behind it.
   const bell = createBellHandle({
     root: el,
     sfx: ctx.sfx,
@@ -143,10 +148,15 @@ export const kitchenScene: Scene = (ctx) => {
   }
 
   // One picker per kind for the whole scene, so two sentences in a row are never the same one –
-  // whichever item earned them. The gender comes from the settings in STEP-20; until then neutral.
+  // whichever item earned them. The gender comes from the settings in STEP-22; until then neutral.
   const praise = createPraisePicker();
-  const finish = createFinishPicker();
   const starLine = createStarPicker();
+  // "Hotovo!" is the exception: only the cake may be called a dortík, so there is one picker per
+  // product and the finale is handed a stand-in that always asks the one of the current order.
+  const finishPickers = new Map(
+    PRODUCTS.map((entry) => [entry.id, createFinishPicker({ product: entry.id })]),
+  );
+  const finish: LinePicker = { next: () => finishPickers.get(order.product)?.next() ?? [] };
   /** Delays that never talk over the narrator: the order, the finale and what is left all use it. */
   const pacer = createPacer({ voice: ctx.voice });
 
@@ -199,7 +209,7 @@ export const kitchenScene: Scene = (ctx) => {
       // half a second in, and the child is the one who asked for it (`pacer.after` only ever
       // replaces the pacer's own work, never a `voice.say()` that is already running).
       pacer.cancel();
-      ctx.voice.say(askAgainSpeech(open));
+      ctx.voice.say(askAgainSpeech(open, order.product));
       idle.poke();
     },
   });
@@ -208,7 +218,8 @@ export const kitchenScene: Scene = (ctx) => {
   const stars = createStars({ root: el, onShop: () => ctx.go('shop') });
   const finale = createFinale({
     root: el,
-    cake: cakeEl,
+    product: productEl,
+    productId: () => order.product,
     customer,
     sfx: ctx.sfx,
     voice: ctx.voice,
@@ -242,7 +253,7 @@ export const kitchenScene: Scene = (ctx) => {
   let backdropWidth = 0;
 
   function draw(): void {
-    place(cakeEl, layout.cake);
+    place(productEl, layout.product);
     place(bowlEl, layout.bowl);
   }
 
@@ -280,7 +291,7 @@ export const kitchenScene: Scene = (ctx) => {
         const open = openItems();
         if (open.length === 0) return;
         for (const item of open) handleOf(item).nudge();
-        ctx.voice.say(repeatSpeech(open));
+        ctx.voice.say(repeatSpeech(open, order.product));
       },
       onHint: () => {
         // Only the first one: two rings lit at once would be two answers handed over. The watcher
@@ -308,7 +319,7 @@ export const kitchenScene: Scene = (ctx) => {
       return;
     }
     // "Výborně!" and right behind it what is still missing, so the child knows the order goes on.
-    pacer.after(REMAINING_DELAY_MS, () => ctx.voice.say(repeatSpeech(open)));
+    pacer.after(REMAINING_DELAY_MS, () => ctx.voice.say(repeatSpeech(open, order.product)));
     idle.poke();
   }
 
@@ -351,8 +362,10 @@ export const kitchenScene: Scene = (ctx) => {
   function finishOrder(): void {
     finale.reset();
     countItem.clear();
-    digitItem.clear();
-    letterItem.clear();
+    // The shelves go back to decoration, drawn for the order that is already waiting – the child
+    // sees the pieces of the NEXT product while the bell is out.
+    digitItem.clear(order.product);
+    letterItem.clear(order.product);
     bubble.show(null);
     ctx.voice.preload(orderPreload(order));
     // The tenth order of the sitting closes the kitchen (STEP-14) – but only once the customer has
@@ -384,16 +397,19 @@ export const kitchenScene: Scene = (ctx) => {
     idle = watcher();
     pacer.cancel();
     stars.set(starBalance(ctx.session.save.stars));
+    // The counter is set before anything is put on it: what stands there is what the animal asked
+    // for, and every slot below is measured from that product.
+    productEl.innerHTML = productBase(next.product);
     bubble.show(next);
     const counted = countItemOf(next);
     const digit = choiceItemOf(next, 'digit');
     const letter = choiceItemOf(next, 'letter');
-    if (counted) countItem.start(counted.amount, counted.fruit);
+    if (counted) countItem.start(counted.amount, counted.fruit, next.product);
     else countItem.clear();
-    if (digit) digitItem.start(digit);
-    else digitItem.clear();
-    if (letter) letterItem.start(letter);
-    else letterItem.clear();
+    if (digit) digitItem.start(digit, next.product);
+    else digitItem.clear(next.product);
+    if (letter) letterItem.start(letter, next.product);
+    else letterItem.clear(next.product);
     if (!counted && !digit && !letter) {
       bubble.show(null);
       if (import.meta.env.DEV) {
@@ -403,7 +419,7 @@ export const kitchenScene: Scene = (ctx) => {
     }
     // ONE utterance for the whole order: "Prosím tři jahody. A ještě perníček s písmenkem ká."
     // Two `say()` calls would cut each other off (audio/voice.ts).
-    pacer.after(SPEAK_DELAY_MS, () => ctx.voice.say(orderSpeech(next.items)));
+    pacer.after(SPEAK_DELAY_MS, () => ctx.voice.say(orderSpeech(next.items, next.product)));
     idle.poke();
   }
 
@@ -444,7 +460,7 @@ export const kitchenScene: Scene = (ctx) => {
 
   /** DEV only: a replayed item is the whole order, bubble included – otherwise the card lies. */
   function devPlay(item: OrderItem): void {
-    startOrder({ index: order.index, items: [item] });
+    startOrder({ index: order.index, product: order.product, items: [item] });
   }
 
   const devHandle: KitchenDevHandle = {
@@ -466,6 +482,9 @@ export const kitchenScene: Scene = (ctx) => {
       const fruit = kind ?? countItemOf(order)?.fruit ?? 'strawberry';
       devPlay({ type: 'count', amount, fruit });
     },
+    product(id) {
+      startOrder({ ...order, product: id });
+    },
     clear() {
       ctx.voice.stop();
       pacer.cancel();
@@ -476,8 +495,8 @@ export const kitchenScene: Scene = (ctx) => {
       finishing = false;
       done.clear();
       countItem.clear();
-      digitItem.clear();
-      letterItem.clear();
+      digitItem.clear(order.product);
+      letterItem.clear(order.product);
       bubble.show(null);
     },
     ring: () => ringBell(),

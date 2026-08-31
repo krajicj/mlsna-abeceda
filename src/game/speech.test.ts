@@ -8,6 +8,7 @@ import {
   type Letter,
 } from '../data/curriculum';
 import { hasLine } from '../data/lines.cs';
+import type { ProductId } from '../data/products';
 import { SHOP_ITEMS } from '../data/shop';
 import type { Order, OrderItem } from './orders';
 import { createRng } from './rng';
@@ -54,8 +55,8 @@ function digitItem(value: number, choices: readonly number[] = [value]): OrderIt
   return { type: 'digit', value, choices };
 }
 
-function order(items: readonly OrderItem[]): Order {
-  return { index: 1, items };
+function order(items: readonly OrderItem[], product: ProductId = 'cake'): Order {
+  return { index: 1, product, items };
 }
 
 /** Every id the game can ask for has to exist as a clip – silence would be a bug, not a feature. */
@@ -420,5 +421,84 @@ describe('the shop (STEP-15)', () => {
       previous = id;
     }
     expect(seen.size).toBe(2);
+  });
+});
+
+describe('the ice cream says its own sentences (STEP-17)', () => {
+  it('asks for the wafer and the flag', () => {
+    expect(orderSpeech([letterItem('K', 'kočka')], 'icecream')).toEqual([
+      'order.letter.k.icecream',
+      'letter.word.k.kocka',
+    ]);
+    expect(orderSpeech([digitItem(5)], 'icecream')).toEqual(['order.digit.5.icecream']);
+  });
+
+  it('uses the "A ještě…" form for the second item, whatever the product', () => {
+    const items = [digitItem(2), letterItem('K', 'kočka')];
+    expect(orderSpeech(items, 'icecream')).toEqual([
+      'order.digit.2.icecream',
+      'order.next.letter.k.icecream',
+      'letter.word.k.kocka',
+    ]);
+    // An item left on its own goes back to "Prosím…" – the rule of STEP-12 holds here too.
+    expect(repeatSpeech([items[1]!], 'icecream')).toEqual(['order.letter.k.icecream']);
+  });
+
+  it('leaves the cake exactly as it was', () => {
+    const items = [countItem(3, 'strawberry'), letterItem('K', 'kočka')];
+    expect(orderSpeech(items, 'cake')).toEqual(orderSpeech(items));
+    expect(orderSpeech(items)).toEqual([
+      'order.count.3.strawberry',
+      'order.next.letter.k',
+      'letter.word.k.kocka',
+    ]);
+  });
+
+  it('says nothing of the product when counting', () => {
+    // Counting is always fruit, so the sentence is the same whatever is being made – and the
+    // ice cream never gets a counting item in the first place (návrh kap. 4).
+    expect(orderSpeech([countItem(3, 'cherry')], 'icecream')).toEqual(['order.count.3.cherry']);
+    expect(enoughSpeech(3, 'cherry')).toEqual(['count.enough.3.cherry']);
+    expect(itemHintSpeech(countItem(3, 'cherry'))).toEqual(['order.count.3.cherry']);
+  });
+
+  it('corrects a wrong wafer with the same sentences as a wrong cookie', () => {
+    // The correction is about the LETTER, not about what carries it.
+    expect(correctionSpeech('K', 'B', false)).toEqual(['wrong.letter.b', 'seek.letter.k']);
+  });
+
+  it('preloads what the ice cream will actually need', () => {
+    const ids = orderPreload(order([digitItem(5, [1, 5])], 'icecream'));
+    expect(ids).toContain('order.digit.5.icecream');
+    expect(ids).not.toContain('order.digit.5');
+    // The one that names the product, and never the one that names the other.
+    expect(ids).toContain('finish.4');
+    expect(ids).not.toContain('finish.3');
+    expectKnown(ids);
+  });
+
+  it('has a clip for every id either product can ask for', () => {
+    for (const product of ['cake', 'icecream'] as const) {
+      for (const letter of BASE_LETTERS) {
+        expectKnown(orderSpeech([letterItem(letter, LETTER_WORDS[letter])], product));
+        expectKnown(
+          repeatSpeech(
+            [letterItem(letter, LETTER_WORDS[letter]), letterItem(letter, LETTER_WORDS[letter])],
+            product,
+          ),
+        );
+      }
+      for (const value of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+        expectKnown(orderSpeech([digitItem(value)], product));
+        expectKnown(repeatSpeech([digitItem(value), digitItem(value)], product));
+      }
+    }
+    // Counting belongs to the fruit, not to the product.
+    for (const amount of [1, 2, 3, 4, 5]) {
+      for (const fruit of FRUITS) {
+        expectKnown(orderSpeech([countItem(amount, fruit)]));
+        expectKnown(enoughSpeech(amount, fruit));
+      }
+    }
   });
 });

@@ -4,11 +4,13 @@ import type { Order } from './orders';
 
 const LETTER_ORDER: Order = {
   index: 2,
+  product: 'cake',
   items: [{ type: 'letter', letter: 'K', word: 'kočka', choices: ['K', 'A'] }],
 };
 
 const COUNT_ORDER: Order = {
   index: 1,
+  product: 'cake',
   items: [{ type: 'count', fruit: 'blueberry', amount: 3 }],
 };
 
@@ -88,12 +90,13 @@ describe('countItemOf', () => {
 
   it('returns null for an order without one', () => {
     expect(countItemOf(LETTER_ORDER)).toBeNull();
-    expect(countItemOf({ index: 3, items: [] })).toBeNull();
+    expect(countItemOf({ index: 3, product: 'cake', items: [] })).toBeNull();
   });
 
   it('returns the first one when an order holds several', () => {
     const order: Order = {
       index: 1,
+      product: 'cake',
       items: [
         { type: 'digit', value: 3, choices: [3, 4] },
         { type: 'count', fruit: 'cherry', amount: 2 },

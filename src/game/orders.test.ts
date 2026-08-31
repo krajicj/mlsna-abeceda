@@ -12,7 +12,7 @@ import {
   type Order,
   type OrderInput,
 } from './orders';
-import { createRng } from './rng';
+import { createRng, type Rng } from './rng';
 import { EMPTY_SETTINGS, type Settings } from './settings';
 
 const SETTINGS: Settings = {
@@ -542,6 +542,108 @@ describe('a new game with two letters', () => {
       expect(item.choices).toHaveLength(2);
       expect(item.choices).toContain(item.letter);
       for (const choice of item.choices) expect(['O', 'S']).toContain(choice);
+    }
+  });
+});
+
+describe('which product is being made (STEP-17)', () => {
+  /** Counts how many times the generator reaches for the rng – the order of the draws is a promise. */
+  function counting(seed: number): { readonly rng: Rng; draws: () => number } {
+    const inner = createRng(seed);
+    let draws = 0;
+    return {
+      rng: () => {
+        draws += 1;
+        return inner();
+      },
+      draws: () => draws,
+    };
+  }
+
+  it('makes the cake when nothing else has been bought', () => {
+    everySeed({ index: 11 }, (order) => expect(order.product).toBe('cake'));
+    everySeed({ index: 11, products: [] }, (order) => expect(order.product).toBe('cake'));
+    everySeed({ index: 11, products: ['cake'] }, (order) => expect(order.product).toBe('cake'));
+  });
+
+  it('does not touch the rng while there is only one product', () => {
+    // A save from before the ice cream has to replay EXACTLY as it did: same seed, same order.
+    for (const seed of [0, 1, 7, 42]) {
+      const before = counting(seed);
+      const after = counting(seed);
+      const plain = generateOrder({ ...input({ index: 11 }), rng: before.rng });
+      const withProducts = generateOrder({
+        ...input({ index: 11, products: ['cake'], avoidProduct: 'cake' }),
+        rng: after.rng,
+      });
+      expect(after.draws()).toBe(before.draws());
+      expect(withProducts.items).toEqual(plain.items);
+    }
+  });
+
+  it('does not ask for the same product twice running', () => {
+    // Order 11 is a digit + a letter, so the ice cream is allowed to carry it.
+    everySeed({ index: 11, products: ['cake', 'icecream'], avoidProduct: 'cake' }, (order) =>
+      expect(order.product).toBe('icecream'),
+    );
+    everySeed({ index: 11, products: ['cake', 'icecream'], avoidProduct: 'icecream' }, (order) =>
+      expect(order.product).toBe('cake'),
+    );
+  });
+
+  it('makes a counting order as a cake, always', () => {
+    // The ice cream arrives finished and has nowhere to put counted pieces (návrh kap. 4).
+    // 1, 5 and 9 are single counting orders; 12 and 14 pair counting with a letter.
+    for (const index of [1, 5, 9, 12, 14]) {
+      everySeed({ index, products: ['cake', 'icecream'] }, (order) => {
+        expect(order.items.some((item) => item.type === 'count')).toBe(true);
+        expect(order.product).toBe('cake');
+      });
+    }
+  });
+
+  it('gives way on the no-repeat rule rather than break the counting rule', () => {
+    // Counting and "not the cake again" cannot both hold; the product rule is the one that yields.
+    everySeed({ index: 12, products: ['cake', 'icecream'], avoidProduct: 'cake' }, (order) => {
+      expect(order.items.some((item) => item.type === 'count')).toBe(true);
+      expect(order.product).toBe('cake');
+    });
+  });
+
+  it('lets the ice cream carry an order with no counting in it', () => {
+    // 3 and 7 are single digit orders, 2 and 4 single letters, 11 and 13 a digit plus a letter.
+    for (const index of [2, 3, 4, 7, 11, 13]) {
+      const seen = new Set<string>();
+      for (let seed = 0; seed < 40; seed += 1) {
+        seen.add(
+          generateOrder({
+            ...input({ index, products: ['cake', 'icecream'] }),
+            rng: createRng(seed),
+          }).product,
+        );
+      }
+      expect([...seen].sort(), `order ${index}`).toEqual(['cake', 'icecream']);
+    }
+  });
+
+  it('gives way rather than run out when the avoided one is all there is', () => {
+    everySeed({ index: 11, products: ['cake'], avoidProduct: 'cake' }, (order) =>
+      expect(order.product).toBe('cake'),
+    );
+  });
+
+  it('keeps the seeded items unchanged whatever is being made', () => {
+    // The product is drawn LAST, so it can never move an item to another element – not even now
+    // that the draw looks at what the items are.
+    for (const seed of [0, 3, 19]) {
+      for (const index of [11, 12]) {
+        const cake = generateOrder({ ...input({ index }), rng: createRng(seed) });
+        const both = generateOrder({
+          ...input({ index, products: ['cake', 'icecream'] }),
+          rng: createRng(seed),
+        });
+        expect(both.items).toEqual(cake.items);
+      }
     }
   });
 });

@@ -76,17 +76,17 @@ export function orderCheck(size: number): string {
 
 /**
  * "Three strawberries" as a picture: up to five pieces in the box of one bubble item, three in the
- * front row and the rest tucked into its gaps – the same arrangement they end up in on the cake, so
- * the child sees the same thing twice. `amount` is clamped to 1…5.
+ * front row and the rest tucked into its gaps – the same arrangement they end up in on the
+ * product, so the child sees the same thing twice. `amount` is clamped to 1…5.
  */
 export function bubbleFruit(kind: FruitKind, amount: number): string {
-  const total = Math.min(Math.max(Math.round(amount) || 1, 1), 5);
-  const front = Math.min(total, 3);
   const height = 44;
   const pitch = 36;
+  const total = Math.min(Math.max(Math.round(amount) || 1, 1), 5);
+  const front = Math.min(total, 3);
   const centerX = BUBBLE_ITEM_WIDTH / 2;
   // With no back row the front one is centred in the box; a second row pushes it down to make
-  // room, exactly the way the two rows sit on the cake.
+  // room, exactly the way the two rows sit on the product.
   const frontY = total > 3 ? BUBBLE_ITEM_HEIGHT - 24 : BUBBLE_ITEM_HEIGHT / 2;
   const backY = frontY - 26;
   const frontCenters = Array.from(

@@ -8,8 +8,8 @@
  *
  * CAREFUL: this file is also read by plain Node (the generator, type stripping), and Node resolves
  * no extensionless specifiers. Value imports must therefore carry the `.ts` extension and may only
- * come from `./curriculum.ts` and `./shop.ts` (both are import-free themselves); anything else has
- * to be an `import type`, which is erased on load.
+ * come from `./curriculum.ts`, `./shop.ts` and `./products.ts` (all three are import-free
+ * themselves); anything else has to be an `import type`, which is erased on load.
  */
 import {
   BASE_LETTERS,
@@ -20,6 +20,7 @@ import {
   type FruitKind,
   type Letter,
 } from './curriculum.ts';
+import { PRODUCTS, productOf, type ProductId } from './products.ts';
 import { SHOP_ITEMS, type ShopItemId } from './shop.ts';
 
 /** Who says the line. STEP-10 adds 'animal' for the customers. */
@@ -34,7 +35,7 @@ export interface Line {
   readonly voice?: VoiceRole;
 }
 
-/** Which set of praises the child hears; the setting arrives in STEP-20, until then 'neutral'. */
+/** Which set of praises the child hears; the setting arrives in STEP-22, until then 'neutral'. */
 export type PraiseGender = 'neutral' | 'female' | 'male';
 
 /** The numbers of M1 – the first ten, never a zero (návrh 5.2). */
@@ -71,7 +72,11 @@ const SPELLED: Readonly<Record<Letter, string>> = {
   Z: 'zet',
 };
 
-/** Accusative numerals – all three fruits are feminine, so one row is enough. */
+/**
+ * Accusative numerals. One row is enough: whatever a product counts, it is fruit, and all four
+ * fruits are feminine. (STEP-17 briefly counted scoops – masculine, "dva kopečky" – and needed
+ * a second row; the ice cream now arrives finished and counts nothing, see návrh kap. 4.)
+ */
 const NUMERALS: Readonly<Record<Digit, string>> = {
   1: 'jednu',
   2: 'dvě',
@@ -137,6 +142,17 @@ const FRUIT_FORMS: Readonly<
   raspberry: { one: 'jednu malinu', few: 'maliny', many: 'malin' },
 };
 
+/**
+ * What carries the letter and the digit on each product, in the accusative – the noun of "Prosím …
+ * s písmenkem ká." The picture is different for every product, and so is the word for it.
+ */
+const PRODUCT_TEXTS: Readonly<
+  Record<ProductId, { readonly letter: string; readonly digit: string }>
+> = {
+  cake: { letter: 'perníček', digit: 'svíčku' },
+  icecream: { letter: 'oplatku', digit: 'vlaječku' },
+};
+
 /** Praise, three sets (návrh kap. 8). The gender is the child's, see PraiseGender. */
 const PRAISE: Readonly<Record<PraiseGender, readonly string[]>> = {
   neutral: [
@@ -169,8 +185,18 @@ const PRAISE: Readonly<Record<PraiseGender, readonly string[]>> = {
   ],
 };
 
-/** The order is done (návrh kap. 4): the finale of the cake, before the star flies. */
-const FINISH: readonly string[] = ['Hotovo!', 'A je to!', 'Dortík je hotový!'];
+/**
+ * The order is done (návrh kap. 4): said while the glaze runs over it, before the star flies. Two
+ * of them fit anything the kitchen makes; the ones that NAME the thing belong to one product only,
+ * because "Dortík je hotový!" over an ice cream is simply not true. The id is the position in this
+ * list, so a new product appends and never renumbers what is already generated.
+ */
+const FINISH: readonly { readonly text: string; readonly product?: ProductId }[] = [
+  { text: 'Hotovo!' },
+  { text: 'A je to!' },
+  { text: 'Dortík je hotový!', product: 'cake' },
+  { text: 'Zmrzlinka je hotová!', product: 'icecream' },
+];
 
 /** The reward lands in the counter (návrh kap. 7). */
 const STAR: readonly string[] = ['Máš hvězdičku!', 'Hvězdička je tvoje!'];
@@ -220,6 +246,10 @@ const SHOP_TEXTS: Readonly<Record<ShopItemId, { readonly ask: string; readonly b
     'decor.radio': {
       ask: 'Chceš koupit rádio za pět hvězdiček?',
       bought: 'Rádio je tvoje!',
+    },
+    'product.icecream': {
+      ask: 'Chceš koupit zmrzlinku za pět hvězdiček?',
+      bought: 'Zmrzlinka je tvoje! Můžeš ji dělat.',
     },
   };
 
@@ -280,6 +310,16 @@ function countedFruit(amount: Digit, fruit: FruitKind): string {
 }
 
 /**
+ * What is appended to the id of an ORDER sentence: nothing for the cake, `.icecream` for the ice
+ * cream. The cake keeps bare ids forever – its clips are generated and committed, and renaming an
+ * id would throw them away (see the step plan, decision 7).
+ */
+function suffix(product?: ProductId): string {
+  const found = product === undefined ? null : productOf(product);
+  return found?.lineSuffix ? `.${found.lineSuffix}` : '';
+}
+
+/**
  * Letter or digit? `target` is a track element exactly as `ChoiceState.target` and `TrackState`
  * hold it: an upper-case letter ('K') or a digit as a string ('3', '10'). Whatever is not one of
  * the 22 base letters goes down the digit branch – and if it is not a digit of M1 either, the id
@@ -289,16 +329,17 @@ function targetKind(target: string): 'letter' | 'digit' {
   return isLetter(target) ? 'letter' : 'digit';
 }
 
+/** Counting never depends on the product: whatever is being made, what is counted is fruit. */
 export function orderCountLine(amount: number, fruit: FruitKind): string {
   return `order.count.${amount}.${fruit}`;
 }
 
-export function orderDigitLine(value: number): string {
-  return `order.digit.${value}`;
+export function orderDigitLine(value: number, product?: ProductId): string {
+  return `order.digit.${value}${suffix(product)}`;
 }
 
-export function orderLetterLine(letter: Letter): string {
-  return `order.letter.${letter.toLowerCase()}`;
+export function orderLetterLine(letter: Letter, product?: ProductId): string {
+  return `order.letter.${letter.toLowerCase()}${suffix(product)}`;
 }
 
 /**
@@ -312,12 +353,12 @@ export function orderNextCountLine(amount: number, fruit: FruitKind): string {
   return `order.next.count.${amount}.${fruit}`;
 }
 
-export function orderNextDigitLine(value: number): string {
-  return `order.next.digit.${value}`;
+export function orderNextDigitLine(value: number, product?: ProductId): string {
+  return `order.next.digit.${value}${suffix(product)}`;
 }
 
-export function orderNextLetterLine(letter: Letter): string {
-  return `order.next.letter.${letter.toLowerCase()}`;
+export function orderNextLetterLine(letter: Letter, product?: ProductId): string {
+  return `order.next.letter.${letter.toLowerCase()}${suffix(product)}`;
 }
 
 /** The word comes from `letterWord()` – "B jako brácha" when there is a brother, else "balón". */
@@ -349,8 +390,14 @@ export function praiseLines(gender: PraiseGender): readonly string[] {
   return PRAISE[gender].map((_, index) => `praise.${gender}.${index + 1}`);
 }
 
-export function finishLines(): readonly string[] {
-  return FINISH.map((_, index) => `finish.${index + 1}`);
+/**
+ * "Hotovo!" – the two that fit anything, plus the one that names this very product. Without a
+ * product only the neutral ones come back, so nothing can be called a dortík by accident.
+ */
+export function finishLines(product?: ProductId): readonly string[] {
+  return FINISH.map((entry, index) => ({ entry, id: `finish.${index + 1}` }))
+    .filter(({ entry }) => entry.product === undefined || entry.product === product)
+    .map(({ id }) => id);
 }
 
 export function starLines(): readonly string[] {
@@ -401,6 +448,8 @@ function add(id: string, text: string): void {
   lines.push({ id, text });
 }
 
+// One set for everything that is counted, because everything that is counted is fruit – on the
+// cake today, on the pancakes and the milkshake later.
 for (const fruit of FRUITS) {
   for (const amount of DIGITS) {
     add(orderCountLine(amount, fruit), `Prosím ${countedFruit(amount, fruit)}.`);
@@ -409,10 +458,27 @@ for (const fruit of FRUITS) {
   }
 }
 
+// The sentence that ASKS for a letter or a digit names what carries it, and that is different on
+// every product ("perníček" × "oplatku"). Everything else about an element – how it is counted out
+// loud, what to say to a wrong one, where to look – is about the letter itself and stays one set.
+for (const product of PRODUCTS) {
+  const texts = PRODUCT_TEXTS[product.id];
+  for (const digit of DIGITS) {
+    add(orderDigitLine(digit, product.id), `Prosím ${texts.digit} s číslem ${CARDINALS[digit]}.`);
+    add(
+      orderNextDigitLine(digit, product.id),
+      `A ještě ${texts.digit} s číslem ${CARDINALS[digit]}.`,
+    );
+  }
+  for (const letter of BASE_LETTERS) {
+    const spelled = SPELLED[letter];
+    add(orderLetterLine(letter, product.id), `Prosím ${texts.letter} s písmenkem ${spelled}.`);
+    add(orderNextLetterLine(letter, product.id), `A ještě ${texts.letter} s písmenkem ${spelled}.`);
+  }
+}
+
 for (const digit of DIGITS) {
   const target = String(digit);
-  add(orderDigitLine(digit), `Prosím svíčku s číslem ${CARDINALS[digit]}.`);
-  add(orderNextDigitLine(digit), `A ještě svíčku s číslem ${CARDINALS[digit]}.`);
   add(countAloudLine(digit), `${capitalize(CARDINALS[digit])}.`);
   add(wrongLine(target), `To je ${DIGIT_NAMES[digit]}.`);
   add(seekLine(target), `Hledáme ${DIGIT_NAMES_ACC[digit]}.`);
@@ -421,8 +487,6 @@ for (const digit of DIGITS) {
 
 for (const letter of BASE_LETTERS) {
   const spelled = SPELLED[letter];
-  add(orderLetterLine(letter), `Prosím perníček s písmenkem ${spelled}.`);
-  add(orderNextLetterLine(letter), `A ještě perníček s písmenkem ${spelled}.`);
   add(wrongLine(letter), `To je ${spelled}.`);
   add(seekLine(letter), `Hledáme ${spelled}.`);
   add(hintLine(letter), `${capitalize(spelled)} je tady!`);
@@ -446,7 +510,7 @@ for (const gender of ['neutral', 'female', 'male'] as const) {
   for (const [index, text] of texts.entries()) add(`praise.${gender}.${index + 1}`, text);
 }
 
-for (const [index, text] of FINISH.entries()) add(`finish.${index + 1}`, text);
+for (const [index, entry] of FINISH.entries()) add(`finish.${index + 1}`, entry.text);
 for (const [index, text] of STAR.entries()) add(`star.${index + 1}`, text);
 for (const [index, text] of BELL.entries()) add(`bell.${index + 1}`, text);
 for (const [index, text] of CLOSING.entries()) add(`closing.${index + 1}`, text);

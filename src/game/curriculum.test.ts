@@ -155,7 +155,7 @@ describe('letterWord', () => {
     expect(letterWord('B', settings)).toBe('brácha');
   });
 
-  it('says ementál for E until the name clip exists (STEP-21)', () => {
+  it('says ementál for E until the name clip exists (STEP-23)', () => {
     expect(letterWord('E', FAMILY)).toBe('ementál');
     expect(letterWord('E', EMPTY_SETTINGS)).toBe('ementál');
   });
@@ -171,7 +171,7 @@ describe('choiceCount', () => {
 
 describe('stage ceilings', () => {
   it('never lets a track climb higher than the kitchen can play', () => {
-    // A save must never claim a stage the generator cannot build; STEP-24 and STEP-27 raise these.
+    // A save must never claim a stage the generator cannot build; STEP-25 and STEP-27 raise these.
     for (const ceiling of [MAX_NUMBER_LEVEL, MAX_LETTER_LEVEL]) {
       expect(ceiling).toBeGreaterThanOrEqual(1);
       expect(ceiling).toBeLessThanOrEqual(5);

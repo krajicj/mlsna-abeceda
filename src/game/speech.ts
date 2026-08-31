@@ -5,6 +5,7 @@
  * moment; which id belongs to it is decided here, so it can be tested without a browser.
  */
 import type { FruitKind } from '../data/curriculum';
+import { STARTER_PRODUCT, type ProductId } from '../data/products';
 import {
   bellLines,
   closedLines,
@@ -44,20 +45,34 @@ import { pick, systemRng, type Rng } from './rng';
  */
 export type ItemPosition = 'first' | 'next';
 
-/** The sentences of ONE item: a letter takes two (the order and the word), the rest just one. */
-export function itemSpeech(item: OrderItem, position: ItemPosition = 'first'): readonly string[] {
+/**
+ * The sentences of ONE item: a letter takes two (the order and the word), the rest just one.
+ *
+ * `product` decides WHICH sentence, because the order names what is being made ("perníček" ×
+ * "oplatku", "tři jahody" × "tři kopečky"). It defaults to the cake, so a caller that forgets it
+ * still compiles and simply says what the game said before there was more than one product – see
+ * the table of call sites in the step plan; every one of them has to pass it.
+ */
+export function itemSpeech(
+  item: OrderItem,
+  position: ItemPosition = 'first',
+  product: ProductId = STARTER_PRODUCT,
+): readonly string[] {
   const next = position === 'next';
   switch (item.type) {
     case 'count':
+      // Counting says nothing about the product: what is counted is fruit, whatever is being made.
       return [
         next
           ? orderNextCountLine(item.amount, item.fruit)
           : orderCountLine(item.amount, item.fruit),
       ];
     case 'digit':
-      return [next ? orderNextDigitLine(item.value) : orderDigitLine(item.value)];
+      return [next ? orderNextDigitLine(item.value, product) : orderDigitLine(item.value, product)];
     case 'letter': {
-      const asked = next ? orderNextLetterLine(item.letter) : orderLetterLine(item.letter);
+      const asked = next
+        ? orderNextLetterLine(item.letter, product)
+        : orderLetterLine(item.letter, product);
       // The word is empty only when the dev console asks for something that is not a letter.
       return item.word === '' ? [asked] : [asked, letterWordLine(item.letter, item.word)];
     }
@@ -70,13 +85,19 @@ function positionOf(index: number): ItemPosition {
 }
 
 /** The whole order as ONE utterance: "Prosím tři jahody. A ještě perníček s písmenkem ká." */
-export function orderSpeech(items: readonly OrderItem[]): readonly string[] {
-  return items.flatMap((item, index) => itemSpeech(item, positionOf(index)));
+export function orderSpeech(
+  items: readonly OrderItem[],
+  product: ProductId = STARTER_PRODUCT,
+): readonly string[] {
+  return items.flatMap((item, index) => itemSpeech(item, positionOf(index), product));
 }
 
 /** The nudge after 15 s: the order sentence of each item, without "Ká jako kočka." */
-export function repeatSpeech(items: readonly OrderItem[]): readonly string[] {
-  return items.flatMap((item, index) => itemSpeech(item, positionOf(index)).slice(0, 1));
+export function repeatSpeech(
+  items: readonly OrderItem[],
+  product: ProductId = STARTER_PRODUCT,
+): readonly string[] {
+  return items.flatMap((item, index) => itemSpeech(item, positionOf(index), product).slice(0, 1));
 }
 
 /**
@@ -86,8 +107,11 @@ export function repeatSpeech(items: readonly OrderItem[]): readonly string[] {
  * the part they could not hold on to, and "Ká jako kočka." is what gives the letter a meaning
  * (návrh 5.6).
  */
-export function askAgainSpeech(items: readonly OrderItem[]): readonly string[] {
-  return orderSpeech(items);
+export function askAgainSpeech(
+  items: readonly OrderItem[],
+  product: ProductId = STARTER_PRODUCT,
+): readonly string[] {
+  return orderSpeech(items, product);
 }
 
 /** Counting out loud after the `placed`-th piece has landed. */
@@ -95,7 +119,7 @@ export function countSpeech(placed: number): readonly string[] {
   return [countAloudLine(placed)];
 }
 
-/** A tap on the bowl that is already covered. */
+/** A tap on the bowl that is already covered: "Už máme tři jahody, to stačí!" */
 export function enoughSpeech(amount: number, fruit: FruitKind): readonly string[] {
   return [countEnoughLine(amount, fruit)];
 }
@@ -124,6 +148,8 @@ export function hintSpeech(target: string): readonly string[] {
  * the bowl and the only thing left to say is what was ordered.
  */
 export function itemHintSpeech(item: OrderItem): readonly string[] {
+  // No product needed: a counting hint falls back to the order sentence, and that sentence is
+  // about the fruit, not about what it is going onto.
   if (item.type === 'count') return repeatSpeech([item]);
   return hintSpeech(item.type === 'letter' ? item.letter : String(item.value));
 }
@@ -135,11 +161,14 @@ export function itemHintSpeech(item: OrderItem): readonly string[] {
  */
 export function orderPreload(order: Order, gender: PraiseGender = 'neutral'): readonly string[] {
   const ids = new Set<string>();
+  // The product is read off the order itself, so this is one of the two places that need no
+  // argument for it – and cannot forget one either.
+  const product = order.product;
   for (const [index, item] of order.items.entries()) {
     // Every item can be heard on its own ("Prosím…") once it is the only one left; from the second
     // one on it is also heard in the "A ještě…" form, as part of the whole order.
-    for (const id of itemSpeech(item, 'first')) ids.add(id);
-    if (index > 0) for (const id of itemSpeech(item, 'next')) ids.add(id);
+    for (const id of itemSpeech(item, 'first', product)) ids.add(id);
+    if (index > 0) for (const id of itemSpeech(item, 'next', product)) ids.add(id);
     if (item.type === 'count') {
       for (let step = 1; step <= item.amount; step += 1) ids.add(countAloudLine(step));
       ids.add(countEnoughLine(item.amount, item.fruit));
@@ -151,7 +180,7 @@ export function orderPreload(order: Order, gender: PraiseGender = 'neutral'): re
     for (const choice of item.choices) ids.add(wrongLine(String(choice)));
   }
   for (const id of praiseLines(gender)) ids.add(id);
-  for (const id of finishLines()) ids.add(id);
+  for (const id of finishLines(product)) ids.add(id);
   for (const id of starLines()) ids.add(id);
   return [...ids];
 }
@@ -185,9 +214,18 @@ export function createPraisePicker(options?: {
   return createLinePicker(praiseLines(options?.gender ?? 'neutral'), options?.rng ?? systemRng);
 }
 
-/** "Hotovo!" – the order is finished, said while the glaze runs over the cake. */
-export function createFinishPicker(options?: { readonly rng?: Rng }): LinePicker {
-  return createLinePicker(finishLines(), options?.rng ?? systemRng);
+/**
+ * "Hotovo!" – the order is finished, said while the glaze runs over it. One picker per product:
+ * only the cake may be called a dortík, so the set it draws from depends on what was made.
+ */
+export function createFinishPicker(options?: {
+  readonly product?: ProductId;
+  readonly rng?: Rng;
+}): LinePicker {
+  return createLinePicker(
+    finishLines(options?.product ?? STARTER_PRODUCT),
+    options?.rng ?? systemRng,
+  );
 }
 
 /** "Máš hvězdičku!" – said while the star flies into the counter. */

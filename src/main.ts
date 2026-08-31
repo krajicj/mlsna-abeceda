@@ -8,7 +8,13 @@ import { letterOrder } from './game/curriculum';
 import { generateOrder, type Order } from './game/orders';
 import { createRng, systemRng } from './game/rng';
 import { createSession } from './game/session';
-import { ownedDecorations, shopOffer, unlockedCustomers, unlockedFruits } from './game/shop';
+import {
+  ownedDecorations,
+  shopOffer,
+  unlockedCustomers,
+  unlockedFruits,
+  unlockedProducts,
+} from './game/shop';
 import { orderPreload } from './game/speech';
 import { mergeSave } from './game/merge';
 import {
@@ -72,7 +78,7 @@ if (app) {
 
   if (import.meta.env.DEV) {
     // Handles for the manual checks in docs/steps/STEP-02-*.md and STEP-03-*.md; stripped from
-    // the build, so real names never reach the deployed game (settings UI comes in STEP-20).
+    // the build, so real names never reach the deployed game (settings UI comes in STEP-22).
     Object.assign(window, {
       __stage: stage,
       __audio: audio,
@@ -154,12 +160,14 @@ if (app) {
           fruits: readonly string[];
           customers: readonly string[];
           decorations: readonly string[];
+          products: readonly string[];
         } => {
           const { stars } = readSave(storage);
           return {
             fruits: unlockedFruits(stars),
             customers: unlockedCustomers(stars),
             decorations: ownedDecorations(stars),
+            products: unlockedProducts(stars),
           };
         },
       },
