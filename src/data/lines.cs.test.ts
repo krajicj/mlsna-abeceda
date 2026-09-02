@@ -37,11 +37,6 @@ const ID_PATTERN = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
 
 const byId = new Map(LINES.map((line) => [line.id, line]));
 
-/** The spelled letter name always opens the sentence: "Ká jako kočka.", "Ká je tady!". */
-function firstWord(text: string): string {
-  return text.split(' ')[0] ?? '';
-}
-
 function textOf(id: string): string {
   const line = byId.get(id);
   expect(line, `missing line ${id}`).toBeDefined();
@@ -110,7 +105,6 @@ describe('manifest of voice lines', () => {
       const word = LETTER_WORDS[letter];
       const wordLine = textOf(letterWordLine(letter, word));
       expect(wordLine).toMatch(new RegExp(`^\\S+ jako ${word}\\.$`));
-      expect(firstWord(wordLine), letter).toBe(firstWord(textOf(hintLine(letter))));
     }
   });
 

@@ -577,9 +577,9 @@
           "loudness": -18
         },
         "letter.word.a.auto": {
-          "hash": "f77ebfeec5526dc2",
-          "text": "Á jako auto.",
-          "bytes": 10911,
+          "hash": "9b5b4512fab95e56",
+          "text": "Aa jako auto.",
+          "bytes": 10285,
           "loudness": -18
         },
         "letter.word.b.babicka": {
@@ -619,9 +619,9 @@
           "loudness": -18
         },
         "letter.word.e.emental": {
-          "hash": "8872818b3aaf59c6",
-          "text": "É jako ementál.",
-          "bytes": 10911,
+          "hash": "913e43fe81dd8130",
+          "text": "Ee jako ementál.",
+          "bytes": 13210,
           "loudness": -18
         },
         "letter.word.f.fotbal": {
@@ -661,9 +661,9 @@
           "loudness": -18
         },
         "letter.word.l.lev": {
-          "hash": "6ece5a20f99fe469",
-          "text": "El jako lev.",
-          "bytes": 9031,
+          "hash": "0b6b8105036c939f",
+          "text": "Ell jako lev.",
+          "bytes": 10285,
           "loudness": -18
         },
         "letter.word.m.maminka": {
@@ -673,9 +673,9 @@
           "loudness": -18
         },
         "letter.word.n.nos": {
-          "hash": "8f151fedb16df7a3",
-          "text": "En jako nos.",
-          "bytes": 9449,
+          "hash": "de4d19f0c0ef2b73",
+          "text": "Enn jako nos.",
+          "bytes": 9867,
           "loudness": -18
         },
         "letter.word.o.oko": {
@@ -711,7 +711,7 @@
         "letter.word.t.tata": {
           "hash": "6ee6d3d2587842ab",
           "text": "Té jako táta.",
-          "bytes": 10493,
+          "bytes": 12165,
           "loudness": -18
         },
         "letter.word.u.ucho": {
@@ -727,9 +727,9 @@
           "loudness": -18
         },
         "letter.word.z.zebra": {
-          "hash": "b1b3c6130e2efb94",
-          "text": "Zet jako zebra.",
-          "bytes": 11747,
+          "hash": "4009742b8a7d399a",
+          "text": "Zet, jako zebra.",
+          "bytes": 12374,
           "loudness": -18
         },
         "open.1": {

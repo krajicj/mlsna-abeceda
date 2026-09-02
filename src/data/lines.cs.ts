@@ -73,6 +73,18 @@ const SPELLED: Readonly<Record<Letter, string>> = {
 };
 
 /**
+ * A few letter names need a phonetic spelling for the TTS.  This applies only to the
+ * “X jako …” teaching line: the other prompts retain the conventional Czech name.
+ */
+const SPELLED_IN_WORD_LINE: Readonly<Partial<Record<Letter, string>>> = {
+  A: 'aa',
+  E: 'ee',
+  L: 'ell',
+  N: 'enn',
+  Z: 'zet,',
+};
+
+/**
  * Accusative numerals. One row is enough: whatever a product counts, it is fruit, and all four
  * fruits are feminine. (STEP-17 briefly counted scoops – masculine, "dva kopečky" – and needed
  * a second row; the ice cream now arrives finished and counts nothing, see návrh kap. 4.)
@@ -498,7 +510,7 @@ for (const letter of BASE_LETTERS) {
   add(hintLine(letter), `${capitalize(spelled)} je tady!`);
   add(
     letterWordLine(letter, LETTER_WORDS[letter]),
-    `${capitalize(spelled)} jako ${LETTER_WORDS[letter]}.`,
+    `${capitalize(SPELLED_IN_WORD_LINE[letter] ?? spelled)} jako ${LETTER_WORDS[letter]}.`,
   );
 }
 
