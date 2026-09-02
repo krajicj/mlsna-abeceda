@@ -118,6 +118,12 @@ docker compose run --rm add <pkg>@<ver>  # add a dependency (needs internet) –
 The ElevenLabs key lives in `~/.config/mlsna-abeceda/elevenlabs.env` on the host — outside the
 repository and outside the bind mount — and is passed only to the `voice` and `sfx` services.
 
+**Never stop the containers.** No `docker compose down`, `stop`, `kill` or `rm` — not to tidy up
+after a manual check, not at the end of a step, not ever without the author asking for it. The dev
+server is what the author tests the work in; taking it down means they open the page and get
+nothing. Starting one is fine, leaving it running is the normal state. Only the author decides
+when a container stops.
+
 ## Non-negotiable rules
 
 1. **The player cannot read.** No text in the game UI (exceptions: the parent corner, and the
