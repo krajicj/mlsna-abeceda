@@ -477,8 +477,8 @@ describe('the ice cream says its own sentences (STEP-17)', () => {
     expectKnown(ids);
   });
 
-  it('has a clip for every id either product can ask for', () => {
-    for (const product of ['cake', 'icecream'] as const) {
+  it('has a clip for every id any product can ask for', () => {
+    for (const product of ['cake', 'icecream', 'pancakes'] as const) {
       for (const letter of BASE_LETTERS) {
         expectKnown(orderSpeech([letterItem(letter, LETTER_WORDS[letter])], product));
         expectKnown(
@@ -500,5 +500,49 @@ describe('the ice cream says its own sentences (STEP-17)', () => {
         expectKnown(enoughSpeech(amount, fruit));
       }
     }
+  });
+});
+
+describe('the pancakes say their own sentences (STEP-18)', () => {
+  it('asks for the chocolate and the sign', () => {
+    expect(orderSpeech([letterItem('K', 'kočka')], 'pancakes')).toEqual([
+      'order.letter.k.pancakes',
+      'letter.word.k.kocka',
+    ]);
+    expect(orderSpeech([digitItem(5)], 'pancakes')).toEqual(['order.digit.5.pancakes']);
+    expect(askAgainSpeech([digitItem(5)], 'pancakes')).toEqual(['order.digit.5.pancakes']);
+  });
+
+  it('counts fruit onto them with the sentences the cake already uses', () => {
+    // The pancakes are the second product that counts, and they add not one counting clip.
+    const items = [countItem(3, 'strawberry'), letterItem('K', 'kočka')];
+    expect(orderSpeech(items, 'pancakes')).toEqual([
+      'order.count.3.strawberry',
+      'order.next.letter.k.pancakes',
+      'letter.word.k.kocka',
+    ]);
+    expect(repeatSpeech([items[1]!], 'pancakes')).toEqual(['order.letter.k.pancakes']);
+    expect(enoughSpeech(3, 'strawberry')).toEqual(['count.enough.3.strawberry']);
+  });
+
+  it('finishes as pancakes and never as a cake or an ice cream', () => {
+    const picker = createFinishPicker({ product: 'pancakes', rng: createRng(4) });
+    const seen = new Set<string>();
+    for (let draw = 0; draw < 60; draw += 1) {
+      const id = picker.next()[0]!;
+      expect(hasLine(id)).toBe(true);
+      seen.add(id);
+    }
+    expect([...seen].sort()).toEqual(['finish.1', 'finish.2', 'finish.5']);
+  });
+
+  it('preloads what the pancakes will actually need', () => {
+    const ids = orderPreload(order([digitItem(5, [1, 5])], 'pancakes'));
+    expect(ids).toContain('order.digit.5.pancakes');
+    expect(ids).not.toContain('order.digit.5');
+    expect(ids).toContain('finish.5');
+    expect(ids).not.toContain('finish.3');
+    expect(ids).not.toContain('finish.4');
+    expectKnown(ids);
   });
 });

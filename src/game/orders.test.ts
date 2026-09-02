@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { STARTER_FRUITS } from '../data/curriculum';
+import type { ProductId } from '../data/products';
 import { MAX_COUNT } from './counting';
 import { createTrack, type TrackState } from './mastery';
 import {
@@ -630,6 +631,67 @@ describe('which product is being made (STEP-17)', () => {
     everySeed({ index: 11, products: ['cake'], avoidProduct: 'cake' }, (order) =>
       expect(order.product).toBe('cake'),
     );
+  });
+
+  it('makes a counting order as a cake or as pancakes, never as ice cream (STEP-18)', () => {
+    // Two products count now, so "a counting order is a cake" stops being true – but "a counting
+    // order is never the ice cream" is the rule that actually matters, and it still holds.
+    const all: ProductId[] = ['cake', 'icecream', 'pancakes'];
+    for (const index of [1, 5, 9, 12, 14]) {
+      everySeed({ index, products: all }, (order) => {
+        expect(order.items.some((item) => item.type === 'count')).toBe(true);
+        expect(['cake', 'pancakes']).toContain(order.product);
+      });
+      // Even when the no-repeat rule points at the only other product that counts.
+      everySeed({ index, products: all, avoidProduct: 'cake' }, (order) =>
+        expect(order.product).toBe('pancakes'),
+      );
+      everySeed({ index, products: all, avoidProduct: 'pancakes' }, (order) =>
+        expect(order.product).toBe('cake'),
+      );
+    }
+  });
+
+  it('sends all three out over a run of orders that count nothing (STEP-18)', () => {
+    const all: ProductId[] = ['cake', 'icecream', 'pancakes'];
+    for (const index of [2, 3, 4, 7, 11, 13]) {
+      const seen = new Set<string>();
+      for (let seed = 0; seed < 60; seed += 1) {
+        seen.add(
+          generateOrder({ ...input({ index, products: all }), rng: createRng(seed) }).product,
+        );
+      }
+      expect([...seen].sort(), `order ${index}`).toEqual(['cake', 'icecream', 'pancakes']);
+    }
+    // And the no-repeat rule still bites with three of them on the shelf.
+    everySeed({ index: 11, products: all, avoidProduct: 'pancakes' }, (order) =>
+      expect(order.product).not.toBe('pancakes'),
+    );
+  });
+
+  it('draws for the product exactly once, and only when there is a choice (STEP-18)', () => {
+    // What a seeded session replays by is the ORDER of the draws, so the rule is: one draw when
+    // more than one product can carry the order, none when only one can. The pancakes therefore
+    // add a draw to counting orders, where the cake used to be the only candidate – and take none
+    // away anywhere. A save from before them replays only in the sense the cake-only test above
+    // promises; the whole shelf of products is what moves the stream, and buying anything does.
+    const all: ProductId[] = ['cake', 'icecream', 'pancakes'];
+    for (const seed of [0, 1, 7, 42]) {
+      // 11 is a digit plus a letter: every product can carry it, with two on the shelf or three.
+      const two = counting(seed);
+      const three = counting(seed);
+      generateOrder({ ...input({ index: 11, products: ['cake', 'icecream'] }), rng: two.rng });
+      generateOrder({ ...input({ index: 11, products: all }), rng: three.rng });
+      expect(three.draws()).toBe(two.draws());
+
+      // 12 pairs counting with a letter: the ice cream cannot carry it, so with two products there
+      // was nothing to draw from and with three there is exactly one draw.
+      const twoCount = counting(seed);
+      const threeCount = counting(seed);
+      generateOrder({ ...input({ index: 12, products: ['cake', 'icecream'] }), rng: twoCount.rng });
+      generateOrder({ ...input({ index: 12, products: all }), rng: threeCount.rng });
+      expect(threeCount.draws()).toBe(twoCount.draws() + 1);
+    }
   });
 
   it('keeps the seeded items unchanged whatever is being made', () => {

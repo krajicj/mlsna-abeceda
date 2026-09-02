@@ -372,6 +372,12 @@
           "bytes": 14673,
           "loudness": -18
         },
+        "finish.5": {
+          "hash": "c11f61fc2fa58111",
+          "text": "Palačinky jsou hotové!",
+          "bytes": 14255,
+          "loudness": -18
+        },
         "guard.turn": {
           "hash": "26584a34bdc40f99",
           "text": "Otoč mě!",
@@ -984,6 +990,12 @@
           "bytes": 22405,
           "loudness": -18
         },
+        "order.digit.1.pancakes": {
+          "hash": "e752d41b528266b6",
+          "text": "Prosím cedulku s číslem jedna.",
+          "bytes": 20942,
+          "loudness": -18
+        },
         "order.digit.10": {
           "hash": "268bee47ac3db702",
           "text": "Prosím svíčku s číslem deset.",
@@ -994,6 +1006,12 @@
           "hash": "456be6365ff2942e",
           "text": "Prosím vlaječku s číslem deset.",
           "bytes": 23659,
+          "loudness": -18
+        },
+        "order.digit.10.pancakes": {
+          "hash": "3215b8ddf1702315",
+          "text": "Prosím cedulku s číslem deset.",
+          "bytes": 25749,
           "loudness": -18
         },
         "order.digit.2": {
@@ -1008,6 +1026,12 @@
           "bytes": 24286,
           "loudness": -18
         },
+        "order.digit.2.pancakes": {
+          "hash": "cdf645ced3223c94",
+          "text": "Prosím cedulku s číslem dva.",
+          "bytes": 17599,
+          "loudness": -18
+        },
         "order.digit.3": {
           "hash": "48b0718a04d2efa7",
           "text": "Prosím svíčku s číslem tři.",
@@ -1018,6 +1042,12 @@
           "hash": "a9a238bd10ecfe7c",
           "text": "Prosím vlaječku s číslem tři.",
           "bytes": 25540,
+          "loudness": -18
+        },
+        "order.digit.3.pancakes": {
+          "hash": "8924d7b490f527c6",
+          "text": "Prosím cedulku s číslem tři.",
+          "bytes": 18017,
           "loudness": -18
         },
         "order.digit.4": {
@@ -1032,6 +1062,12 @@
           "bytes": 23659,
           "loudness": -18
         },
+        "order.digit.4.pancakes": {
+          "hash": "7227311ddf0bcf68",
+          "text": "Prosím cedulku s číslem čtyři.",
+          "bytes": 18435,
+          "loudness": -18
+        },
         "order.digit.5": {
           "hash": "c2b7b44ab7bb6b0a",
           "text": "Prosím svíčku s číslem pět.",
@@ -1042,6 +1078,12 @@
           "hash": "e2978e4eaf63e8e3",
           "text": "Prosím vlaječku s číslem pět.",
           "bytes": 20525,
+          "loudness": -18
+        },
+        "order.digit.5.pancakes": {
+          "hash": "a5cc6dc407f9bfc7",
+          "text": "Prosím cedulku s číslem pět.",
+          "bytes": 22196,
           "loudness": -18
         },
         "order.digit.6": {
@@ -1056,6 +1098,12 @@
           "bytes": 22405,
           "loudness": -18
         },
+        "order.digit.6.pancakes": {
+          "hash": "5571ae83afae6392",
+          "text": "Prosím cedulku s číslem šest.",
+          "bytes": 17181,
+          "loudness": -18
+        },
         "order.digit.7": {
           "hash": "95f8d1e98bf9c7b5",
           "text": "Prosím svíčku s číslem sedm.",
@@ -1066,6 +1114,12 @@
           "hash": "04fc359d36b1a634",
           "text": "Prosím vlaječku s číslem sedm.",
           "bytes": 24704,
+          "loudness": -18
+        },
+        "order.digit.7.pancakes": {
+          "hash": "a6b5cbc9e5a0deea",
+          "text": "Prosím cedulku s číslem sedm.",
+          "bytes": 22196,
           "loudness": -18
         },
         "order.digit.8": {
@@ -1080,6 +1134,12 @@
           "bytes": 23241,
           "loudness": -18
         },
+        "order.digit.8.pancakes": {
+          "hash": "e83aeabfd89588c3",
+          "text": "Prosím cedulku s číslem osm.",
+          "bytes": 19898,
+          "loudness": -18
+        },
         "order.digit.9": {
           "hash": "a2b4f660642d8cef",
           "text": "Prosím svíčku s číslem devět.",
@@ -1090,6 +1150,12 @@
           "hash": "ff599cdabc9dd66c",
           "text": "Prosím vlaječku s číslem devět.",
           "bytes": 19898,
+          "loudness": -18
+        },
+        "order.digit.9.pancakes": {
+          "hash": "6eee2dffb284fbe6",
+          "text": "Prosím cedulku s číslem devět.",
+          "bytes": 20525,
           "loudness": -18
         },
         "order.letter.a": {
@@ -1104,6 +1170,12 @@
           "bytes": 18435,
           "loudness": -18
         },
+        "order.letter.a.pancakes": {
+          "hash": "75e30fec9f6f6dd4",
+          "text": "Prosím čokoládu s písmenkem á.",
+          "bytes": 19898,
+          "loudness": -18
+        },
         "order.letter.b": {
           "hash": "10ca76011fbb2a4d",
           "text": "Prosím perníček s písmenkem bé.",
@@ -1114,6 +1186,12 @@
           "hash": "57577407b3d041b4",
           "text": "Prosím oplatku s písmenkem bé.",
           "bytes": 23659,
+          "loudness": -18
+        },
+        "order.letter.b.pancakes": {
+          "hash": "315c77a1c0a92515",
+          "text": "Prosím čokoládu s písmenkem bé.",
+          "bytes": 21360,
           "loudness": -18
         },
         "order.letter.c": {
@@ -1128,6 +1206,12 @@
           "bytes": 23659,
           "loudness": -18
         },
+        "order.letter.c.pancakes": {
+          "hash": "34392beab8a30dc7",
+          "text": "Prosím čokoládu s písmenkem cé.",
+          "bytes": 23868,
+          "loudness": -18
+        },
         "order.letter.d": {
           "hash": "4691b14163d80261",
           "text": "Prosím perníček s písmenkem dé.",
@@ -1138,6 +1222,12 @@
           "hash": "d72388522cdc0d05",
           "text": "Prosím oplatku s písmenkem dé.",
           "bytes": 20525,
+          "loudness": -18
+        },
+        "order.letter.d.pancakes": {
+          "hash": "db17237b2a79fef5",
+          "text": "Prosím čokoládu s písmenkem dé.",
+          "bytes": 20316,
           "loudness": -18
         },
         "order.letter.e": {
@@ -1152,6 +1242,12 @@
           "bytes": 20525,
           "loudness": -18
         },
+        "order.letter.e.pancakes": {
+          "hash": "81586877d7da984d",
+          "text": "Prosím čokoládu s písmenkem é.",
+          "bytes": 23241,
+          "loudness": -18
+        },
         "order.letter.f": {
           "hash": "85a15f4cc3979cad",
           "text": "Prosím perníček s písmenkem ef.",
@@ -1162,6 +1258,12 @@
           "hash": "456265eb43fe320b",
           "text": "Prosím oplatku s písmenkem ef.",
           "bytes": 21360,
+          "loudness": -18
+        },
+        "order.letter.f.pancakes": {
+          "hash": "cee080575e3ad797",
+          "text": "Prosím čokoládu s písmenkem ef.",
+          "bytes": 23241,
           "loudness": -18
         },
         "order.letter.g": {
@@ -1176,6 +1278,12 @@
           "bytes": 20316,
           "loudness": -18
         },
+        "order.letter.g.pancakes": {
+          "hash": "6e0d9a57010d3b35",
+          "text": "Prosím čokoládu s písmenkem gé.",
+          "bytes": 20942,
+          "loudness": -18
+        },
         "order.letter.h": {
           "hash": "e216d27aaed6caa6",
           "text": "Prosím perníček s písmenkem há.",
@@ -1186,6 +1294,12 @@
           "hash": "d42c17e87f7793c3",
           "text": "Prosím oplatku s písmenkem há.",
           "bytes": 20525,
+          "loudness": -18
+        },
+        "order.letter.h.pancakes": {
+          "hash": "476a85ce9fb2ef01",
+          "text": "Prosím čokoládu s písmenkem há.",
+          "bytes": 19898,
           "loudness": -18
         },
         "order.letter.i": {
@@ -1200,6 +1314,12 @@
           "bytes": 19480,
           "loudness": -18
         },
+        "order.letter.i.pancakes": {
+          "hash": "bd4e1522f346ccd9",
+          "text": "Prosím čokoládu s písmenkem í.",
+          "bytes": 21360,
+          "loudness": -18
+        },
         "order.letter.j": {
           "hash": "578ce7e10cd692c8",
           "text": "Prosím perníček s písmenkem jé.",
@@ -1210,6 +1330,12 @@
           "hash": "162851702816d73b",
           "text": "Prosím oplatku s písmenkem jé.",
           "bytes": 23868,
+          "loudness": -18
+        },
+        "order.letter.j.pancakes": {
+          "hash": "0c4a42273d0c01d1",
+          "text": "Prosím čokoládu s písmenkem jé.",
+          "bytes": 20525,
           "loudness": -18
         },
         "order.letter.k": {
@@ -1224,6 +1350,12 @@
           "bytes": 24704,
           "loudness": -18
         },
+        "order.letter.k.pancakes": {
+          "hash": "01c07fb0a1cd33db",
+          "text": "Prosím čokoládu s písmenkem ká.",
+          "bytes": 23868,
+          "loudness": -18
+        },
         "order.letter.l": {
           "hash": "4a4ec4819d5a37f1",
           "text": "Prosím perníček s písmenkem el.",
@@ -1234,6 +1366,12 @@
           "hash": "25aafde5b035f0e7",
           "text": "Prosím oplatku s písmenkem el.",
           "bytes": 21360,
+          "loudness": -18
+        },
+        "order.letter.l.pancakes": {
+          "hash": "1085ac3f23ce59b4",
+          "text": "Prosím čokoládu s písmenkem el.",
+          "bytes": 22823,
           "loudness": -18
         },
         "order.letter.m": {
@@ -1248,6 +1386,12 @@
           "bytes": 21778,
           "loudness": -18
         },
+        "order.letter.m.pancakes": {
+          "hash": "7941045fed69ce4a",
+          "text": "Prosím čokoládu s písmenkem em.",
+          "bytes": 28048,
+          "loudness": -18
+        },
         "order.letter.n": {
           "hash": "50c8799afe105777",
           "text": "Prosím perníček s písmenkem en.",
@@ -1258,6 +1402,12 @@
           "hash": "13ccd5895a57023d",
           "text": "Prosím oplatku s písmenkem en.",
           "bytes": 22196,
+          "loudness": -18
+        },
+        "order.letter.n.pancakes": {
+          "hash": "0852c81d124e3217",
+          "text": "Prosím čokoládu s písmenkem en.",
+          "bytes": 22823,
           "loudness": -18
         },
         "order.letter.o": {
@@ -1272,6 +1422,12 @@
           "bytes": 22196,
           "loudness": -18
         },
+        "order.letter.o.pancakes": {
+          "hash": "760690339bcd4d90",
+          "text": "Prosím čokoládu s písmenkem ó.",
+          "bytes": 25122,
+          "loudness": -18
+        },
         "order.letter.p": {
           "hash": "7f04c0beb9827827",
           "text": "Prosím perníček s písmenkem pé.",
@@ -1282,6 +1438,12 @@
           "hash": "80a725700d2eaf55",
           "text": "Prosím oplatku s písmenkem pé.",
           "bytes": 22823,
+          "loudness": -18
+        },
+        "order.letter.p.pancakes": {
+          "hash": "0aa2e1566d07de68",
+          "text": "Prosím čokoládu s písmenkem pé.",
+          "bytes": 18853,
           "loudness": -18
         },
         "order.letter.r": {
@@ -1296,6 +1458,12 @@
           "bytes": 21778,
           "loudness": -18
         },
+        "order.letter.r.pancakes": {
+          "hash": "5de0fc144b47b44b",
+          "text": "Prosím čokoládu s písmenkem er.",
+          "bytes": 23868,
+          "loudness": -18
+        },
         "order.letter.s": {
           "hash": "fa40a892d0333c54",
           "text": "Prosím perníček s písmenkem es.",
@@ -1306,6 +1474,12 @@
           "hash": "e1a49e90be023eeb",
           "text": "Prosím oplatku s písmenkem es.",
           "bytes": 20942,
+          "loudness": -18
+        },
+        "order.letter.s.pancakes": {
+          "hash": "011d107092e17942",
+          "text": "Prosím čokoládu s písmenkem es.",
+          "bytes": 22823,
           "loudness": -18
         },
         "order.letter.t": {
@@ -1320,6 +1494,12 @@
           "bytes": 19898,
           "loudness": -18
         },
+        "order.letter.t.pancakes": {
+          "hash": "176c5255cc8fb6d2",
+          "text": "Prosím čokoládu s písmenkem té.",
+          "bytes": 25540,
+          "loudness": -18
+        },
         "order.letter.u": {
           "hash": "0e748a5c0eb1f150",
           "text": "Prosím perníček s písmenkem ú.",
@@ -1330,6 +1510,12 @@
           "hash": "66116e49a424244c",
           "text": "Prosím oplatku s písmenkem ú.",
           "bytes": 20316,
+          "loudness": -18
+        },
+        "order.letter.u.pancakes": {
+          "hash": "f8961453fe0f5d99",
+          "text": "Prosím čokoládu s písmenkem ú.",
+          "bytes": 22823,
           "loudness": -18
         },
         "order.letter.v": {
@@ -1344,6 +1530,12 @@
           "bytes": 19062,
           "loudness": -18
         },
+        "order.letter.v.pancakes": {
+          "hash": "8287dd9f31622de9",
+          "text": "Prosím čokoládu s písmenkem vé.",
+          "bytes": 22196,
+          "loudness": -18
+        },
         "order.letter.z": {
           "hash": "b9d0258ba2ed7dae",
           "text": "Prosím perníček s písmenkem zet.",
@@ -1354,6 +1546,12 @@
           "hash": "0ff066d9884fadda",
           "text": "Prosím oplatku s písmenkem zet.",
           "bytes": 20942,
+          "loudness": -18
+        },
+        "order.letter.z.pancakes": {
+          "hash": "789382ff3aae63a9",
+          "text": "Prosím čokoládu s písmenkem zet.",
+          "bytes": 22196,
           "loudness": -18
         },
         "order.next.count.1.blueberry": {
@@ -1608,6 +1806,12 @@
           "bytes": 19480,
           "loudness": -18
         },
+        "order.next.digit.1.pancakes": {
+          "hash": "3b409570973058eb",
+          "text": "A ještě cedulku s číslem jedna.",
+          "bytes": 21778,
+          "loudness": -18
+        },
         "order.next.digit.10": {
           "hash": "382e62e6f6262c9c",
           "text": "A ještě svíčku s číslem deset.",
@@ -1618,6 +1822,12 @@
           "hash": "680b531fa5e389c8",
           "text": "A ještě vlaječku s číslem deset.",
           "bytes": 24286,
+          "loudness": -18
+        },
+        "order.next.digit.10.pancakes": {
+          "hash": "e1226b7a85a323b0",
+          "text": "A ještě cedulku s číslem deset.",
+          "bytes": 20316,
           "loudness": -18
         },
         "order.next.digit.2": {
@@ -1632,6 +1842,12 @@
           "bytes": 20525,
           "loudness": -18
         },
+        "order.next.digit.2.pancakes": {
+          "hash": "4dd492abfdfe4671",
+          "text": "A ještě cedulku s číslem dva.",
+          "bytes": 18853,
+          "loudness": -18
+        },
         "order.next.digit.3": {
           "hash": "c5a4e93c49d84be7",
           "text": "A ještě svíčku s číslem tři.",
@@ -1641,6 +1857,12 @@
         "order.next.digit.3.icecream": {
           "hash": "105b569c22c85074",
           "text": "A ještě vlaječku s číslem tři.",
+          "bytes": 18853,
+          "loudness": -18
+        },
+        "order.next.digit.3.pancakes": {
+          "hash": "54e7dbc3daaca674",
+          "text": "A ještě cedulku s číslem tři.",
           "bytes": 18853,
           "loudness": -18
         },
@@ -1656,6 +1878,12 @@
           "bytes": 23241,
           "loudness": -18
         },
+        "order.next.digit.4.pancakes": {
+          "hash": "8aa544c142dd6d55",
+          "text": "A ještě cedulku s číslem čtyři.",
+          "bytes": 20942,
+          "loudness": -18
+        },
         "order.next.digit.5": {
           "hash": "415aa26102234430",
           "text": "A ještě svíčku s číslem pět.",
@@ -1668,6 +1896,12 @@
           "bytes": 22196,
           "loudness": -18
         },
+        "order.next.digit.5.pancakes": {
+          "hash": "865277fd0a33e5e3",
+          "text": "A ještě cedulku s číslem pět.",
+          "bytes": 20942,
+          "loudness": -18
+        },
         "order.next.digit.6": {
           "hash": "259e9bd2203de619",
           "text": "A ještě svíčku s číslem šest.",
@@ -1677,6 +1911,12 @@
         "order.next.digit.6.icecream": {
           "hash": "237c296e3395e36e",
           "text": "A ještě vlaječku s číslem šest.",
+          "bytes": 20525,
+          "loudness": -18
+        },
+        "order.next.digit.6.pancakes": {
+          "hash": "a6f4302c32de3180",
+          "text": "A ještě cedulku s číslem šest.",
           "bytes": 20525,
           "loudness": -18
         },
@@ -1692,6 +1932,12 @@
           "bytes": 19898,
           "loudness": -18
         },
+        "order.next.digit.7.pancakes": {
+          "hash": "d705d329c2a0700e",
+          "text": "A ještě cedulku s číslem sedm.",
+          "bytes": 19480,
+          "loudness": -18
+        },
         "order.next.digit.8": {
           "hash": "3af10e2de8a75a22",
           "text": "A ještě svíčku s číslem osm.",
@@ -1702,6 +1948,12 @@
           "hash": "dc728bb1fdc0dfe1",
           "text": "A ještě vlaječku s číslem osm.",
           "bytes": 19480,
+          "loudness": -18
+        },
+        "order.next.digit.8.pancakes": {
+          "hash": "e9ed5f68dfe13fce",
+          "text": "A ještě cedulku s číslem osm.",
+          "bytes": 20316,
           "loudness": -18
         },
         "order.next.digit.9": {
@@ -1716,6 +1968,12 @@
           "bytes": 22405,
           "loudness": -18
         },
+        "order.next.digit.9.pancakes": {
+          "hash": "209e7f291b389d4f",
+          "text": "A ještě cedulku s číslem devět.",
+          "bytes": 21360,
+          "loudness": -18
+        },
         "order.next.letter.a": {
           "hash": "6a833488ee304f3f",
           "text": "A ještě perníček s písmenkem á.",
@@ -1726,6 +1984,12 @@
           "hash": "d9a6376aa207cf8e",
           "text": "A ještě oplatku s písmenkem á.",
           "bytes": 20525,
+          "loudness": -18
+        },
+        "order.next.letter.a.pancakes": {
+          "hash": "6c1cd654d4da331e",
+          "text": "A ještě čokoládu s písmenkem á.",
+          "bytes": 23241,
           "loudness": -18
         },
         "order.next.letter.b": {
@@ -1740,6 +2004,12 @@
           "bytes": 19898,
           "loudness": -18
         },
+        "order.next.letter.b.pancakes": {
+          "hash": "0686d27fb22ee48d",
+          "text": "A ještě čokoládu s písmenkem bé.",
+          "bytes": 22196,
+          "loudness": -18
+        },
         "order.next.letter.c": {
           "hash": "7db72a404277420a",
           "text": "A ještě perníček s písmenkem cé.",
@@ -1752,6 +2022,12 @@
           "bytes": 19898,
           "loudness": -18
         },
+        "order.next.letter.c.pancakes": {
+          "hash": "ce663fa482771e13",
+          "text": "A ještě čokoládu s písmenkem cé.",
+          "bytes": 22405,
+          "loudness": -18
+        },
         "order.next.letter.d": {
           "hash": "39b0e55999f9c9a4",
           "text": "A ještě perníček s písmenkem dé.",
@@ -1761,6 +2037,12 @@
         "order.next.letter.d.icecream": {
           "hash": "8aba48ec2e24e85c",
           "text": "A ještě oplatku s písmenkem dé.",
+          "bytes": 20316,
+          "loudness": -18
+        },
+        "order.next.letter.d.pancakes": {
+          "hash": "722ccc4c0b10f811",
+          "text": "A ještě čokoládu s písmenkem dé.",
           "bytes": 20316,
           "loudness": -18
         },
@@ -1776,6 +2058,12 @@
           "bytes": 21360,
           "loudness": -18
         },
+        "order.next.letter.e.pancakes": {
+          "hash": "1c90dc093e031042",
+          "text": "A ještě čokoládu s písmenkem é.",
+          "bytes": 22823,
+          "loudness": -18
+        },
         "order.next.letter.f": {
           "hash": "bdd1963a7f04ce1d",
           "text": "A ještě perníček s písmenkem ef.",
@@ -1786,6 +2074,12 @@
           "hash": "4f731fce4bb9d4be",
           "text": "A ještě oplatku s písmenkem ef.",
           "bytes": 23868,
+          "loudness": -18
+        },
+        "order.next.letter.f.pancakes": {
+          "hash": "57df2b41e41e17db",
+          "text": "A ještě čokoládu s písmenkem ef.",
+          "bytes": 23659,
           "loudness": -18
         },
         "order.next.letter.g": {
@@ -1800,6 +2094,12 @@
           "bytes": 20525,
           "loudness": -18
         },
+        "order.next.letter.g.pancakes": {
+          "hash": "57da7a8da5e16e6d",
+          "text": "A ještě čokoládu s písmenkem gé.",
+          "bytes": 22196,
+          "loudness": -18
+        },
         "order.next.letter.h": {
           "hash": "66fe86d4627feee1",
           "text": "A ještě perníček s písmenkem há.",
@@ -1810,6 +2110,12 @@
           "hash": "ec3d5eb155082481",
           "text": "A ještě oplatku s písmenkem há.",
           "bytes": 22405,
+          "loudness": -18
+        },
+        "order.next.letter.h.pancakes": {
+          "hash": "2184112721ed363c",
+          "text": "A ještě čokoládu s písmenkem há.",
+          "bytes": 22196,
           "loudness": -18
         },
         "order.next.letter.i": {
@@ -1824,6 +2130,12 @@
           "bytes": 19898,
           "loudness": -18
         },
+        "order.next.letter.i.pancakes": {
+          "hash": "a79fd8421c775a1c",
+          "text": "A ještě čokoládu s písmenkem í.",
+          "bytes": 21360,
+          "loudness": -18
+        },
         "order.next.letter.j": {
           "hash": "968043808e71017e",
           "text": "A ještě perníček s písmenkem jé.",
@@ -1834,6 +2146,12 @@
           "hash": "3588130bbbb4c327",
           "text": "A ještě oplatku s písmenkem jé.",
           "bytes": 19480,
+          "loudness": -18
+        },
+        "order.next.letter.j.pancakes": {
+          "hash": "72e1aca4a66015ff",
+          "text": "A ještě čokoládu s písmenkem jé.",
+          "bytes": 22405,
           "loudness": -18
         },
         "order.next.letter.k": {
@@ -1848,6 +2166,12 @@
           "bytes": 20942,
           "loudness": -18
         },
+        "order.next.letter.k.pancakes": {
+          "hash": "a478e9557095ee20",
+          "text": "A ještě čokoládu s písmenkem ká.",
+          "bytes": 20525,
+          "loudness": -18
+        },
         "order.next.letter.l": {
           "hash": "60c08b92acc64a29",
           "text": "A ještě perníček s písmenkem el.",
@@ -1858,6 +2182,12 @@
           "hash": "bea925e7d3204219",
           "text": "A ještě oplatku s písmenkem el.",
           "bytes": 20525,
+          "loudness": -18
+        },
+        "order.next.letter.l.pancakes": {
+          "hash": "466ae0a55a52169f",
+          "text": "A ještě čokoládu s písmenkem el.",
+          "bytes": 22196,
           "loudness": -18
         },
         "order.next.letter.m": {
@@ -1872,6 +2202,12 @@
           "bytes": 22823,
           "loudness": -18
         },
+        "order.next.letter.m.pancakes": {
+          "hash": "90c5219bc97d6b46",
+          "text": "A ještě čokoládu s písmenkem em.",
+          "bytes": 25122,
+          "loudness": -18
+        },
         "order.next.letter.n": {
           "hash": "3f2df1adebfe2062",
           "text": "A ještě perníček s písmenkem en.",
@@ -1882,6 +2218,12 @@
           "hash": "98863e7370723c36",
           "text": "A ještě oplatku s písmenkem en.",
           "bytes": 21778,
+          "loudness": -18
+        },
+        "order.next.letter.n.pancakes": {
+          "hash": "8675f11047a23f37",
+          "text": "A ještě čokoládu s písmenkem en.",
+          "bytes": 24286,
           "loudness": -18
         },
         "order.next.letter.o": {
@@ -1896,6 +2238,12 @@
           "bytes": 21360,
           "loudness": -18
         },
+        "order.next.letter.o.pancakes": {
+          "hash": "2bcd27ab3f3a8aa7",
+          "text": "A ještě čokoládu s písmenkem ó.",
+          "bytes": 23659,
+          "loudness": -18
+        },
         "order.next.letter.p": {
           "hash": "ed3f78e3b39850cd",
           "text": "A ještě perníček s písmenkem pé.",
@@ -1906,6 +2254,12 @@
           "hash": "2abc46bfc5a5c42a",
           "text": "A ještě oplatku s písmenkem pé.",
           "bytes": 19062,
+          "loudness": -18
+        },
+        "order.next.letter.p.pancakes": {
+          "hash": "fe35a7bf4e87d467",
+          "text": "A ještě čokoládu s písmenkem pé.",
+          "bytes": 23659,
           "loudness": -18
         },
         "order.next.letter.r": {
@@ -1920,6 +2274,12 @@
           "bytes": 23241,
           "loudness": -18
         },
+        "order.next.letter.r.pancakes": {
+          "hash": "90c48473a58ad405",
+          "text": "A ještě čokoládu s písmenkem er.",
+          "bytes": 24704,
+          "loudness": -18
+        },
         "order.next.letter.s": {
           "hash": "1bcd3676c29bcfc1",
           "text": "A ještě perníček s písmenkem es.",
@@ -1930,6 +2290,12 @@
           "hash": "a449b6f508c0fd95",
           "text": "A ještě oplatku s písmenkem es.",
           "bytes": 20525,
+          "loudness": -18
+        },
+        "order.next.letter.s.pancakes": {
+          "hash": "36dace4204a49d2f",
+          "text": "A ještě čokoládu s písmenkem es.",
+          "bytes": 23868,
           "loudness": -18
         },
         "order.next.letter.t": {
@@ -1944,6 +2310,12 @@
           "bytes": 23868,
           "loudness": -18
         },
+        "order.next.letter.t.pancakes": {
+          "hash": "1ea10fae3ecc0a28",
+          "text": "A ještě čokoládu s písmenkem té.",
+          "bytes": 22405,
+          "loudness": -18
+        },
         "order.next.letter.u": {
           "hash": "51beba31b900d5da",
           "text": "A ještě perníček s písmenkem ú.",
@@ -1954,6 +2326,12 @@
           "hash": "503bcc85dbbafb87",
           "text": "A ještě oplatku s písmenkem ú.",
           "bytes": 19898,
+          "loudness": -18
+        },
+        "order.next.letter.u.pancakes": {
+          "hash": "a65bb6e471143719",
+          "text": "A ještě čokoládu s písmenkem ú.",
+          "bytes": 23659,
           "loudness": -18
         },
         "order.next.letter.v": {
@@ -1968,6 +2346,12 @@
           "bytes": 19062,
           "loudness": -18
         },
+        "order.next.letter.v.pancakes": {
+          "hash": "ea8c56b6431217a3",
+          "text": "A ještě čokoládu s písmenkem vé.",
+          "bytes": 20525,
+          "loudness": -18
+        },
         "order.next.letter.z": {
           "hash": "cbd4f0500225014f",
           "text": "A ještě perníček s písmenkem zet.",
@@ -1978,6 +2362,12 @@
           "hash": "9ecbaee0897fcf44",
           "text": "A ještě oplatku s písmenkem zet.",
           "bytes": 20942,
+          "loudness": -18
+        },
+        "order.next.letter.z.pancakes": {
+          "hash": "c702529c78f0ea11",
+          "text": "A ještě čokoládu s písmenkem zet.",
+          "bytes": 22196,
           "loudness": -18
         },
         "praise.female.1": {
@@ -2334,6 +2724,12 @@
           "bytes": 20942,
           "loudness": -18
         },
+        "shop.ask.product.pancakes": {
+          "hash": "260b21da7ad55373",
+          "text": "Chceš koupit palačinky za pět hvězdiček?",
+          "bytes": 22405,
+          "loudness": -18
+        },
         "shop.bought.customer.frog": {
           "hash": "869fdd0e185c7522",
           "text": "Žabka přijde na návštěvu!",
@@ -2362,6 +2758,12 @@
           "hash": "275b01525d3e2675",
           "text": "Zmrzlinka je tvoje! Můžeš ji dělat.",
           "bytes": 25748,
+          "loudness": -18
+        },
+        "shop.bought.product.pancakes": {
+          "hash": "08689fd3667481c5",
+          "text": "Palačinky jsou tvoje! Můžeš je dělat.",
+          "bytes": 25122,
           "loudness": -18
         },
         "shop.hello.1": {

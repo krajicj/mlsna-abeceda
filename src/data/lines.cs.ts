@@ -151,6 +151,7 @@ const PRODUCT_TEXTS: Readonly<
 > = {
   cake: { letter: 'perníček', digit: 'svíčku' },
   icecream: { letter: 'oplatku', digit: 'vlaječku' },
+  pancakes: { letter: 'čokoládu', digit: 'cedulku' },
 };
 
 /** Praise, three sets (návrh kap. 8). The gender is the child's, see PraiseGender. */
@@ -196,6 +197,7 @@ const FINISH: readonly { readonly text: string; readonly product?: ProductId }[]
   { text: 'A je to!' },
   { text: 'Dortík je hotový!', product: 'cake' },
   { text: 'Zmrzlinka je hotová!', product: 'icecream' },
+  { text: 'Palačinky jsou hotové!', product: 'pancakes' },
 ];
 
 /** The reward lands in the counter (návrh kap. 7). */
@@ -250,6 +252,10 @@ const SHOP_TEXTS: Readonly<Record<ShopItemId, { readonly ask: string; readonly b
     'product.icecream': {
       ask: 'Chceš koupit zmrzlinku za pět hvězdiček?',
       bought: 'Zmrzlinka je tvoje! Můžeš ji dělat.',
+    },
+    'product.pancakes': {
+      ask: 'Chceš koupit palačinky za pět hvězdiček?',
+      bought: 'Palačinky jsou tvoje! Můžeš je dělat.',
     },
   };
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { shopLayout } from '../art/layout';
 import { FRUITS, STARTER_FRUITS } from '../data/curriculum';
 import { CUSTOMERS, STARTER_CUSTOMERS } from '../data/customers';
 import { PRODUCTS, STARTER_PRODUCT } from '../data/products';
@@ -266,5 +267,24 @@ describe('unlockedProducts (STEP-17)', () => {
     expect(starBalance(bought!)).toBe(0);
     expect(buyShopItem(bought!, 'product.icecream')).toBeNull();
     expect(buyShopItem(stars(4), 'product.icecream')).toBeNull();
+  });
+
+  it('adds the pancakes as the third product, for five stars (STEP-18)', () => {
+    expect(shopItem('product.pancakes')?.price).toBe(5);
+    const bought = buyShopItem(stars(5), 'product.pancakes');
+    expect(bought).not.toBeNull();
+    expect(starBalance(bought!)).toBe(0);
+    expect(buyShopItem(bought!, 'product.pancakes')).toBeNull();
+    expect(buyShopItem(stars(4), 'product.pancakes')).toBeNull();
+    // In the order of the catalogue, whatever order the purchases were made in.
+    const all = { 'product.pancakes': 5, 'product.icecream': 5 };
+    expect(unlockedProducts(stars(0, all))).toEqual(['cake', 'icecream', 'pancakes']);
+  });
+
+  it('keeps the catalogue inside the shelf of the shop (STEP-18)', () => {
+    // `drawShelf()` reads `layout.goods[index]` and SKIPS a row it has no cell for: a seventh item
+    // would be invisible and unbuyable, and nothing would throw. The milkshake of STEP-19 is meant
+    // to run into this line, not into a silent hole on the shelf.
+    expect(SHOP_ITEMS.length).toBeLessThanOrEqual(shopLayout(1024).goods.length);
   });
 });

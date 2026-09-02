@@ -53,6 +53,16 @@ export const PALETTE = {
   spongeLight: '#FFF3D6',
   dough: '#C98A4B',
   doughLight: '#E0AC74',
+  /** The pancakes (STEP-18): golden rather than the browner gingerbread dough above. */
+  pancake: '#E8B771',
+  pancakeDark: '#C08A45',
+  /**
+   * The chocolate disc that carries the letter on pancakes, and the syrup of their finale. Two
+   * classes darker than `dough` on purpose: the disc is the same 96 px circle as the gingerbread
+   * cookie, and colour is one of the three things that keep the two apart (STEP-18, decision 2).
+   */
+  chocolate: '#5A3520',
+  chocolateLight: '#7C4A2D',
   pillDone: '#FF8FAB',
   pillMuted: '#B9A697',
   wax: '#FFF1DC',

@@ -26,6 +26,18 @@ import {
   WAFER_SIZE,
 } from './icecream';
 import { productBase, productDigitArt, productLetterArt } from './product';
+import {
+  chocolateLetter,
+  CHOCOLATE_SIZE,
+  pancakesBase,
+  pancakesTopping,
+  PANCAKES_HEIGHT,
+  PANCAKES_VIEW_BOX,
+  PANCAKES_WIDTH,
+  sign,
+  SIGN_HEIGHT,
+  SIGN_WIDTH,
+} from './pancakes';
 import { kitchenBackdrop } from './kitchen';
 import { confettiPiece, CONFETTI_COUNT, CONFETTI_SIZE } from './confetti';
 import { bowlLid } from './lid';
@@ -123,6 +135,13 @@ const MODULES: Record<string, string> = {
   blankWafer: wafer(),
   flag: flag('3'),
   blankFlag: flag(),
+  // The pancakes (STEP-18).
+  pancakesBase: pancakesBase(),
+  pancakesTopping: pancakesTopping(),
+  chocolateLetter: chocolateLetter('K'),
+  blankChocolate: chocolateLetter(),
+  sign: sign('3'),
+  blankSign: sign(),
 };
 
 /** Minimal well-formedness check: every tag closes, in the right order, exactly once. */
@@ -196,6 +215,22 @@ describe('art modules', () => {
     ],
     ['wafer', MODULES['wafer'], `0 0 ${WAFER_SIZE} ${WAFER_SIZE}`, WAFER_SIZE, WAFER_SIZE],
     ['flag', MODULES['flag'], `0 0 ${FLAG_WIDTH} ${FLAG_HEIGHT}`, FLAG_WIDTH, FLAG_HEIGHT],
+    ['pancakesBase', MODULES['pancakesBase'], PANCAKES_VIEW_BOX, PANCAKES_WIDTH, PANCAKES_HEIGHT],
+    [
+      'pancakesTopping',
+      MODULES['pancakesTopping'],
+      PANCAKES_VIEW_BOX,
+      PANCAKES_WIDTH,
+      PANCAKES_HEIGHT,
+    ],
+    [
+      'chocolateLetter',
+      MODULES['chocolateLetter'],
+      `0 0 ${CHOCOLATE_SIZE} ${CHOCOLATE_SIZE}`,
+      CHOCOLATE_SIZE,
+      CHOCOLATE_SIZE,
+    ],
+    ['sign', MODULES['sign'], `0 0 ${SIGN_WIDTH} ${SIGN_HEIGHT}`, SIGN_WIDTH, SIGN_HEIGHT],
     ['bubbleFruit', MODULES['bubbleFruit'], '0 0 116 88', 116, 88],
     ['star', MODULES['star'], '0 0 40 40', 40, 40],
     ['starsPill', MODULES['starsPill'], '0 0 160 64', 160, 64],
@@ -509,6 +544,52 @@ describe('the drawings of the ice cream (STEP-17)', () => {
   });
 });
 
+describe('the drawings of the pancakes (STEP-18)', () => {
+  it('carries the letter and the digit only when it has one', () => {
+    // The order bubble shows the blank one: "chocolate", not "the chocolate with a K" (návrh 5.4).
+    expect(chocolateLetter('K')).toContain('>K<');
+    expect(chocolateLetter()).not.toContain('<text');
+    expect(sign('3')).toContain('>3<');
+    expect(sign()).not.toContain('<text');
+  });
+
+  it('stands a stack of five on a plate, tall enough to carry both at once', () => {
+    const markup = pancakesBase();
+    // Five pancakes and the plate they stand on; the top surface is where the fruit lands.
+    expect(markup.split('<path').length - 1).toBe(5);
+    expect(markup).toContain(PALETTE.pancake);
+    expect(markup).toContain(PALETTE.plate);
+    expect(markup).toContain(INK); // the 4 px outline of rule 8
+  });
+
+  it('pours the syrup over the front rim and leaves the top of the stack clear', () => {
+    // The middle of the top carries the fruit, the sign and the disc; syrup across it would hide
+    // what the child has just counted.
+    const markup = pancakesTopping();
+    expect(markup).toContain(PALETTE.chocolate);
+    expect(markup).not.toContain(PALETTE.pancake);
+    expect(unbalancedTags(markup)).toEqual([]);
+  });
+
+  it('keeps the chocolate disc and the gingerbread cookie apart at a glance', () => {
+    // Both are 96 px discs with a letter in the middle, and the child meets both across orders.
+    // Three things separate them, and two of them are checked here: the cookie is a smooth circle
+    // in pale dough, the disc a scalloped path in dark chocolate.
+    expect(cookie()).toContain('<circle');
+    expect(cookie()).toContain(PALETTE.dough);
+    expect(chocolateLetter()).not.toContain('<circle');
+    expect(chocolateLetter()).toContain(PALETTE.chocolate);
+    expect(chocolateLetter()).not.toContain(PALETTE.dough);
+  });
+
+  it('stands the sign on two legs, so it is never the ice cream flag', () => {
+    // The flag is a pennant on ONE stick; the sign is a card on two, like a nameplate in a shop.
+    expect((sign().match(/rotate\(/g) ?? []).length).toBe(2);
+    expect(sign()).not.toContain(PALETTE.frosting);
+    expect(flag()).not.toContain(PALETTE.mintLight);
+  });
+});
+
 describe('the art dispatcher (STEP-17)', () => {
   it('has a picture for every product in the catalogue', () => {
     for (const product of PRODUCTS) {
@@ -528,6 +609,10 @@ describe('the art dispatcher (STEP-17)', () => {
     expect(productBase('icecream')).toBe(iceCreamBase());
     expect(productLetterArt('icecream', 'K')).toBe(wafer('K'));
     expect(productDigitArt('icecream', '3')).toBe(flag('3'));
+    // STEP-18: the pancakes went through the same four signposts and nothing else.
+    expect(productBase('pancakes')).toBe(pancakesBase());
+    expect(productLetterArt('pancakes', 'K')).toBe(chocolateLetter('K'));
+    expect(productDigitArt('pancakes', '3')).toBe(sign('3'));
     // The cake is untouched: exactly the markup the game has been drawing all along.
     expect(productLetterArt('cake', 'K')).toBe(cookie('K'));
     expect(productDigitArt('cake', '3')).toBe(candle('3'));

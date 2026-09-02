@@ -89,6 +89,7 @@ import type { Rect } from './svg';
 
 const CAKE = PRODUCT_GEOMETRY.cake;
 const ICECREAM = PRODUCT_GEOMETRY.icecream;
+const PANCAKES = PRODUCT_GEOMETRY.pancakes;
 
 const WIDTHS = [1024, 1200, 1366];
 /** Smallest touch target the game allows (CLAUDE.md, rule 3). */
@@ -932,6 +933,71 @@ describe('productCountSlots', () => {
       { x: 445, y: 350, width: 34, height: 44, back: true },
     ]);
   });
+
+  it.each(WIDTHS)('counts onto the pancakes the same way as onto the cake at %i px', (width) => {
+    const { bowl, product } = kitchenLayout(width);
+    const pills = pillSlots(product, MAX_PILLS);
+    const pillBottom = pills[0]!.y + pills[0]!.height;
+    expect(PANCAKES.count).not.toBeNull();
+    const slots = productCountSlots(product, 'pancakes', MAX_COUNT_PIECES);
+    expect(slots).toHaveLength(MAX_COUNT_PIECES);
+    const front = slots.filter((slot) => !slot.back);
+    const back = slots.filter((slot) => slot.back);
+    expect(front).toHaveLength(3);
+    for (let i = 1; i < front.length; i += 1) {
+      expect(front[i]!.x).toBeGreaterThanOrEqual(front[i - 1]!.x + front[i - 1]!.width);
+    }
+    // Every back piece peeks out of a gap in the front row, so all five can still be counted.
+    for (const slot of back) {
+      expect(slot.y).toBeLessThan(front[0]!.y);
+      expect(slot.x).toBeGreaterThan(front[0]!.x);
+      expect(slot.x + slot.width).toBeLessThan(front[2]!.x + front[2]!.width);
+    }
+    for (const slot of slots) {
+      expect(slot.x + slot.width).toBeLessThan(bowl.x);
+      expect(slot.y).toBeGreaterThan(pillBottom);
+      expect(slot.x).toBeGreaterThanOrEqual(product.x);
+      expect(slot.x + slot.width).toBeLessThanOrEqual(product.x + product.width);
+    }
+  });
+
+  it.each(WIDTHS)(
+    'leaves the fruit and the chocolate disc room for each other at %i px',
+    (width) => {
+      // An order may ask for counting AND a letter (návrh 5.3), and on the pancakes they meet: the
+      // fruit lies on top of the stack, the disc leans against its front. This is what the fifth
+      // pancake is for – three of them would put the two on top of each other.
+      const { product } = kitchenLayout(width);
+      const letterSlot = productLetterSlot(product, 'pancakes');
+      for (const slot of productCountSlots(product, 'pancakes', MAX_COUNT_PIECES)) {
+        expect(slot.y + slot.height).toBeLessThan(letterSlot.y);
+      }
+      expect(letterSlot.y - (product.y + PANCAKES.count!.frontBottom)).toBe(22);
+    },
+  );
+
+  it.each(WIDTHS)(
+    'stands the sign on the stack and leans the disc on its front at %i px',
+    (width) => {
+      const { bowl, product } = kitchenLayout(width);
+      const signSlot = productDigitSlot(product, 'pancakes');
+      const discSlot = productLetterSlot(product, 'pancakes');
+      expect(signSlot.y + signSlot.height).toBe(product.y + PANCAKES.topItemBottom);
+      expect(discSlot.y + discSlot.height / 2).toBe(product.y + PANCAKES.frontItemCenterY);
+      // Both on the centre line of the stack, and never on top of one another or of the bowl.
+      for (const slot of [signSlot, discSlot]) {
+        expect(slot.x + slot.width / 2).toBe(product.x + PANCAKES.topCenterX);
+        expect(separation(slot, bowl)).toBeGreaterThan(0);
+        expect(inside(slot, width)).toBe(true);
+      }
+      expect(separation(signSlot, discSlot)).toBeGreaterThan(0);
+      // The disc leans on the stack, it does not hang below the plate.
+      expect(discSlot.y + discSlot.height).toBeLessThanOrEqual(product.y + product.height);
+      // Both are drawn at the size they stand on the shelf, so no flight ever rescales one.
+      const shelfSlot = shelfSlots(kitchenLayout(width).shelfLetters, 3)[0]!;
+      expect(discSlot.width).toBe(shelfSlot.width);
+    },
+  );
 });
 
 describe('lidRect', () => {

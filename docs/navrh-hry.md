@@ -100,21 +100,28 @@ Stejné mechaniky, jiný obrázek – každý nový výrobek je odměna z obchů
 |---|---|---|---|
 | **Dortík** (start) | ovoce na dortu | perníček | svíčka |
 | **Zmrzlinka** | nic – přijde hotová | oplatka | vlaječka |
-| **Palačinky** | ovoce na palačinkách | písmenko ze šlehačky | cedulka |
+| **Palačinky** | ovoce na palačinkách | čokoládová placička | cedulka |
 | **Koktejl** | ovoce ve skleničce (rozmixuje se až na konci) | brčko | nálepka na skleničce |
 
-Tři upřesnění (rozhodnutí autora, srpen 2026):
+Čtyři upřesnění (rozhodnutí autora, srpen a září 2026):
 
 - **Zmrzlinka se nepočítá – na pult přijede hotová a přidává se na ni jen oplatka nebo vlaječka.**
   Původní návrh („kopečky v kornoutu, tři kopečky“) narazil na to, co se ukázalo až na obrazovce:
   dcera klepne na **misku jahod** a vyletí z ní **kopeček zmrzliny**. To není stylizace, to je
   nesmysl – ve zbytku hry platí „na co klepnu, to přiletí“ a tohle jediné místo by to porušovalo.
-  Důsledek, který k rozhodnutí patří: **objednávka na počítání je vždycky dort**, protože zmrzlina
-  nemá kam počítané kusy dát. Číselná dráha střídá počítání a číslice, takže zmrzlina vyjde zhruba
-  na půlku objednávek, a je to kratší objednávka než dort – mění se tím tempo, což je spíš plus.
+  Důsledek, který k rozhodnutí patří: **objednávka na počítání nikdy nepřijde na zmrzlinu**, protože
+  ta nemá kam počítané kusy dát. Do STEP-18 to znamenalo „počítání = vždycky dort“; od palačinek se
+  i počítání střídá mezi dvěma obrázky. Číselná dráha střídá počítání a číslice, takže zmrzlina
+  vyjde zhruba na půlku objednávek, a je to kratší objednávka než dort – mění se tím tempo, což je
+  spíš plus.
 - **Počítá se vždycky ovoce, ať se staví cokoli.** Padlo tím i „kopečky nemají příchuť“ (nemá co
   řešit) a palačinky nedostanou vlastní počítanou sadu: nosí ovoce jako dort a koktejl. Jedna sada
   hlášek pro všechno, co se počítá.
+- **Písmenko na palačinkách nese čokoládová placička, ne šlehačka** (rozhodnutí autora, 2. 9. 2026,
+  provedeno v STEP-18). Bublina ukazuje nosič **prázdný** (kap. 5.4), a prázdné písmenko ze šlehačky
+  není nic – nedá se nakreslit tak, aby bylo poznat, co si zákazník přeje. Placička navíc zapadne
+  do jediné šablony věty, kterou mají všechny výrobky společnou: „Prosím **čokoládu** s písmenkem
+  ká.“ Kreslí se tmavě a s vlnitým okrajem, aby si ji nešlo splést s perníčkem z dortu.
 - **Koktejl se mixuje až po dokončení objednávky.** Rozmixovat ovoce průběžně by bylo totéž, co
   kap. 13 bod 2 zamítá u pečení: spočítané kusy zmizí a nedají se přepočítat, na čemž stojí Č1
   i pozdější „kolik je“. Ovoce proto zůstane vidět ve skleničce a mixér se rozjede až jako
@@ -122,7 +129,7 @@ Tři upřesnění (rozhodnutí autora, srpen 2026):
 
 **Pořadí:** výrobky jdou hned po obchůdku (STEP-17 zmrzlinka, STEP-18 palačinky, STEP-19 koktejl),
 každý jako vlastní krok – nosič písmenka i číslice je u každého jiný, takže každý si žádá vlastní
-sadu hlášek. Album se naopak odsunulo na konec roadmapy (STEP-30), viz `plan.md`.
+sadu hlášek. Album se naopak odsunulo na konec roadmapy (STEP-31), viz `plan.md`.
 
 ### Konec sezení
 Po **10 objednávkách** (výchozí; rodič nastaví jiný počet, minutový limit nebo vypne) kuchyně zavře:
@@ -168,7 +175,7 @@ Generátor objednávek si bere položky z obou drah podle toho, kde zrovna kter�
 | Č5 | + „o jednu víc / míň“, nula | výhled |
 
 **Č2 přijde nadvakrát.** Číslice 6–10 otevře STEP-11, ale **počítání zůstane do pěti**
-a „kolik je“ počká na STEP-25: na horní plochu dortu se vejde pět kousků ovoce
+a „kolik je“ počká na STEP-26: na horní plochu dortu se vejde pět kousků ovoce
 (`MAX_CAKE_FRUIT`) a šestý by neměl kam. Druhá řada na dortu je práce s artem, ne
 s generátorem, tak jde do vlastního kroku.
 
@@ -227,7 +234,7 @@ Každé písmeno a číslo má **skóre zvládnutí** 0–5:
   uvolní – radši kratší nabídka než žádná objednávka.
 - Postup na další stupeň: vše v aktuálním stupni má skóre ≥ 3. Zpět jen rodič.
   Dráha nikdy nevyleze výš, než co kuchyně opravdu umí zahrát: dnes Č2 a P2. Strop zvedne
-  STEP-25 (čísla) a STEP-27 (písmena). Bez něj by save tvrdil stupeň, jehož obsah generátor
+  STEP-26 (čísla) a STEP-28 (písmena). Bez něj by save tvrdil stupeň, jehož obsah generátor
   neumí složit.
 - **Pořadí písmen** (počítá se z nastavení): 1) písmena jména dítěte v pořadí, v jakém jsou
   ve jméně, ta s háčkem/čárkou se **přeskočí** (Anička → A, N, I, K; Č přijde až v P4),
@@ -369,7 +376,7 @@ Co **nebude:** streaky, denní odměny, časově omezené nabídky, odemykání 
 
 Zámek: podržet hvězdičky vpravo nahoře 3 s → „Kolik je 4 × 3?“ s číselnou klávesnicí.
 
-Než koutek vznikne (STEP-22), zastupuje ho **dočasná číselná klávesnice na zavřené kuchyni**:
+Než koutek vznikne (STEP-23), zastupuje ho **dočasná číselná klávesnice na zavřené kuchyni**:
 ikona visacího zámku v pravém dolním rohu, kód `1234`, který jenom vynuluje sezení a vytáhne
 mříž. Není to tajemství (repozitář je veřejný), jen brána pro čtyřletou – a jediné místo hry,
 kde je číslice UI, ne učební obsah.

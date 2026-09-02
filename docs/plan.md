@@ -35,19 +35,20 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-15 | [Obchůdek: katalog, nákup a odemykání (logika)](steps/STEP-15-shop-catalogue-and-unlocks.md) | M3 | 13 | done |
 | STEP-16 | [Obchůdek: scéna, košík a věci do kuchyně](steps/STEP-16-shop-scene-and-decorations.md) | M3 | 15 | done |
 | STEP-17 | [Druhý výrobek: zmrzlinka (výrobek jako proměnná)](steps/STEP-17-icecream-second-product.md) | M3 | 15, 16 | done |
-| STEP-18 | Třetí výrobek: palačinky | M3 | 17 | — |
+| STEP-18 | [Třetí výrobek: palačinky](steps/STEP-18-pancakes-third-product.md) | M3 | 17 | done |
 | STEP-19 | Čtvrtý výrobek: koktejl (mixuje se až na konci) | M3 | 17 | — |
-| STEP-20 | PWA ručně (service worker, manifest), offline, ikona na ploše | M3 | 02 | — |
-| STEP-21 | Překvapení | M3 | 13 | — |
-| STEP-22 | Rodičovský koutek: zámek, nastavení dítěte a rodiny (jméno, rod, členové), limity, zvuk | M4 | 13, 14 | — |
-| STEP-23 | Hlasový balíček jmen (`personal.json`, index, oslovení) | M4 | 07, 22 | — |
-| STEP-24 | Pokrok, export/import, mazání dat | M4 | 13, 22 | — |
-| STEP-25 | „Kolik je“ a dva druhy ovoce (Č2–Č3) | M5 | 11 | — |
-| STEP-26 | Sčítání (Č4) | M5 | 25 | — |
-| STEP-27 | Slovo se vzorem (P3) | M6 | 11 | — |
-| STEP-28 | Slovo bez vzoru, diakritika ze jména, jméno jako milník (P4) | M6 | 27, 23 | — |
-| STEP-29 | Lísteček (P5) | M6 | 28 | — |
-| STEP-30 | Album (vědomě až úplně nakonec, viz poznámka) | M3 | 13 | — |
+| STEP-20 | [Slabikář a mluvící police](steps/STEP-20-primer-and-talking-shelves.md) | M3 | 11, 16 | proposed |
+| STEP-21 | PWA ručně (service worker, manifest), offline, ikona na ploše | M3 | 02 | — |
+| STEP-22 | Překvapení | M3 | 13 | — |
+| STEP-23 | Rodičovský koutek: zámek, nastavení dítěte a rodiny (jméno, rod, členové), limity, zvuk | M4 | 13, 14 | — |
+| STEP-24 | Hlasový balíček jmen (`personal.json`, index, oslovení) | M4 | 07, 23 | — |
+| STEP-25 | Pokrok, export/import, mazání dat | M4 | 13, 23 | — |
+| STEP-26 | „Kolik je“ a dva druhy ovoce (Č2–Č3) | M5 | 11 | — |
+| STEP-27 | Sčítání (Č4) | M5 | 26 | — |
+| STEP-28 | Slovo se vzorem (P3) | M6 | 11 | — |
+| STEP-29 | Slovo bez vzoru, diakritika ze jména, jméno jako milník (P4) | M6 | 28, 24 | — |
+| STEP-30 | Lísteček (P5) | M6 | 29 | — |
+| STEP-31 | Album (vědomě až úplně nakonec, viz poznámka) | M3 | 13 | — |
 
 ## Poznámky
 
@@ -109,9 +110,9 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   a perníček opře zepředu. Při plánování STEP-11 se ukázalo, že u **dvoupoložkové** objednávky
   (STEP-12) kolize nehrozí: pravidlo z návrhu 5.3 („při 2+ položkách vždy aspoň jedna z každé
   dráhy“) nikdy nespojí počítání se svíčkou, a perníček stojí o kus níž než ovoce. Posunout
-  jedno z toho bude potřeba až u **tří** položek, tedy se stupni Č3/P3 (STEP-25, STEP-27).
+  jedno z toho bude potřeba až u **tří** položek, tedy se stupni Č3/P3 (STEP-26, STEP-28).
 - **Rod dítěte** (holčička / kluk / neutrální) přibyl do nastavení kvůli tvarům pochval
-  (`navrh-hry.md` kap. 3 a 9). STEP-07 vygeneruje všechny tři sady, přepínač je v STEP-22;
+  (`navrh-hry.md` kap. 3 a 9). STEP-07 vygeneruje všechny tři sady, přepínač je v STEP-23;
   do té doby hra chválí neutrálně.
 - **Ukládání postupu (srpen 2026):** `localStorage` sám nestačí – dcera hraje na víc zařízeních
   a WebKit maže script-writable úložiště po sedmi dnech používání Safari bez interakce se
@@ -129,7 +130,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
      písmena na perníčcích a číslice na svíčkách zůstanou v původním měřítku vedle vyrostlé
      grafiky; po reloadu je to v pořádku. Je to starší chování `resize()` ve scéně (týká se
      i svíček, kterých se STEP-11 nedotkl), na tabletu na to dítě nenarazí — ale u PWA
-     (STEP-20) nebo rodičovského koutku by to chtělo srovnat.
+     (STEP-21) nebo rodičovského koutku by to chtělo srovnat.
 
 - **Formát save patří do STEP-13 (srpen 2026, hotovo).** Při plánování STEP-11 se prošlo, co v uloženém
   záznamu doopravdy je. Dobrá zpráva: **skóre zvládnutí tam je od začátku** (`tracks`: `level`,
@@ -170,7 +171,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   jedna prosba. Manifest tím roste na **316 hlášek** a STEP-12 si vyžádá běh
   `docker compose run --rm voice` (generátor je přírůstkový, vyrobí jen nové). Když položka zazní
   sama, použije se vždycky tvar s „Prosím“, takže osamocené „A ještě…“ nikdy nezazní. Věty pro
-  **třetí** pozici se zatím nedělají – přijdou se stupni Č3/P3 (STEP-25, STEP-27).
+  **třetí** pozici se zatím nedělají – přijdou se stupni Č3/P3 (STEP-26, STEP-28).
 - **Police mají po STEP-12 vlastní modul každá.** Při implementaci se ukázalo, že dvoupoložková
   objednávka bývá **číslice + písmeno** (obě jsou „výběr z police“, jen každá z jiné dráhy), takže
   jeden `choice-item` na scénu nestačil – uměl vždycky jen jednu polici. `createChoiceItem` proto
@@ -213,7 +214,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   hvězdiček** (rozhodnutí autora) a výzdoba kuchyně (kytka, záclony, kočička na polici, rádio)
   včetně jejích kreseb a míst. Sortiment prvního kola je podle návrhu kap. 7 všechno tři: ovoce,
   zákazník i výzdoba. **Za zavřenou mříží se nenakupuje** (rozhodnutí autora) – zavřeno je zavřeno.
-  **Zbytek roadmapy se posunul o jedno číslo** (staré STEP-16 „Album“ je dnes STEP-30, viz přeskládání M3 níž);
+  **Zbytek roadmapy se posunul o jedno číslo** (staré STEP-16 „Album“ je dnes STEP-31, viz přeskládání M3 níž);
   odkazy `STEP-NN` v komentářích kódu srovná implementace STEP-15 (22 míst ve 12 souborech, seznam
   v jeho plánu). Hotové plány v `docs/steps/` se nepřečíslovávají.
 - **Co se u STEP-16 změnilo při implementaci (srpen 2026).** Autor zrušil nábytek na zeď (okno,
@@ -243,13 +244,13 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   4. **Krok jde na dvě zastavení** (A obchůdek a košík, B výzdoba), každé zvlášť ověřené
      a commitnuté. Nové hlášky ani zvuky nepotřebuje — vygeneroval je STEP-15, takže se
      **generátor vůbec nepouští**.
-- **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-20 do STEP-04: zatím se
+- **Font Fredoka** (`public/fonts/`, OFL) se přesunul ze STEP-21 do STEP-04: zatím se
   vůbec nenačítá a nápisy běží na náhradním systémovém fontu, takže by výtvarnou podobu
-  kuchyně nešlo posoudit. STEP-20 řeší jen PWA a offline.
+  kuchyně nešlo posoudit. STEP-21 řeší jen PWA a offline.
 
 - **M3 se přeskládalo: výrobky dopředu, album dozadu (31. 8. 2026, rozhodnutí autora).** Po STEP-16
   měla přijít odměnová část M3 v pořadí album → překvapení → zmrzlinka. Autor to obrátil: dcera hraje
-  pořád tentýž dort, takže **pestrost výrobků jde první** a album až úplně nakonec (dnes STEP-30).
+  pořád tentýž dort, takže **pestrost výrobků jde první** a album až úplně nakonec (dnes STEP-31).
   Důvody pro album: je to jediná odměna, která dítěti nedá nic nového na práci, a hlavně by si sáhla
   na save — fotky objednávek ve `slučitelném` formátu ze STEP-13 jsou samostatný problém a nemá cenu
   ho řešit dřív, než se rozhodne přenos postupu mezi zařízeními (kap. 13). Nové pořadí:
@@ -272,6 +273,8 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   Odkazy `STEP-NN` v komentářích kódu jsou srovnané rovnou (13 míst v 13 souborech + 3 v návrhu);
   hotové plány v `docs/steps/` se nepřečíslovávají, jsou zápisem o tom, co platilo tehdy. Milník
   u alba zůstává M3, i když jde jako poslední — je to pořád odměna, ne nová látka.
+  **Pravý sloupec téhle tabulky platil do 2. 9. 2026**, kdy se mezi výrobky a PWA vešel slabikář
+  (STEP-20) a všechno od PWA dál se posunulo ještě o jedno – viz poznámka o slabikáři níž.
 - **Výrobky jsou tři kroky, ne jeden (31. 8. 2026).** Nabízelo se slepit zmrzlinku, palačinky
   a koktejl do jednoho kroku „další výrobky“, protože mechanika je u všech stejná. Nejde to kvůli
   **hlasu**: věty nesou nosič („Prosím **perníček** s písmenkem ká“ × „**oplatku**“ × „**brčko**“),
@@ -296,7 +299,8 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   se stránkou, kdežto **web apka na ploše má vlastní počítadlo a té se to netýká** (kap. 9.1). Od
   STEP-15 jsou hvězdičky měna a dcera za ně nakupuje, takže „ikona na ploše“ přestala být pohodlí
   a stala se pojistkou na pravidlo 4. Na iPadu navíc odpadne i celoobrazovkový režim, který dnes
-  řeší `requestFullscreen` v úvodní scéně.
+  řeší `requestFullscreen` v úvodní scéně. **Od 2. 9. 2026 je PWA STEP-21**, protože před ni vklouzl
+  slabikář.
 
 - **Co se rozhodlo při plánování STEP-17 (31. 8. 2026).** Čtyři věci nad rámec řádku roadmapy:
   1. **Výrobek losuje generátor** z koupených a nepadne dvakrát po sobě týž – stejný vzor jako
@@ -308,7 +312,8 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   3. **Stará id hlášek se nepřejmenovávají.** Dort si nechává holá id (`order.letter.k`), jejichž
      klipy jsou vygenerované a commitnuté; nové výrobky dostávají příponu (`order.letter.k.icecream`).
      Počítání se liší podle **jednotky**, ne podle výrobku: dort i koktejl počítají ovoce a sdílejí
-     jednu sadu, zmrzlina má `.scoop`, palačinky si v STEP-18 přidají `.pancake`.
+     jednu sadu, zmrzlina má `.scoop`. (Obojí od té doby padlo: zmrzlina se nakonec vůbec nepočítá
+     a palačinky si v STEP-18 **žádnou počítací sadu nepřidaly** – nosí ovoce jako dort.)
   4. **Kopečky jsou mužského rodu.** `NUMERALS` v manifestu je jediná řada, protože všechna čtyři
      ovoce jsou ženská; „kopeček" ne, takže dvojka potřebuje vlastní tvar („**dva** kopečky").
      Našla to nezávislá revize plánu — bez ní by chyba prošla až do zaplaceného klipu, protože
@@ -322,6 +327,66 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
   oplatka nebo vlaječka; rozhodnutí autora poté, co uviděl, že dcera klepne na misku jahod a vyletí
   z ní kopeček. Návrh kap. 4 je přepsaný, generátor dává počítací objednávky vždycky dortu.
   Poslechová kontrola „dva kopečky" tím odpadla – ty věty už neexistují.
+- **Co se rozhodlo při plánování STEP-18 (2. 9. 2026).** Palačinky jsou po STEP-17 skoro jen data:
+  řádek v `PRODUCTS`, `PRODUCT_GEOMETRY`, `PRODUCT_TEXTS`, `FINISH` a `SHOP_ITEMS`, k tomu jedna
+  kresba. Tři věci nad rámec řádku roadmapy:
+  1. **Písmenko nese čokoládová placička, ne šlehačka** (rozhodnutí autora). Návrh kap. 4 sliboval
+     „písmenko ze šlehačky“, jenže bublina ukazuje nosič **prázdný** (návrh 5.4) a prázdné písmenko
+     ze šlehačky není nic; doslovná varianta by navíc potřebovala vlastní šablonu věty jen pro
+     palačinky. Riziko je záměna s perníčkem, a nese ho tahle volba vědomě: placička se odliší
+     tmavou čokoládovou barvou a vlnitým okrajem, a hlídá to test i ruční porovnání.
+  2. **Číslici nese cedulka** na dvou nožičkách, ne praporek na tyčce – jinak by splývala
+     s vlaječkou od zmrzliny.
+  3. **Krok nepřidá počítací sadu.** Počítá se ovoce, ať se staví cokoli, takže palačinky sdílejí
+     `order.count.*` s dortem. Manifest jde ze 433 na **500** (64 objednávkových vět + 2 obchodní
+     + „Palačinky jsou hotové!“).
+
+  **Regál v obchůdku je po tomhle kroku plný.** `shopLayout()` má šest buněk a katalog bude mít šest
+  řádků; sedmá položka by se **nenakreslila a nešla koupit** (`drawShelf()` ji při `undefined` buňce
+  přeskočí, nic nespadne). Rozšíření regálu je práce pro **STEP-19** (rozhodnutí autora); STEP-18
+  proto přidá test `SHOP_ITEMS.length <= shopLayout(1024).goods.length`, aby na tu hranici STEP-19
+  narazil v testech a ne až na obrazovce.
+
+- **STEP-18 hotový (2. 9. 2026).** 976 testů zelených (bylo 928), 67 klipů navíc, manifest je na
+  **500 hláškách**; `index.json` jen přibyl (402 řádků, 0 ubylo). Palačinky jsou **první výrobek,
+  který ověřil abstrakci ze STEP-17**: generátor, scéna, bublina, police, počítání ani finále se
+  nesáhly. Dvě věci z plánu nesedly a implementace je opravila:
+  1. **„Se třemi výrobky se z rng táhne stejně jako se dvěma“ neplatí** (rozhodnutí 6). U počítací
+     objednávky měl `pickProduct()` dřív jediného kandidáta a netáhl vůbec; teď má dva a jedno
+     `pick` udělá. Nevadí to (výrobek se losuje poslední, sejv jen s dortem se přehraje beze změny),
+     ale test tvrdí pravdu, ne plán.
+  2. **Test „cedulka nezasahuje do řady koleček“ nešel napsat**, protože neplatí ani u dortu:
+     svíčka i cedulka jsou vyšší než `PILL_OFFSET_Y`. Nevadí to, protože objednávka má z číselné
+     dráhy **buď** počítání, **nebo** číslici – kolečka a cedulka se nikdy nepotkají.
+
+  Návrh kap. 4 se opravil na dvou místech: řádek palačinek (čokoládová placička) a věta
+  „objednávka na počítání je vždycky dort“, která od tohohle kroku neplatí. **Neověřený zůstal
+  poslech** tří nových hlášek. Regál obchůdku je plný 6/6 a nový test na to STEP-19 upozorní.
+
+- **Slabikář je nápad dcery, a roadmapa se kvůli němu posunula (2. 9. 2026).** Požadavek zněl:
+  tlačítko v rohu, deska s písmeny a čísly, klepnutí řekne „T jako táta“ – a to samé na policích
+  v kuchyni, když u pultu nikdo není. Autor ho zařadil jako **STEP-20**, tedy hned za výrobky, takže
+  **zbytek roadmapy se posunul o jedno číslo** (PWA 20 → 21, překvapení 21 → 22, rodičovský koutek
+  22 → 23, …, album 30 → **31**). Odkazy `STEP-NN` v komentářích kódu srovná implementace toho
+  kroku, který půjde první; v `docs/plan.md` a v návrhu jsou srovnané hned. Hotové plány
+  v `docs/steps/` se nepřečíslovávají – jsou zápisem o tom, co platilo tehdy, a **historická tabulka
+  přeskládání M3 z 31. 8. proto taky zůstává, jak byla** (její pravý sloupec platil do 2. 9.).
+
+  Čtyři věci, které se u kroku rozhodly:
+  1. **Nula nových hlášek.** „Ká jako kočka.“ (`letter.word.k.kocka`) i „To je pětka.“
+     (`wrong.digit.5`) jsou v manifestu od STEP-07 a klipy jsou zaplacené. Generátor se nepouští
+     vůbec. (Id se v plánu musela opravit: `letterWordLine()` zahazuje diakritiku ve slově
+     a `wrongLine()` nese v id druh prvku – našla to nezávislá revize.)
+  2. **Deska ukazuje všechno**, i to, co hra ještě nezavedla – nezavedené dlaždice jsou bledé, ale
+     plně klepatelné (rozhodnutí autora). Tři odstíny podle skóre zvládnutí jsou zároveň to jediné
+     místo, kde dcera **vidí svůj postup**.
+  3. **Slabikář je dostupný i za zavřenou mříží** (rozhodnutí autora). Cena je známá: konec sezení
+     tím přestává být úplná stopka. Argument pro: slabikář nemá odměnu, nepřičítá hvězdičky
+     a nehne s postupem – je to knížka, a knížka se nezavírá s kuchyní.
+  4. **Klepnutí nikdy nezapisuje do skóre** a mluvící police se zapínají jen s prázdným pultem –
+     ne podle toho, že je police hluchá. `clear()` se totiž volá i na polici, kterou běžící
+     objednávka nepoužívá, a mluvící police během objednávky by byla nápověda zadarmo.
+
 - **Klíč `elevenlabs.env` je v kořeni repozitáře jako obyčejný soubor, ne symlink.** Gitignorem
   krytý, ale uvnitř bind mountu, takže na něj vidí i kontejnery bez internetu (`dev`, `test`,
   `build`, `check`) – pravidlo 9 v CLAUDE.md počítá s tím, že klíč leží mimo repozitář. Přesunout do

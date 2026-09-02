@@ -33,6 +33,14 @@ describe('the catalogue of products', () => {
     // The ice cream arrives finished; a bowl of strawberries has nothing to give it (návrh kap. 4).
     expect(productOf('cake')?.counts).toBe(true);
     expect(productOf('icecream')?.counts).toBe(false);
+    // The pancakes are the second thing fruit lands on, so counting stops being the cake's alone.
+    expect(productOf('pancakes')?.counts).toBe(true);
+  });
+
+  it('sells the pancakes as the third thing the kitchen can make (STEP-18)', () => {
+    expect(PRODUCTS.map((product) => product.id)).toEqual(['cake', 'icecream', 'pancakes']);
+    expect(productOf('pancakes')?.lineSuffix).toBe('pancakes');
+    expect(productOf('pancakes')?.label).toBe('palačinky');
   });
 
   it('always leaves at least one product that counts', () => {

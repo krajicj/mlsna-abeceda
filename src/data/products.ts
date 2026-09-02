@@ -1,7 +1,7 @@
 /**
  * What the kitchen can make (docs/navrh-hry.md kap. 4). One row = one thing an animal may order:
  * what is counted onto it, and how its order sentences are named in the manifest. The cake is the
- * one the child starts with; everything else is bought in the shop (STEP-17 adds the ice cream,
+ * one the child starts with; everything else is bought in the shop (STEP-17 added the ice cream,
  * STEP-18 the pancakes, STEP-19 the milkshake).
  *
  * The catalogue is DATA – it knows nothing about drawing (that is `art/product.ts`) and nothing
@@ -12,7 +12,7 @@
  * file may only ever use `import type` – the same rule as curriculum.ts and shop.ts.
  */
 
-export type ProductId = 'cake' | 'icecream';
+export type ProductId = 'cake' | 'icecream' | 'pancakes';
 
 export interface Product {
   readonly id: ProductId;
@@ -42,6 +42,7 @@ export const STARTER_PRODUCT: ProductId = 'cake';
 export const PRODUCTS: readonly Product[] = [
   { id: 'cake', label: 'dortík', counts: true, lineSuffix: null },
   { id: 'icecream', label: 'zmrzlinka', counts: false, lineSuffix: 'icecream' },
+  { id: 'pancakes', label: 'palačinky', counts: true, lineSuffix: 'pancakes' },
 ];
 
 const BY_ID: ReadonlyMap<string, Product> = new Map(

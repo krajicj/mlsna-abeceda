@@ -55,10 +55,12 @@ describe('manifest of voice lines', () => {
     // shop in STEP-15 (30 for the raspberry, 19 for the shelf itself), −4 in STEP-16 with the
     // flower and the curtains dropped from the catalogue, +67 for the ice cream in STEP-17 (64 for
     // its own order sentences, 2 for the shop, 1 for "Zmrzlinka je hotová!"; the 30 scoop
-    // sentences were generated and then dropped when the ice cream stopped being counted onto).
+    // sentences were generated and then dropped when the ice cream stopped being counted onto),
+    // +67 for the pancakes in STEP-18 on the very same count – they are counted onto, but what is
+    // counted is fruit, so they need no counting sentences of their own.
     // Adding lines means paying for them and regenerating – the number is here so that cost is a
     // conscious edit, not a surprise.
-    expect(LINES).toHaveLength(433);
+    expect(LINES).toHaveLength(500);
   });
 
   it('has unique ids usable as file names', () => {
@@ -190,6 +192,10 @@ describe('manifest of voice lines', () => {
     // The two neutral ones fit anything; the one that names the thing belongs to that thing only.
     expect(finishLines('icecream')).toEqual(['finish.1', 'finish.2', 'finish.4']);
     expect(textOf('finish.4')).toBe('Zmrzlinka je hotová!');
+    // STEP-18: appended, never renumbered – finish.3 and finish.4 keep their generated clips.
+    expect(finishLines('pancakes')).toEqual(['finish.1', 'finish.2', 'finish.5']);
+    expect(textOf('finish.5')).toBe('Palačinky jsou hotové!');
+    expect(finishLines('cake')).toEqual(['finish.1', 'finish.2', 'finish.3']);
     // Without a product only the neutral ones come back: silence about WHAT is finished is always
     // true, and a caller that forgets its product cannot make the narrator say something false.
     expect(finishLines()).toEqual(['finish.1', 'finish.2']);
@@ -213,6 +219,17 @@ describe('manifest of voice lines', () => {
     expect(textOf('order.digit.5')).toBe('Prosím svíčku s číslem pět.');
     expect(textOf('order.digit.5.icecream')).toBe('Prosím vlaječku s číslem pět.');
     expect(textOf('order.next.digit.5.icecream')).toBe('A ještě vlaječku s číslem pět.');
+  });
+
+  it('asks for the chocolate and the sign on the pancakes (STEP-18)', () => {
+    expect(textOf('order.letter.k.pancakes')).toBe('Prosím čokoládu s písmenkem ká.');
+    expect(textOf('order.next.letter.k.pancakes')).toBe('A ještě čokoládu s písmenkem ká.');
+    expect(textOf('order.digit.5.pancakes')).toBe('Prosím cedulku s číslem pět.');
+    expect(textOf('order.next.digit.5.pancakes')).toBe('A ještě cedulku s číslem pět.');
+    // Counting is shared: "tři jahody na palačinky" is the very clip the cake already uses.
+    expect(hasLine('order.count.3.strawberry.pancakes')).toBe(false);
+    expect(textOf('shop.ask.product.pancakes')).toBe('Chceš koupit palačinky za pět hvězdiček?');
+    expect(textOf('shop.bought.product.pancakes')).toBe('Palačinky jsou tvoje! Můžeš je dělat.');
   });
 
   it('keeps the cake on bare ids, whatever the helpers are asked (STEP-17)', () => {

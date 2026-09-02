@@ -9,6 +9,7 @@ import { COOKIE_SIZE } from './cookie';
 import { DECOR_CAT_HEIGHT, DECOR_CAT_WIDTH } from './decor';
 import { fruitWidth } from './fruit';
 import { FLAG_HEIGHT, FLAG_WIDTH, ICECREAM_HEIGHT, WAFER_SIZE } from './icecream';
+import { CHOCOLATE_SIZE, SIGN_HEIGHT, SIGN_WIDTH } from './pancakes';
 import type { ProductId } from '../data/products';
 import type { Rect } from './svg';
 
@@ -76,9 +77,9 @@ export const SHELF_DIGITS_TOP = 84;
 export const MAX_COUNT_PIECES = 5;
 
 /**
- * Where the parts of ONE product sit inside its 220×146 box – the numbers `cake.ts` and
- * `icecream.ts` were drawn to. Every coordinate is local to the box, so the geometry says nothing
- * about where on the counter the product stands.
+ * Where the parts of ONE product sit inside its 220×146 box – the numbers `cake.ts`,
+ * `icecream.ts` and `pancakes.ts` were drawn to. Every coordinate is local to the box, so the
+ * geometry says nothing about where on the counter the product stands.
  *
  * Whatever is counted goes in a front row of three with the rest tucked into its gaps, so all five
  * pieces stay countable – which is what Č1 rests on (návrh 5.1).
@@ -104,9 +105,9 @@ export interface ProductGeometry {
    * is what says so; this is the drawing side of the same fact.
    */
   readonly count: ProductCountGeometry | null;
-  /** Local y where whatever stands on top touches down: the candle, the flag. */
+  /** Local y where whatever stands on top touches down: the candle, the flag, the sign. */
   readonly topItemBottom: number;
-  /** Local y of the centre of what leans against the front: the cookie, the wafer. */
+  /** Local y of the centre of what leans against the front: the cookie, the wafer, the disc. */
   readonly frontItemCenterY: number;
   /** The piece that carries the letter, at the size it stands on the shelf. */
   readonly letterSize: { readonly width: number; readonly height: number };
@@ -142,9 +143,29 @@ export const PRODUCT_GEOMETRY: Readonly<Record<ProductId, ProductGeometry>> = {
     letterSize: { width: WAFER_SIZE, height: WAFER_SIZE },
     digitSize: { width: FLAG_WIDTH, height: FLAG_HEIGHT },
   },
+  pancakes: {
+    topCenterX: 110,
+    count: {
+      pitch: 40,
+      height: 44,
+      width: fruitWidth(44),
+      // The fruit lies on the TOP pancake, whose surface is at y = 22 (pancakes.ts); the cake
+      // carries its own four pixels higher because its top is four pixels higher.
+      frontBottom: 26,
+      backBottom: 14,
+      frontMax: 3,
+    },
+    // The stack is five pancakes tall for this: the sign stands on top, the chocolate disc leans
+    // against the front face, and its top edge (96 ÷ 2 below 96, so y = 48) stays 22 px clear of
+    // the fruit above. An order may ask for counting and a letter at once (návrh 5.3).
+    topItemBottom: 26,
+    frontItemCenterY: 96,
+    letterSize: { width: CHOCOLATE_SIZE, height: CHOCOLATE_SIZE },
+    digitSize: { width: SIGN_WIDTH, height: SIGN_HEIGHT },
+  },
 };
 
-/** The box every product is drawn in; both of them are the same size (cake.ts, icecream.ts). */
+/** The box every product is drawn in; all three are the same size (cake, icecream, pancakes). */
 export const PRODUCT_WIDTH = 220;
 export const PRODUCT_HEIGHT = ICECREAM_HEIGHT;
 
