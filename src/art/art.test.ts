@@ -70,6 +70,7 @@ import { decorLayout, shopGoodPicture, shopLayout, ANSWER_SIZE, PRICE_STAR } fro
 import { PRODUCTS } from '../data/products';
 import { SHOP_ITEMS } from '../data/shop';
 import { fruit, fruitWidth } from './fruit';
+import { primerBookIcon, primerCaseToggle, primerTile } from './primer';
 import { fitted, INK, PALETTE } from './svg';
 
 /** Every animal, the ones bought in the shop included – art nobody tests is art nobody drew. */
@@ -128,6 +129,11 @@ const MODULES: Record<string, string> = {
   sleepingCat: sleepingCat(),
   radioSet: radioSet(),
   radioNiche: radioNiche(decorLayout(1024).radio),
+  primerBook: primerBookIcon(),
+  primerTileNew: primerTile('K', 'new'),
+  primerTileLearning: primerTile('K', 'learning'),
+  primerTileKnown: primerTile('K', 'known'),
+  primerCaseToggle: primerCaseToggle(false),
   // The ice cream (STEP-17).
   iceCreamBase: iceCreamBase(),
   iceCreamTopping: iceCreamTopping(),
@@ -310,6 +316,15 @@ describe('art modules', () => {
     expect(bell()).toContain(PALETTE.brass);
     expect(attribute(bell(64), 'viewBox')).toBe(attribute(bell(), 'viewBox'));
     expect(attribute(bell(64), 'width')).toBe('64');
+  });
+
+  it('shows primer states by colour and keeps the book icon wordless', () => {
+    expect(primerTile('K', 'new')).toContain('>K</text>');
+    expect(primerTile('K', 'new')).not.toEqual(primerTile('K', 'learning'));
+    expect(primerTile('K', 'learning')).not.toEqual(primerTile('K', 'known'));
+    expect(primerBookIcon()).not.toContain('<text');
+    expect(primerBookIcon()).toContain(PALETTE.white);
+    expect(primerCaseToggle(false)).not.toEqual(primerCaseToggle(true));
   });
 
   it('draws the letter on the cookie and the digit on the candle', () => {

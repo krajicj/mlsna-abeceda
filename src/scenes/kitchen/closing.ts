@@ -67,6 +67,8 @@ export function createClosing(options: {
   readonly onCode: () => void;
   /** The shutter is up: the kitchen can put the bell back on the counter. */
   readonly onOpen: () => void;
+  /** Lets the one live control above the shutter hide while the keypad is open. */
+  readonly onPanel?: (open: boolean) => void;
 }): ClosingHandle {
   const wrap = layer('kitchen-closing');
   wrap.hidden = true;
@@ -151,6 +153,7 @@ export function createClosing(options: {
     typed = [];
     drawDots();
     keypad.hidden = true;
+    options.onPanel?.(false);
   }
 
   function openPanel(): void {
@@ -158,6 +161,7 @@ export function createClosing(options: {
     typed = [];
     drawDots();
     keypad.hidden = false;
+    options.onPanel?.(true);
     motion.animate(keypad, [{ transform: 'scale(0.92)' }, { transform: 'scale(1)' }], {
       duration: PANEL_MS,
       easing: 'ease-out',

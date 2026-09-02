@@ -37,7 +37,7 @@ M0 kostra → M1 první objednávka → M2 smyčka  ──► hratelné minimum,
 | STEP-17 | [Druhý výrobek: zmrzlinka (výrobek jako proměnná)](steps/STEP-17-icecream-second-product.md) | M3 | 15, 16 | done |
 | STEP-18 | [Třetí výrobek: palačinky](steps/STEP-18-pancakes-third-product.md) | M3 | 17 | done |
 | STEP-19 | Čtvrtý výrobek: koktejl (mixuje se až na konci) | M3 | 17 | — |
-| STEP-20 | [Slabikář a mluvící police](steps/STEP-20-primer-and-talking-shelves.md) | M3 | 11, 16 | proposed |
+| STEP-20 | [Slabikář a mluvící police](steps/STEP-20-primer-and-talking-shelves.md) | M3 | 11, 16 | done |
 | STEP-21 | PWA ručně (service worker, manifest), offline, ikona na ploše | M3 | 02 | — |
 | STEP-22 | Překvapení | M3 | 13 | — |
 | STEP-23 | Rodičovský koutek: zámek, nastavení dítěte a rodiny (jméno, rod, členové), limity, zvuk | M4 | 13, 14 | — |

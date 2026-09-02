@@ -1,0 +1,40 @@
+.scene-primer {
+  background: var(--wall);
+  background-image: radial-gradient(var(--wall-dot) 3px, transparent 3.5px);
+  background-size: 48px 48px;
+}
+
+.scene-primer svg {
+  display: block;
+}
+
+.primer-board,
+.primer-tile,
+.primer-door,
+.primer-case {
+  position: absolute;
+}
+
+.primer-board {
+  pointer-events: none;
+}
+
+.primer-tile,
+.primer-door,
+.primer-case {
+  cursor: pointer;
+}
+
+.primer-tile {
+  transition: transform 120ms ease-out;
+}
+
+.primer-tile:active {
+  transform: scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primer-tile {
+    transition: none;
+  }
+}

@@ -30,12 +30,15 @@ import {
   itemSpeech,
   orderPreload,
   orderSpeech,
+  primerDigitSpeech,
+  primerLetterSpeech,
   repeatSpeech,
   shopAskSpeech,
   shopBoughtSpeech,
   shopPreload,
   shopShortSpeech,
 } from './speech';
+import { EMPTY_SETTINGS } from './settings';
 
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
@@ -63,6 +66,23 @@ function order(items: readonly OrderItem[], product: ProductId = 'cake'): Order 
 function expectKnown(ids: readonly string[]): void {
   for (const id of ids) expect({ id, known: hasLine(id) }).toEqual({ id, known: true });
 }
+
+describe('primer speech', () => {
+  it('reuses the existing letter words, including family variants', () => {
+    for (const letter of BASE_LETTERS) expectKnown(primerLetterSpeech(letter, EMPTY_SETTINGS));
+    expect(
+      primerLetterSpeech('B', {
+        ...EMPTY_SETTINGS,
+        family: [{ role: 'brother', name: 'x' }],
+      }),
+    ).toEqual(['letter.word.b.bracha']);
+  });
+
+  it('reuses the existing digit naming clips and stays silent for unknown values', () => {
+    for (const value of DIGITS) expectKnown(primerDigitSpeech(String(value)));
+    expect(primerDigitSpeech('99')).toEqual([]);
+  });
+});
 
 describe('orderSpeech', () => {
   it('says the order and the word for a letter', () => {

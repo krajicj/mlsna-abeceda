@@ -71,6 +71,31 @@
   display: none;
 }
 
+/* The open-book primer is the one kitchen control that lives above the closed shutter. */
+.kitchen-primer {
+  position: absolute;
+  z-index: 7;
+  pointer-events: none;
+  opacity: 0.4;
+  transition: opacity 180ms ease-out;
+}
+
+.kitchen-primer.is-ready {
+  pointer-events: auto;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.kitchen-primer[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kitchen-primer {
+    transition: none;
+  }
+}
+
 /* What the child has bought (STEP-16): the cat on the floor and the radio in the counter. They
    answer a tap (meow, a few notes) but they are not part of any order – the drawings stay deaf and
    the target sits over them, exactly like the fruit in the bowl. The shutter covers them like the

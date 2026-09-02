@@ -77,6 +77,8 @@ import {
   kitchenLayout,
   lidRect,
   pillSlots,
+  primerLayout,
+  PRIMER_TILE,
   shelfHitSlots,
   shelfSlots,
   starSlot,
@@ -191,6 +193,7 @@ describe('kitchenLayout', () => {
     expect(kitchenLayout(1024).bubble).toEqual({ x: 60, y: 28, width: 480, height: 124 });
     expect(kitchenLayout(1024).stars).toEqual({ x: 848, y: 10, width: 160, height: 64 });
     expect(kitchenLayout(1366).stars).toEqual({ x: 1190, y: 10, width: 160, height: 64 });
+    expect(kitchenLayout(1024).primer).toEqual({ x: 16, y: 656, width: 96, height: 96 });
   });
 
   it('hangs the bubble in the same place whatever the stage width', () => {
@@ -211,6 +214,34 @@ describe('kitchenLayout', () => {
       const { bubble, shelfDigits } = kitchenLayout(width);
       expect(bubble.x + bubble.width).toBeLessThanOrEqual(shelfDigits.x - 8);
     }
+  });
+});
+
+describe('primerLayout', () => {
+  it.each([Number.NaN, 200, 1024, 1366, 4000])(
+    'keeps all 32 tiles inside a clamped stage (%s)',
+    (width) => {
+      const layout = primerLayout(width);
+      const stageWidth = Number.isFinite(width) ? Math.min(Math.max(width, 1024), 1366) : 1024;
+      expect(layout.letters).toHaveLength(22);
+      expect(layout.digits).toHaveLength(10);
+      for (const box of [...layout.letters, ...layout.digits, layout.back, layout.letterCase]) {
+        expect(inside(box, stageWidth)).toBe(true);
+        expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(MIN_TARGET);
+      }
+    },
+  );
+
+  it('centres each row and keeps tiles apart', () => {
+    const layout = primerLayout(1024);
+    const boxes = [...layout.letters, ...layout.digits];
+    for (const [index, first] of boxes.entries()) {
+      for (const second of boxes.slice(index + 1))
+        expect(separation(first, second)).toBeGreaterThanOrEqual(0);
+    }
+    expect(layout.letters.slice(16).map((box) => box.x)).toEqual([184, 296, 408, 520, 632, 744]);
+    expect(PRIMER_TILE).toBeGreaterThanOrEqual(MIN_TARGET);
+    expect(layout.letterCase.x).toBe(912);
   });
 });
 

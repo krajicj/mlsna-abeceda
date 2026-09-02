@@ -145,6 +145,11 @@ poslední a do kdy je zavřeno. Reload tedy zavíračku neobejde – kuchyně se
 jen bez rachotu. Po pauze delší než hodinu se sezení počítá znovu od jedné. Znovu otevře
 rodič (zámek, kap. 9), nebo kuchyně sama, jakmile minutka doběhne. Účel: hra sama říká „dost“.
 
+**Slabikář zůstává živý i za mříží.** V levém dolním rohu je obrázek otevřené knížky; vede do
+volné desky všech základních písmen a číslic 1–10. Nezapisuje skóre, hvězdičky ani sezení, takže
+není odměnou ani cestou, jak si postup vyťukat. Je to první záměrná výjimka z úplného zastavení po
+zavření: kuchyně nepracuje, ale knížka zůstává k prohlížení.
+
 ## 5. Učení: dvě dráhy, jedna objednávka
 
 Dcera počítá dobře, písmena nezná – proto se **čísla a písmena vyvíjejí nezávisle**.
@@ -285,6 +290,22 @@ Chyba nikdy nezastaví hru a nikdy nezní jako výtka.
 - **Čeština v hláškách:** objednávky v celých větách se správnými tvary („jedna jahoda, dvě
   jahody, pět jahod“), počítání nahlas generickou řadou
   „jedna, dva, tři…“. Každá kombinace (číslo × věc) je samostatný klip, nic se nelepí.
+
+### 5.7 Slabikář a mluvící police
+
+Slabikář je volná deska 22 základních písmen v abecedním pořadí a číslic 1–10. Klepnutí písmeno
+pojmenuje se slovem („Ká jako kočka.“), klepnutí číslici ji pojmenuje („To je pětka.“). Využívá
+stejné hlášky jako kuchyň, včetně rodinných slov z nastavení; bez dostupného klipu jen mlčí.
+
+V pravém dolním rohu je obrázkový přepínač **A/a**: mění všechny dlaždice písmen mezi velkými a
+malými tvary. Číslice se nemění, pořadí, barva postupu i hlas také ne – malé `k` pořád řekne
+„Ká jako kočka.“. Je to volba pohledu pro prohlížení, ne další stupeň dráhy, proto se nikam
+neukládá.
+
+Dlaždice ukazují postup barvou: bledá ještě není v aktivní sadě, plná se učí (skóre 0–2) a mátová
+je zvládnutá (skóre alespoň 3). Všechny tři jsou stejně klepatelné. Pořadí se nikdy nepřerovnává
+podle jména ani rodiny: slabikář je orientační knížka, ne další úkol. Na prázdném pultu mluví stejným
+způsobem i skutečné perníčky a svíčky na policích; během objednávky jsou police opět jen nabídkou.
 
 ## 6. Zákazníci
 
@@ -474,7 +495,7 @@ nikdy neblokují vstup déle než 1 s.
 | M0 | Kostra | Vite projekt, responzivní scéna, přepínání scén, audio odemčené dotykem, otočení na šířku, nasazeno na GitHub Pages, placeholder grafika |
 | M1 | První objednávka | Casting hlasu (dcera vybere), medvídek, miska jahod, 4 perníčky, svíčky; počítání + písmenko + číslice i s chybami a nápovědou; hvězdička; hlášky z ElevenLabs |
 | M2 | Smyčka | Zvoneček, 3 zákazníci, generátor objednávek s dvěma dráhami (Č1–Č2, P1–P2), ukládání, konec sezení |
-| M3 | Odměny | Obchůdek, čtyři výrobky (zmrzlinka, palačinky, koktejl), PWA a ikona na ploše, překvapení; album až za M6 |
+| M3 | Odměny | Obchůdek, čtyři výrobky (zmrzlinka, palačinky, koktejl), slabikář, PWA a ikona na ploše, překvapení; album až za M6 |
 | M4 | Rodičovský koutek | Zámek, rodina a jména, hlasový balíček jmen, pokrok, export/import |
 | M5 | Počítání | „kolik je“, dva druhy ovoce, sčítání (Č3–Č4) |
 | M6 | Čtení | Slovo se vzorem i bez, jméno jako milník, lísteček (P3–P5) |

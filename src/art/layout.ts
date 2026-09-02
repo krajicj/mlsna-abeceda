@@ -17,6 +17,10 @@ export const SHELF_ITEM_WIDTH = 96; // ≥ 88 (CLAUDE.md, rule 3)
 export const SHELF_GAP = 16;
 export const SHELF_BOARD = 16; // the board itself: the bottom strip of the shelf rect
 export const MAX_CHOICES = 4;
+export const PRIMER_TILE = 96; // ≥ 88 (CLAUDE.md, rule 3)
+export const PRIMER_GAP = 16;
+export const PRIMER_LETTER_COLUMNS = 8;
+export const PRIMER_DIGIT_COLUMNS = 5;
 /** Pitch of the hit boxes on a shelf: the piece plus the gap, so no tap falls between two. */
 export const SHELF_HIT_WIDTH = SHELF_ITEM_WIDTH + SHELF_GAP;
 export const FRUIT_SLOT = 96; // strawberry hit box, ≥ 88
@@ -209,6 +213,8 @@ export interface KitchenLayout {
    * 12 px between the customer and the product, so it falls back to the right of the bowl.
    */
   readonly bell: Rect;
+  /** The primer button stays available even while the shutter is down. */
+  readonly primer: Rect;
 }
 
 /**
@@ -267,6 +273,36 @@ export function kitchenLayout(stageWidth: number): KitchenLayout {
       width: STARS_PILL_WIDTH,
       height: STARS_PILL_HEIGHT,
     },
+    primer: { x: 16, y: 656, width: PRIMER_TILE, height: PRIMER_TILE },
+  };
+}
+
+export interface PrimerLayout {
+  readonly letters: readonly Rect[];
+  readonly digits: readonly Rect[];
+  readonly back: Rect;
+  /** Upper/lowercase switch, in the other lower corner from the back door. */
+  readonly letterCase: Rect;
+}
+
+/** The primer's fixed board: rows are centred individually so the short last row stays balanced. */
+export function primerLayout(stageWidth: number): PrimerLayout {
+  const width = clampStageWidth(stageWidth);
+  const row = (count: number, columns: number, y: number): Rect[] =>
+    Array.from({ length: Math.ceil(count / columns) }, (_, rowIndex) => {
+      const inRow = Math.min(columns, count - rowIndex * columns);
+      return centeredRow(0, width, inRow, PRIMER_TILE, PRIMER_GAP).map((x) => ({
+        x,
+        y: y + rowIndex * (PRIMER_TILE + PRIMER_GAP),
+        width: PRIMER_TILE,
+        height: PRIMER_TILE,
+      }));
+    }).flat();
+  return {
+    letters: row(22, PRIMER_LETTER_COLUMNS, 96),
+    digits: row(10, PRIMER_DIGIT_COLUMNS, 456),
+    back: { x: 16, y: 656, width: PRIMER_TILE, height: PRIMER_TILE },
+    letterCase: { x: width - 16 - PRIMER_TILE, y: 656, width: PRIMER_TILE, height: PRIMER_TILE },
   };
 }
 

@@ -4,7 +4,7 @@
  * Czech declines and fragments must never be stitched together). The kitchen only decides the
  * moment; which id belongs to it is decided here, so it can be tested without a browser.
  */
-import type { FruitKind } from '../data/curriculum';
+import type { FruitKind, Letter } from '../data/curriculum';
 import { STARTER_PRODUCT, type ProductId } from '../data/products';
 import {
   bellLines,
@@ -34,6 +34,8 @@ import {
   type PraiseGender,
 } from '../data/lines.cs';
 import { SHOP_ITEMS } from '../data/shop';
+import { letterWord } from './curriculum';
+import type { Settings } from './settings';
 import type { Order, OrderItem } from './orders';
 import { pick, systemRng, type Rng } from './rng';
 
@@ -122,6 +124,21 @@ export function countSpeech(placed: number): readonly string[] {
 /** A tap on the bowl that is already covered: "Už máme tři jahody, to stačí!" */
 export function enoughSpeech(amount: number, fruit: FruitKind): readonly string[] {
   return [countEnoughLine(amount, fruit)];
+}
+
+/** "Ká jako kočka." – the manifest already contains every base and family word variant. */
+export function primerLetterSpeech(letter: Letter, settings: Settings): readonly string[] {
+  const id = letterWordLine(letter, letterWord(letter, settings));
+  return hasLine(id) ? [id] : [];
+}
+
+/**
+ * "To je pětka." Reuses `wrong.digit.N`: despite its historical name, that clip only names the
+ * digit and contains no correction. A missing clip leaves the exploratory interaction silent.
+ */
+export function primerDigitSpeech(value: string): readonly string[] {
+  const id = wrongLine(value);
+  return hasLine(id) ? [id] : [];
 }
 
 /**

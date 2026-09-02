@@ -1,6 +1,7 @@
 import { fruitBowl } from '../../art/bowl';
 import { kitchenBackdrop } from '../../art/kitchen';
 import { kitchenLayout, type KitchenLayout } from '../../art/layout';
+import { primerBookIcon } from '../../art/primer';
 import { productBase } from '../../art/product';
 import { isLetter, type FruitKind, type Letter } from '../../data/curriculum';
 import type { CustomerId } from '../../data/customers';
@@ -28,6 +29,8 @@ import {
   itemHintSpeech,
   orderPreload,
   orderSpeech,
+  primerDigitSpeech,
+  primerLetterSpeech,
   repeatSpeech,
   type LinePicker,
 } from '../../game/speech';
@@ -118,6 +121,8 @@ export const kitchenScene: Scene = (ctx) => {
   const bowlEl = prop('kitchen-bowl', fruitBowl());
   const digitShelf = layer('kitchen-shelf');
   const letterShelf = layer('kitchen-shelf');
+  const primerEl = layer('kitchen-primer');
+  primerEl.innerHTML = primerBookIcon();
   el.append(backdrop);
   // Right after the backdrop: the cat on the floor and the radio in the counter are behind
   // everything the child plays with (STEP-16). The layer reads the save itself and never listens
@@ -187,6 +192,11 @@ export const kitchenScene: Scene = (ctx) => {
     voice: ctx.voice,
     onActivity: () => idle.poke(),
     onDone: () => finishItem('digit'),
+    onBrowse: (element) => {
+      ctx.voice.stop();
+      ctx.sfx.play('pling');
+      ctx.voice.say(primerDigitSpeech(element));
+    },
   });
   const letterItem = createChoiceItem({
     root: el,
@@ -197,6 +207,12 @@ export const kitchenScene: Scene = (ctx) => {
     voice: ctx.voice,
     onActivity: () => idle.poke(),
     onDone: () => finishItem('letter'),
+    onBrowse: (element) => {
+      if (!isLetter(element)) return;
+      ctx.voice.stop();
+      ctx.sfx.play('pling');
+      ctx.voice.say(primerLetterSpeech(element, ctx.session.save.settings));
+    },
   });
   const bubble = createBubble({
     root: el,
@@ -242,8 +258,16 @@ export const kitchenScene: Scene = (ctx) => {
     onOpen: () => {
       bell.show();
       stars.shop(true);
+      setBrowse(true);
+      setPrimerReady(true);
+    },
+    onPanel: (open) => {
+      primerEl.hidden = open;
     },
   });
+  // This is deliberately appended after the shutter. Its z-index is above the grille, making the
+  // primer the one thing that stays useful after a sitting ends.
+  el.append(primerEl);
 
   // The context is unlocked by now (the title screen saw to that), so this is where the bytes
   // fetched in main.ts actually turn into buffers.
@@ -251,11 +275,29 @@ export const kitchenScene: Scene = (ctx) => {
 
   let layout = kitchenLayout(0);
   let backdropWidth = 0;
+  let primerReady = false;
 
   function draw(): void {
     place(productEl, layout.product);
     place(bowlEl, layout.bowl);
+    place(primerEl, layout.primer);
   }
+
+  function setBrowse(on: boolean): void {
+    digitItem.browse(on);
+    letterItem.browse(on);
+  }
+
+  function setPrimerReady(on: boolean): void {
+    primerReady = on;
+    primerEl.classList.toggle('is-ready', on);
+  }
+
+  primerEl.addEventListener('pointerdown', (event) => {
+    if (!event.isPrimary || !primerReady) return;
+    event.preventDefault();
+    ctx.go('primer');
+  });
 
   /** Which handle plays this item – the one place the three of them are told apart. */
   function handleOf(item: OrderItem): {
@@ -374,9 +416,13 @@ export const kitchenScene: Scene = (ctx) => {
       if (isClosed(ctx.session.save.session, Date.now())) {
         closing.close();
         stars.shop(false); // behind the shutter nothing is bought either
+        setBrowse(false);
+        setPrimerReady(true);
       } else {
         bell.show();
         stars.shop(true);
+        setBrowse(true);
+        setPrimerReady(true);
       }
     });
   }
@@ -385,6 +431,8 @@ export const kitchenScene: Scene = (ctx) => {
   function ringBell(): void {
     bell.hide();
     stars.shop(false);
+    setBrowse(false);
+    setPrimerReady(false);
     customer.arrive(ctx.session.customer, () => startOrder(ctx.session.order));
   }
 
@@ -397,6 +445,8 @@ export const kitchenScene: Scene = (ctx) => {
     idle = watcher();
     pacer.cancel();
     stars.set(starBalance(ctx.session.save.stars));
+    setBrowse(false);
+    setPrimerReady(false);
     // The counter is set before anything is put on it: what stands there is what the animal asked
     // for, and every slot below is measured from that product.
     productEl.innerHTML = productBase(next.product);
@@ -433,6 +483,8 @@ export const kitchenScene: Scene = (ctx) => {
   bell.layout(layout);
   decor.layout(0);
   closing.layout(0);
+  digitItem.clear(order.product);
+  letterItem.clear(order.product);
   // The kitchen opens EMPTY: no customer, no bubble, no order, only the bell (návrh kap. 4 – "the
   // bell rings, a customer comes"). The first thing the child does in the game is decide to start
   // it. An empty card would promise an order that nobody has placed yet.
@@ -445,9 +497,13 @@ export const kitchenScene: Scene = (ctx) => {
   if (isClosed(ctx.session.save.session, Date.now())) {
     closing.close({ animate: false });
     stars.shop(false);
+    setBrowse(false);
+    setPrimerReady(true);
   } else {
     bell.show();
     stars.shop(true);
+    setBrowse(true);
+    setPrimerReady(true);
   }
 
   /** DEV only: the offer of the order when it fits, otherwise what stands on the shelf. */
@@ -492,6 +548,8 @@ export const kitchenScene: Scene = (ctx) => {
       finale.reset();
       bell.hide();
       stars.shop(false);
+      setBrowse(false);
+      setPrimerReady(false);
       finishing = false;
       done.clear();
       countItem.clear();
@@ -510,6 +568,8 @@ export const kitchenScene: Scene = (ctx) => {
       ctx.session.close(minutes === undefined ? undefined : minutes * 60_000);
       closing.close();
       stars.shop(false);
+      setBrowse(false);
+      setPrimerReady(true);
     },
     open() {
       ctx.session.reopen();

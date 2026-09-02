@@ -29,6 +29,7 @@ import {
 import { EMPTY_SETTINGS, normalizeSettings, type Settings } from './game/settings';
 import { SAVE_BACKUP_KEY, SAVE_KEY } from './game/version';
 import { kitchenScene } from './scenes/kitchen';
+import { primerScene } from './scenes/primer';
 import { shopScene } from './scenes/shop';
 import { titleScene } from './scenes/title';
 import { createOrientationGuard } from './stage/orientation';
@@ -71,7 +72,7 @@ if (app) {
   sfx.preload();
   const scenes = createSceneManager(
     { stage, audio, voice, sfx, session },
-    { title: titleScene, kitchen: kitchenScene, shop: shopScene },
+    { title: titleScene, kitchen: kitchenScene, shop: shopScene, primer: primerScene },
   );
   const orientation = createOrientationGuard(app, { voice });
   scenes.go('title');

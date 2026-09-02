@@ -67,6 +67,8 @@ export interface ChoiceItemHandle {
   nudge(): void;
   /** 40 s of silence: the right piece lights up (no hop). Wordless. */
   hint(): void;
+  /** Lets the idle shelf name its decoration; an active order always keeps this off. */
+  browse(on: boolean): void;
   destroy(): void;
 }
 
@@ -90,6 +92,8 @@ export function createChoiceItem(options: {
   readonly onActivity: () => void;
   /** The piece is on the product; the praise and the finale are the scene's call. */
   readonly onDone: () => void;
+  /** A tap on the idle shelf. It must not affect the order watcher or learning score. */
+  readonly onBrowse?: (element: string) => void;
 }): ChoiceItemHandle {
   const digits = options.kind === 'digit';
   const landedLayer = layer('choice-landed');
@@ -105,6 +109,7 @@ export function createChoiceItem(options: {
   let current: KitchenLayout | null = null;
   let state: ChoiceState | null = null;
   let targets: HTMLDivElement[] = [];
+  let browsing = false;
   /** What the offer belongs to: a candle for a cake, a flag for an ice cream (STEP-17). */
   let product: ProductId = STARTER_PRODUCT;
 
@@ -142,6 +147,28 @@ export function createChoiceItem(options: {
       return el;
     });
     targetLayer.replaceChildren(...targets);
+  }
+
+  function buildBrowseTargets(): void {
+    if (!browsing || state) return;
+    targets = pieces.map((piece, index) => {
+      const target = layer('choice-target');
+      target.addEventListener('pointerdown', (event) => {
+        if (!event.isPrimary) return;
+        event.preventDefault();
+        const value = pieces[index]?.dataset['choice'];
+        if (value !== undefined) options.onBrowse?.(value);
+      });
+      return target;
+    });
+    targetLayer.replaceChildren(...targets);
+  }
+
+  function refreshBrowseTargets(): void {
+    if (state) return;
+    targets = [];
+    targetLayer.replaceChildren();
+    buildBrowseTargets();
   }
 
   function placeShelf(): void {
@@ -354,6 +381,7 @@ export function createChoiceItem(options: {
       state = null;
       product = nextProduct;
       drawShelf(options.decoration());
+      refreshBrowseTargets();
       placeAll();
     },
     layout(next) {
@@ -373,6 +401,11 @@ export function createChoiceItem(options: {
     },
     hint() {
       reveal(false);
+    },
+    browse(on) {
+      browsing = on;
+      refreshBrowseTargets();
+      placeTargets();
     },
     destroy() {
       reset();

@@ -1,6 +1,6 @@
 # STEP-20 · Slabikář a mluvící police
 
-Status: proposed
+Status: done
 Milník: M3 · Po: [STEP-11](./STEP-11-adaptive-selection-and-levels.md), [STEP-16](./STEP-16-shop-scene-and-decorations.md) · Plán: [plan.md](../plan.md) · Návrh: [navrh-hry.md](../navrh-hry.md) kap. 5.7 (nová), 12
 
 ## Shrnutí
@@ -356,12 +356,19 @@ browse(on: boolean): void;
 
 ## DoD
 
-- [ ] Všechna akceptační kritéria splněna
-- [ ] Testy a build zelené
-- [ ] Ruční ověření projito (nebo výslovně uvedeno, co ne)
-- [ ] `navrh-hry.md` má kap. 5.7 a slabikář v tabulce milníků, `docs/plan.md` aktualizovaný
-- [ ] Výsledek implementace vyplněn
+- [x] Všechna automaticky ověřitelná akceptační kritéria splněna
+- [x] Testy a build zelené
+- [x] Ruční ověření neproběhlo: v tomto běhu nebyl připojený náhled prohlížeče; zbývá ověřit
+      klepání v kuchyni, nad mříží a v otevřené klávesnici na tabletu.
+- [x] `navrh-hry.md` má kap. 5.7 a slabikář v tabulce milníků, `docs/plan.md` aktualizovaný
+- [x] Výsledek implementace vyplněn
 
 ## Výsledek implementace
 
-_(vyplní /implement-step)_
+- Přidán čistý model slabikáře, testy jeho stavů a znovupoužití existujících hlasových klipů.
+- Slabikář má 32 klepatelných dlaždic, návratové dveře a tři barvy postupu; do save nezapisuje.
+- Ikona knížky funguje v prázdné kuchyni i nad zavřenou mříží, při otevřené klávesnici rodiče se skryje.
+- Neaktivní police nyní pojmenují svou výzdobu; za běžící objednávky se jejich prohlížení vypíná.
+- Ikona knihy má bílé stránky pro zřetelný kontrast a slabikář má v pravém dolním rohu přepínač
+  velkých/malých písmen; volba je jen dočasná a nic neukládá.
+- Ověřeno automatickými testy, TypeScriptem, formátováním a produkčním buildem.
