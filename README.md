@@ -16,8 +16,7 @@ The whole toolchain runs in Docker; nothing from npm is ever installed or execut
 
 ```
 docker compose build                     # toolchain image (Node 22 by digest + pinned pnpm)
-docker compose run --rm install pnpm install   # first time (no lockfile yet)
-docker compose run --rm install          # afterwards: pnpm install --frozen-lockfile
+docker compose run --rm install          # pnpm install --frozen-lockfile (needs the registry)
 docker compose --profile dev up          # dev server → http://localhost:5173/mlsna-abeceda/
 docker compose run --rm test             # vitest
 docker compose run --rm check            # tsc + prettier
@@ -25,6 +24,8 @@ docker compose run --rm build            # vite build → dist/
 docker compose run --rm voice --dry-run  # what the missing voice lines would cost
 docker compose run --rm voice            # generate them into public/audio/voice/
 docker compose run --rm normalize        # re-gain the committed clips to a common loudness
+docker compose run --rm sfx              # generate sound effects (same key as voice)
+docker compose run --rm normalize-sfx    # re-gain the committed effects
 ```
 
 The dev, test, check and build containers have no network access, run as a non-root user and

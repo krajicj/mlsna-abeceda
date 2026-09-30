@@ -19,11 +19,18 @@ identifiers, commit messages, file and directory names, skill names, status valu
 `CLAUDE.md`, `.claude/*`, scripts, config, README. No Czech–English hybrids (`plan-krok` is
 wrong; `plan-step` is right).
 
-## Project status (August 2026)
+## Project status (September 2026)
 
-- Phase: M0 done – project skeleton and isolated toolchain (STEP-01), scaled stage, scene
-  switching, audio unlock on first tap and the portrait guard (STEP-02); the game itself is
-  variant "C – Kouzelná kuchyně" (magic kitchen). A push to `main` deploys to Pages.
+**Read `RESUME.md` first** (where we stopped, next 3 steps); the roadmap with per-step statuses
+is `docs/plan.md`.
+
+- Phase: milestones M0–M2 done, M3 (rewards) in progress. Done: STEP-01–18 and STEP-20 —
+  skeleton and toolchain, stage and audio unlock, game logic and save (v2, mergeable), kitchen,
+  voice, order loop, bell and three customers, adaptive selection, two-item orders, session end
+  and parent lock, shop, ice cream and pancakes as further products, primer and talking shelves.
+  Manual tablet check of STEP-20 is still open. Not started: STEP-19 (cocktail), 21 (PWA),
+  22 (surprise), 31 (album), then M4 (parent corner), M5 (counting), M6 (reading).
+  The game is variant "C – Kouzelná kuchyně" (magic kitchen). A push to `main` deploys to Pages.
 - The child does not know letters, counts to 20, recognises digits to 5 → learning runs on
   **two independent tracks** (numbers × letters), see design doc ch. 5.
 - Names (child, family) live **only in settings** (localStorage) and in the git-ignored
@@ -58,40 +65,42 @@ wrong; `plan-step` is right).
 else without the justification described under "Supply-chain security".
 Do not reopen the framework/engine question (Svelte, React, Phaser, Pixi) unless the author does.
 
-## Planned structure
+## Structure
+
+Actual layout as of September 2026. Items marked _(planned)_ do not exist yet.
 
 ```
 compose.yaml               # all toolchain commands run through Docker Compose (see Commands)
 Dockerfile                 # node:22-bookworm-slim@sha256:… + corepack; runs as user `node`
 pnpm-workspace.yaml        # pnpm settings: minimumReleaseAge, blockExoticSubdeps, trustPolicy
-personal.json              # names for voice clips – git-ignored (template: personal.example.json)
+elevenlabs.env             # git-ignored symlink to ~/.config/mlsna-abeceda/elevenlabs.env
+personal.json              # (planned, STEP-24) names for voice clips – git-ignored
 public/
-  audio/voice/<id>.mp3     # generated voice lines (committed)
-  audio/voice/names/       # name clips (first names only) + index.json – committed
+  audio/voice/<slug>/      # generated voice lines per narrator (slug `cook`), committed; index.json = fingerprints
+  audio/voice/names/       # (planned, STEP-24) name clips + index.json
   audio/sfx/<id>.mp3       # generated sound effects + index.json – committed
-  fonts/                   # Fredoka
+  fonts/                   # Fredoka (woff2 + OFL)
+  sw.js, manifest.webmanifest   # (planned, STEP-21) PWA
 src/
   main.ts                  # bootstrap, stage scaling, audio unlock
-  stage/                   # fixed 768-high stage scaled into the window, scene switching
-  scenes/                  # title, kitchen, shop, album, parent (one folder = one scene)
-  game/                    # pure DOM-free logic: orders.ts, mastery.ts (two tracks), curriculum.ts, save.ts
-  audio/                   # voice.ts (playback by id), sfx.ts, music.ts – thin Web Audio wrapper, no library
-  ui/                      # reusable pieces: speech bubble, pill, button, counter
-  art/                     # SVG characters and props as TS templates (bear, cake, fruit…)
-  data/
-    lines.cs.ts            # manifest of ALL voice lines: { id, text, voice } – the only source for generation
-    curriculum.ts          # letter/number order, words for letters ("M jako maminka")
-    customers.ts           # customers and their lines
-  data/
-    sfx.ts                 # manifest of ALL sound effects: { id, prompt, durationSeconds }
+  stage/                   # fixed 768-high stage scaled into the window, scene switching, orientation guard
+  scenes/                  # title, kitchen, shop, primer (one folder = one scene); album, parent (planned)
+  game/                    # pure DOM-free logic with tests: orders, mastery, curriculum, save/migrate/merge, progress, stars, shop, session, closing, idle, primer…
+  audio/                   # voice.ts (playback by id), sfx.ts, chime.ts, context.ts – thin Web Audio wrapper, no library (music.ts planned)
+  art/                     # SVG characters and props as TS templates (bear, cake, fruit, icecream, pancakes…)
+  data/                    # lines.cs.ts (manifest of ALL voice lines – the only source for generation), voices.ts,
+                           # sfx.ts, curriculum.ts, customers.ts, products.ts, shop.ts
+  (ui/ – planned: reusable speech bubble, pill, button; today these live in art/ and scenes/kitchen/)
 scripts/
   lib/audio.mjs            # shared by both generators: ffmpeg loudness pass, atomic write, fingerprint, retries
-  generate-voice.mjs       # ElevenLabs via plain fetch (no SDK): lines.cs.ts → public/audio/voice/; --names for personal.json
+  generate-voice.mjs       # ElevenLabs via plain fetch (no SDK): lines.cs.ts → public/audio/voice/; --names (planned) for personal.json
   generate-sfx.mjs         # ElevenLabs Sound Effects: sfx.ts → public/audio/sfx/
+  fetch-fonts.mjs          # one-off Fredoka download
 docs/navrh-hry.md          # game design (Czech)
 docs/plan.md               # step roadmap and statuses (Czech)
 docs/steps/                # one implementation plan per step (Czech)
 docs/design/               # design canvas sources (see above)
+RESUME.md                  # handover: where we stopped, next steps (Czech)
 ```
 
 ## Commands
@@ -102,7 +111,6 @@ Docker Compose; `node_modules` and the pnpm store live in named volumes, not on 
 ```
 docker compose build                     # toolchain image (Node 22 by digest + pinned pnpm)
 docker compose run --rm install          # pnpm install --frozen-lockfile (internet: registry only)
-docker compose run --rm install pnpm install   # only without a lockfile (first install / adding by hand)
 docker compose --profile dev up          # dev server → http://localhost:5173/mlsna-abeceda/ (no internet in the container)
 docker compose run --rm test             # vitest run          (network: none)
 docker compose run --rm check            # tsc + prettier      (network: none)
